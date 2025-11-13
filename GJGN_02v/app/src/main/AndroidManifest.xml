@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.gjgn_02v">
+
+    <!-- ✅ 인터넷 권한 (서버 통신 및 카카오 SDK에 필요) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.GJGN_02v">
+
+        <!-- ✅ Kakao SDK 앱 키 등록 -->
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="15717b2f42caeea1ee8e0d45226b3236" />
+
+        <!-- ✅ Kakao 로그인 Redirect URI 설정 -->
+        <activity
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="kakao15717b2f42caeea1ee8e0d45226b3236"
+                    android:host="oauth" />
+            </intent-filter>
+        </activity>
+
+        <!-- ✅ 로그인 (앱 진입점) -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:label="로그인"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ✅ 프로필 설정 화면 -->
+        <activity
+            android:name=".ProfileSetupActivity"
+            android:exported="true"
+            android:label="프로필 설정"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <!-- ✅ 메인 화면 -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="메인화면"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <!-- ✅ 기록 페이지 -->
+        <activity
+            android:name=".RecordActivity"
+            android:exported="true"
+            android:label="기록"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <!-- ✅ 분석 페이지 -->
+        <activity
+            android:name=".AnalysisActivity"
+            android:exported="true"
+            android:label="분석"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <!-- ✅ 내 정보 페이지 -->
+        <activity
+            android:name=".MyPageActivity"
+            android:exported="true"
+            android:label="내 정보"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+    </application>
+</manifest>

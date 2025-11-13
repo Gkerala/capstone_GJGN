@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_main"
+        android:title="메인" />
+
+    <item
+        android:id="@+id/menu_record"
+        android:title="기록" />
+
+    <item
+        android:id="@+id/menu_analysis"
+        android:title="분석" />
+
+    <item
+        android:id="@+id/menu_mypage"
+        android:title="내정보" />
+</menu>
