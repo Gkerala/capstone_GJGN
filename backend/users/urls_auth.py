@@ -1,7 +1,7 @@
 from django.urls import path
-from . import views_auth
+from .views_auth import KakaoLoginView, JWTTestView
 
 urlpatterns = [
-    path('kakao/', views_auth.kakao_login, name='kakao_login'),
-    path('kakao/callback/', views_auth.kakao_callback, name='kakao_callback'),
+    path("login/kakao/", KakaoLoginView.as_view(), name="kakao_login"),
+    path("jwt/test/", JWTTestView.as_view(), name="jwt_test"),
 ]

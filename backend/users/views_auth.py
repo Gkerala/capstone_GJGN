@@ -1,70 +1,81 @@
-import requests
-import jwt
-from django.conf import settings
-from django.contrib.auth.models import User
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from rest_framework import status
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-
-# 1️⃣ 카카오 로그인 시작
-@api_view(['GET'])
-def kakao_login(request):
-    kakao_auth_url = (
-        f"https://kauth.kakao.com/oauth/authorize?"
-        f"client_id={settings.KAKAO_REST_API_KEY}&"
-        f"redirect_uri={settings.KAKAO_REDIRECT_URI}&"
-        f"response_type=code"
-    )
-    return Response({"auth_url": kakao_auth_url})
+from .kakao import get_kakao_user_info
 
 
-# 2️⃣ 카카오 인증 콜백 → JWT 발급
-@api_view(['GET'])
-def kakao_callback(request):
-    code = request.GET.get("code")
+class KakaoLoginView(APIView):
+    """
+    프론트엔드에서 access_token 받아
+    → 카카오 API 호출
+    → 유저 등록 or 로그인
+    → JWT 발급 후 반환
+    """
 
-    if not code:
-        return Response({"error": "인가 코드가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        try:
+            access_token = request.data.get("access_token")
+            if not access_token:
+                return Response(
+                    {"error": "access_token이 필요합니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-    # 1단계: 카카오 액세스 토큰 요청
-    token_url = "https://kauth.kakao.com/oauth/token"
-    data = {
-        "grant_type": "authorization_code",
-        "client_id": settings.KAKAO_REST_API_KEY,
-        "redirect_uri": settings.KAKAO_REDIRECT_URI,
-        "code": code,
-    }
+            # ✅ 카카오 사용자 정보 요청
+            kakao_user = get_kakao_user_info(access_token)
+            kakao_id = kakao_user.get("id")
 
-    token_response = requests.post(token_url, data=data)
-    token_json = token_response.json()
+            if not kakao_id:
+                return Response(
+                    {"error": "카카오 사용자 정보 조회 실패"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-    access_token = token_json.get("access_token")
-    if not access_token:
-        return Response({"error": "카카오 토큰 발급 실패", "detail": token_json}, status=status.HTTP_400_BAD_REQUEST)
+            email = kakao_user.get("email") or f"kakao_{kakao_id}@kakao.com"
+            nickname = kakao_user.get("nickname") or "KakaoUser"
 
-    # 2단계: 사용자 정보 요청
-    user_info = requests.get(
-        "https://kapi.kakao.com/v2/user/me",
-        headers={"Authorization": f"Bearer {access_token}"}
-    ).json()
+            # ✅ 유저 생성 또는 로그인 처리
+            user, created = User.objects.get_or_create(
+                username=f"kakao_{kakao_id}",
+                defaults={"email": email, "first_name": nickname},
+            )
 
-    kakao_id = user_info.get("id")
-    kakao_account = user_info.get("kakao_account", {})
-    email = kakao_account.get("email", f"kakao_{kakao_id}@example.com")
-    nickname = kakao_account.get("profile", {}).get("nickname", "카카오사용자")
+            # ✅ JWT 토큰 발급
+            refresh = RefreshToken.for_user(user)
 
-    # 3단계: 사용자 생성 or 기존 사용자 가져오기
-    user, created = User.objects.get_or_create(username=email, defaults={"first_name": nickname})
+            return Response(
+                {
+                    "message": "회원가입 완료" if created else "로그인 성공",
+                    "user": {
+                        "username": user.username,
+                        "email": user.email,
+                        "nickname": user.first_name,
+                    },
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh),
+                },
+                status=status.HTTP_200_OK,
+            )
 
-    # 4단계: JWT 토큰 발급
-    refresh = RefreshToken.for_user(user)
-    access = str(refresh.access_token)
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-    return Response({
-        "email": email,
-        "nickname": nickname,
-        "access_token": access,
-        "refresh_token": str(refresh),
-        "is_new_user": created,
-    })
+
+class JWTTestView(APIView):
+    """
+    JWT 인증이 잘 작동하는지 테스트용 API
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response(
+            {"message": "JWT 인증 성공", "user": user.username},
+            status=status.HTTP_200_OK,
+        )

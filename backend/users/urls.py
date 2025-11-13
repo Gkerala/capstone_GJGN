@@ -1,7 +1,7 @@
-# backend/users/urls.py
-from django.urls import path
-from .views import KakaoLoginView
+from django.contrib import admin
+from django.urls import path, include
 
 urlpatterns = [
-    path('kakao/callback/', KakaoLoginView.as_view(), name='kakao_login'),
+    path('admin/', admin.site.urls),
+    path('api/users/', include('users.urls_auth')), 
 ]
