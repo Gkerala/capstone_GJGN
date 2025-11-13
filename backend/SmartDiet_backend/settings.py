@@ -108,3 +108,5 @@ KAKAO_REDIRECT_URI = os.getenv('KAKAO_REDIRECT_URI', 'http://127.0.0.1:8000/api/
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
