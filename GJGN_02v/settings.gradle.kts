@@ -9,8 +9,12 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
-        // ✅ 카카오 SDK를 위한 저장소 추가
+
+        // ✅ 카카오 SDK 저장소
         maven { url = uri("https://devrepo.kakao.com/nexus/content/groups/public/") }
+
+        // ✅ MPAndroidChart(JitPack) 저장소
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
@@ -19,8 +23,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // ✅ 카카오 SDK 저장소 (Kotlin DSL용)
+
+        // ✅ 카카오 SDK 저장소
         maven { url = uri("https://devrepo.kakao.com/nexus/content/groups/public/") }
+
+        // ✅ MPAndroidChart(JitPack)
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
