@@ -1,4 +1,4 @@
-package com.example.gjgn_02v
+package com.example.gjgn_02v.profile
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -6,6 +6,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.example.gjgn_02v.R
+import com.example.gjgn_02v.utils.TokenManager
+import com.example.gjgn_02v.utils.UserProfile
+import com.example.gjgn_02v.data.api.RetrofitClient
+import com.example.gjgn_02v.main.MyPageActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

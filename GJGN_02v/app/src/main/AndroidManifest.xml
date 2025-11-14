@@ -35,7 +35,7 @@
 
         <!-- ✅ 로그인 (앱 진입점) -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".login.LoginActivity"
             android:exported="true"
             android:label="로그인"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
@@ -47,7 +47,7 @@
 
         <!-- ✅ 프로필 설정 화면 -->
         <activity
-            android:name=".ProfileSetupActivity"
+            android:name=".profile.ProfileSetupActivity"
             android:exported="true"
             android:label="프로필 설정"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
@@ -61,21 +61,21 @@
 
         <!-- ✅ 기록 페이지 -->
         <activity
-            android:name=".RecordActivity"
+            android:name=".main.RecordActivity"
             android:exported="true"
             android:label="기록"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
         <!-- ✅ 분석 페이지 -->
         <activity
-            android:name=".AnalysisActivity"
+            android:name=".main.AnalysisActivity"
             android:exported="true"
             android:label="분석"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
         <!-- ✅ 내 정보 페이지 -->
         <activity
-            android:name=".MyPageActivity"
+            android:name=".main.MyPageActivity"
             android:exported="true"
             android:label="내 정보"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />

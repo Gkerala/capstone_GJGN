@@ -1,7 +1,6 @@
-package com.example.gjgn_02v
+package com.example.gjgn_02v.utils
 
 import android.content.Context
-import android.content.SharedPreferences
 
 object TokenManager {
     private const val PREF_NAME = "auth_pref"

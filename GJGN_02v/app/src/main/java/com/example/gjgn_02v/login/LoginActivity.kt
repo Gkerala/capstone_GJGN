@@ -1,10 +1,15 @@
-package com.example.gjgn_02v
+package com.example.gjgn_02v.login
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import com.example.gjgn_02v.profile.ProfileSetupActivity
+import com.example.gjgn_02v.utils.TokenManager
+import com.example.gjgn_02v.utils.TokenResponse
+import com.example.gjgn_02v.utils.UserProfile
+import com.example.gjgn_02v.data.api.RetrofitClient
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.user.UserApiClient
@@ -40,7 +45,8 @@ class LoginActivity : ComponentActivity() {
                         if (profile?.profile_completed == true) {
                             startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                         } else {
-                            val intent = Intent(this@LoginActivity, ProfileSetupActivity::class.java)
+                            val intent =
+                                Intent(this@LoginActivity, ProfileSetupActivity::class.java)
                             intent.putExtra("JWT_TOKEN", jwtToken)
                             intent.putExtra("USER_EMAIL", profile?.email ?: "")
                             startActivity(intent)
@@ -60,7 +66,7 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun loginWithKakao() {
-        UserApiClient.instance.loginWithKakaoAccount(this) { token, error ->
+        UserApiClient.Companion.instance.loginWithKakaoAccount(this) { token, error ->
             if (token != null) handleKakaoLogin(token)
             else {
                 Toast.makeText(this, "카카오 로그인 실패", Toast.LENGTH_SHORT).show()
@@ -102,7 +108,8 @@ class LoginActivity : ComponentActivity() {
                         if (profile?.profile_completed == true) {
                             startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                         } else {
-                            val intent = Intent(this@LoginActivity, ProfileSetupActivity::class.java)
+                            val intent =
+                                Intent(this@LoginActivity, ProfileSetupActivity::class.java)
                             intent.putExtra("JWT_TOKEN", jwtToken)
                             intent.putExtra("USER_EMAIL", email)
                             startActivity(intent)

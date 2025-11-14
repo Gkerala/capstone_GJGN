@@ -1,10 +1,14 @@
-package com.example.gjgn_02v
+package com.example.gjgn_02v.main
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.gjgn_02v.R
+import com.example.gjgn_02v.utils.TokenManager
+import com.example.gjgn_02v.data.api.RetrofitClient
+import com.example.gjgn_02v.login.LoginActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import retrofit2.Call

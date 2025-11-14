@@ -1,4 +1,4 @@
-package com.example.gjgn_02v
+package com.example.gjgn_02v.data.api
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
