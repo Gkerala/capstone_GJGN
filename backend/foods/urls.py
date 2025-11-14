@@ -1,9 +1,12 @@
-# backend/foods/urls.py
-
 from django.urls import path
-from . import views
+from .views import (
+    FoodListView,
+    FoodCreateView,
+    FoodAnalyzeView
+)
 
 urlpatterns = [
-    # 예시 URL — 나중에 실제 view 함수로 교체 가능
-    path('', views.index, name='foods_index'),
+    path("", FoodListView.as_view(), name="food-list"),
+    path("create/", FoodCreateView.as_view(), name="food-create"),
+    path("analyze/", FoodAnalyzeView.as_view(), name="food-analyze"),
 ]
