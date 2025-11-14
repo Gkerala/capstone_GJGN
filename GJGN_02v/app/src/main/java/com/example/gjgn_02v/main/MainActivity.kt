@@ -12,7 +12,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MyPageActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var btnDelete: Button
 

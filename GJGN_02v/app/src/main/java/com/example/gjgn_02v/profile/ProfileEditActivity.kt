@@ -8,10 +8,9 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
-import com.example.gjgn_02v.data.api.TokenStore
+import com.example.gjgn_02v.data.model.auth.UserProfileRequest
+import com.example.gjgn_02v.data.model.auth.UserProfileResponse
 import com.example.gjgn_02v.main.MyPageActivity
-import com.example.gjgn_02v.model.UserProfileRequest
-import com.example.gjgn_02v.model.UserProfileResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -20,7 +19,7 @@ import java.util.*
 class ProfileEditActivity : AppCompatActivity() {
 
     private lateinit var etName: EditText
-    private lateinit var tvBirth: TextView
+    private lateinit var btnBirth: Button
     private lateinit var btnGender: Button
     private lateinit var btnActivity: Button
     private lateinit var btnHeight: Button
@@ -28,18 +27,19 @@ class ProfileEditActivity : AppCompatActivity() {
     private lateinit var btnSave: Button
     private lateinit var btnCancel: Button
 
-    private var birthDate: String? = null
-    private var gender: String = "M"
-    private var activityLevel: String = "moderate"
-    private var height: Int = 0
-    private var weight: Int = 0
+    private var birthDate: String = ""
+    private var gender: String = "male"   // API는 male/female
+    private var activityLevel: String = "medium" // API는 low/medium/high
+    private var height: Int = 160
+    private var weight: Int = 60
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile_edit)
 
+        // XML 연결
         etName = findViewById(R.id.etName)
-        tvBirth = findViewById(R.id.tvBirth)
+        btnBirth = findViewById(R.id.btnBirth)
         btnGender = findViewById(R.id.btnGender)
         btnActivity = findViewById(R.id.btnActivityLevel)
         btnHeight = findViewById(R.id.btnSetHeight)
@@ -49,14 +49,16 @@ class ProfileEditActivity : AppCompatActivity() {
 
         loadProfile()
 
-        // --- 생년월일 ---
-        tvBirth.setOnClickListener {
+        // -----------------------------
+        // 생년월일 선택
+        // -----------------------------
+        btnBirth.setOnClickListener {
             val cal = Calendar.getInstance()
             DatePickerDialog(
                 this,
                 { _, y, m, d ->
                     birthDate = "%04d-%02d-%02d".format(y, m + 1, d)
-                    tvBirth.text = "생년월일: $birthDate"
+                    btnBirth.text = "생년월일: $birthDate"
                 },
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
@@ -64,21 +66,27 @@ class ProfileEditActivity : AppCompatActivity() {
             ).show()
         }
 
-        // --- 성별 ---
+        // -----------------------------
+        // 성별 선택
+        // -----------------------------
         btnGender.setOnClickListener {
             val items = arrayOf("남성", "여성")
+            val values = arrayOf("male", "female")
+
             AlertDialog.Builder(this)
                 .setTitle("성별 선택")
                 .setItems(items) { _, i ->
-                    gender = if (i == 0) "M" else "F"
+                    gender = values[i]
                     btnGender.text = "성별: ${items[i]}"
                 }.show()
         }
 
-        // --- 활동량 ---
+        // -----------------------------
+        // 활동량 선택 (low / medium / high)
+        // -----------------------------
         btnActivity.setOnClickListener {
             val items = arrayOf("비활동적", "보통", "매우 활동적")
-            val values = arrayOf("low", "moderate", "high")
+            val values = arrayOf("low", "medium", "high")
 
             AlertDialog.Builder(this)
                 .setTitle("활동량 선택")
@@ -88,15 +96,19 @@ class ProfileEditActivity : AppCompatActivity() {
                 }.show()
         }
 
-        // --- 키 ---
+        // -----------------------------
+        // 키 설정
+        // -----------------------------
         btnHeight.setOnClickListener {
-            showNumberPicker("키(cm)", 100, 250) {
+            showNumberPicker("키(cm)", 100, 230) {
                 height = it
                 btnHeight.text = "키: $it cm"
             }
         }
 
-        // --- 몸무게 ---
+        // -----------------------------
+        // 몸무게 설정
+        // -----------------------------
         btnWeight.setOnClickListener {
             showNumberPicker("몸무게(kg)", 30, 200) {
                 weight = it
@@ -104,19 +116,21 @@ class ProfileEditActivity : AppCompatActivity() {
             }
         }
 
-        // --- 저장 ---
+        // -----------------------------
+        // 저장
+        // -----------------------------
         btnSave.setOnClickListener {
+
             val req = UserProfileRequest(
                 name = etName.text.toString(),
-                age = 0, // Django에서 사용 X
-                birth = birthDate ?: "",
+                birth = birthDate,
                 gender = gender,
                 height = height,
                 weight = weight,
-                activityLevel = activityLevel
+                activity_level = activityLevel
             )
 
-            RetrofitClient.api.createOrUpdateProfile(req)
+            RetrofitClient.api.updateMyProfile(req)
                 .enqueue(object : Callback<UserProfileResponse> {
                     override fun onResponse(
                         call: Call<UserProfileResponse>,
@@ -140,6 +154,9 @@ class ProfileEditActivity : AppCompatActivity() {
         btnCancel.setOnClickListener { finish() }
     }
 
+    // -----------------------------
+    // 프로필 로드
+    // -----------------------------
     private fun loadProfile() {
         RetrofitClient.api.getMyProfile()
             .enqueue(object : Callback<UserProfileResponse> {
@@ -150,21 +167,23 @@ class ProfileEditActivity : AppCompatActivity() {
                     if (!response.isSuccessful) return
                     val p = response.body()!!
 
-                    etName.setText(p.name)
-                    birthDate = p.birth
-                    gender = p.gender
-                    height = p.height
-                    weight = p.weight
-                    activityLevel = p.activityLevel
+                    etName.setText(p.nickname)
 
-                    tvBirth.text = "생년월일: $birthDate"
-                    btnGender.text = if (gender == "M") "성별: 남성" else "성별: 여성"
+                    birthDate = p.created_at.substring(0, 10) // 서버에서 birth가 없음 → created_at 사용?
+                    btnBirth.text = "생년월일: $birthDate"
+
+                    gender = p.gender
+                    btnGender.text = if (gender == "male") "성별: 남성" else "성별: 여성"
+
+                    height = p.height.toInt()
+                    weight = p.weight.toInt()
                     btnHeight.text = "키: $height cm"
                     btnWeight.text = "몸무게: $weight kg"
 
+                    activityLevel = p.activity_level
                     btnActivity.text = when (activityLevel) {
                         "high" -> "활동량: 매우 활동적"
-                        "moderate" -> "활동량: 보통"
+                        "medium" -> "활동량: 보통"
                         else -> "활동량: 비활동적"
                     }
                 }

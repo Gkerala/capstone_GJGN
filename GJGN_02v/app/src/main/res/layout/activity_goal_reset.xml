@@ -1,92 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="24dp"
     android:fillViewport="true">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center_horizontal">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <!-- Title -->
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tvTitle"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="목표 재설정"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:textSize="24sp"
-            android:textColor="@color/black"
             android:layout_marginBottom="20dp" />
 
-        <!-- 현재 목표 정보 -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- 🔥 칼로리 목표 -->
+        <EditText
+            android:id="@+id/goal_cal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/card_bg">
+            android:hint="목표 칼로리(kcal)"
+            android:inputType="number"
+            android:layout_marginBottom="16dp" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvCurrentGoal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="현재 목표 정보를 불러오는 중..."
-                android:textSize="16sp"
-                android:padding="16dp"
-                android:gravity="center" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- 목표 유형 선택 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGoalType"
-            style="@style/Widget.Material3.Button.Filled"
+        <!-- 탄수화물 -->
+        <EditText
+            android:id="@+id/goal_carb"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="목표 유형 선택"
-            app:icon="@drawable/ic_arrow_drop_down"
-            app:iconGravity="start"
-            android:layout_marginBottom="16dp"/>
+            android:hint="탄수화물(g)"
+            android:inputType="number"
+            android:layout_marginBottom="16dp" />
 
-        <!-- 목표 체중 선택 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnTargetWeight"
-            style="@style/Widget.Material3.Button.Filled"
+        <!-- 단백질 -->
+        <EditText
+            android:id="@+id/goal_protein"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="목표 체중 설정"
-            app:icon="@drawable/ic_edit"
-            app:iconGravity="start"
-            android:layout_marginBottom="28dp" />
+            android:hint="단백질(g)"
+            android:inputType="number"
+            android:layout_marginBottom="16dp" />
 
-        <!-- Divider -->
-        <com.google.android.material.divider.MaterialDivider
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginBottom="28dp" />
-
-        <!-- 저장하기 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSaveGoal"
-            style="@style/Widget.Material3.Button.Filled"
+        <!-- 지방 -->
+        <EditText
+            android:id="@+id/goal_fat"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="저장"
-            android:textStyle="bold"
-            android:layout_marginBottom="14dp" />
+            android:hint="지방(g)"
+            android:inputType="number"
+            android:layout_marginBottom="30dp" />
 
-        <!-- 취소 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCancelGoal"
-            style="@style/Widget.Material3.Button.Outlined"
+        <!-- 수정 버튼 -->
+        <Button
+            android:id="@+id/btn_update_goal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="취소" />
+            android:text="목표 수정"
+            android:backgroundTint="#1976D2"
+            android:textColor="#FFFFFF"
+            android:padding="12dp" />
 
     </LinearLayout>
-
 </ScrollView>

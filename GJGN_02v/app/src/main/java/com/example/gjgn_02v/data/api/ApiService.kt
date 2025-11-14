@@ -12,8 +12,10 @@ import com.example.gjgn_02v.data.model.foods.FoodSearchResponse
 import com.example.gjgn_02v.data.model.foods.SaveMealRequest
 import com.example.gjgn_02v.data.model.foods.SaveMealResponse
 import com.example.gjgn_02v.data.model.foods.AiFoodDetectResponse
+import com.example.gjgn_02v.data.model.foods.FoodItemResponse
 
 import com.example.gjgn_02v.data.model.goals.GoalResponse
+import com.example.gjgn_02v.data.model.goals.GoalStatResponse
 import com.example.gjgn_02v.data.model.goals.UpdateGoalRequest
 import com.example.gjgn_02v.data.model.goals.UpdateGoalResponse
 
@@ -72,7 +74,7 @@ interface ApiService {
     @GET("api/foods/search/")
     fun searchFoods(
         @Query("q") query: String
-    ): Call<List<FoodSearchResponse>>
+    ): Call<List<FoodItemResponse>>
 
     @POST("api/foods/save/")
     fun saveMeal(
@@ -115,4 +117,28 @@ interface ApiService {
 
     @GET("api/home/statistics/")
     fun getHomeStatistics(): Call<HomeStatisticsResponse>
+
+    // 현재 로그인 사용자 정보 조회
+    @GET("api/users/me/")
+    fun getCurrentUser(
+        @Header("Authorization") token: String
+    ): Call<UserProfileResponse>
+
+    @GET("api/analysis/weekly/")
+    fun getWeeklyAchievement(): Call<GoalStatResponse>
+
+    @GET("api/analysis/monthly/")
+    fun getMonthlyAchievement(): Call<GoalStatResponse>
+
+    @POST("api/logout/")
+    fun logoutUser(
+        @Header("Authorization") auth: String,
+        @Body refresh: Map<String, String>
+    ): Call<Void>
+
+    @HTTP(method = "DELETE", path = "api/user/delete/", hasBody = true)
+    fun deleteUser(
+        @Header("Authorization") auth: String,
+        @Body refresh: Map<String, String>
+    ): Call<Void>
 }

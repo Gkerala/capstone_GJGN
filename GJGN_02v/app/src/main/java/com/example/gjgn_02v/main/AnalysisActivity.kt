@@ -5,6 +5,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
+import com.example.gjgn_02v.data.model.goals.GoalStatResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -28,11 +29,16 @@ class AnalysisActivity : AppCompatActivity() {
     private fun loadWeekly() {
         RetrofitClient.api.getWeeklyAchievement()
             .enqueue(object : Callback<GoalStatResponse> {
-                override fun onResponse(call: Call<GoalStatResponse>, res: Response<GoalStatResponse>) {
-                    if (res.isSuccessful) {
-                        txtWeekly.text = "주간 달성률: ${res.body()!!.achievement}%"
+                override fun onResponse(
+                    call: Call<GoalStatResponse>,
+                    response: Response<GoalStatResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        txtWeekly.text =
+                            "주간 달성률: ${response.body()!!.achievement}%"
                     }
                 }
+
                 override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {}
             })
     }
@@ -40,11 +46,16 @@ class AnalysisActivity : AppCompatActivity() {
     private fun loadMonthly() {
         RetrofitClient.api.getMonthlyAchievement()
             .enqueue(object : Callback<GoalStatResponse> {
-                override fun onResponse(call: Call<GoalStatResponse>, res: Response<GoalStatResponse>) {
-                    if (res.isSuccessful) {
-                        txtMonthly.text = "월간 달성률: ${res.body()!!.achievement}%"
+                override fun onResponse(
+                    call: Call<GoalStatResponse>,
+                    response: Response<GoalStatResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        txtMonthly.text =
+                            "월간 달성률: ${response.body()!!.achievement}%"
                     }
                 }
+
                 override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {}
             })
     }

@@ -12,7 +12,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
-import com.example.gjgn_02v.data.model.ai.AiFoodDetectResponse
+import com.example.gjgn_02v.data.model.foods.AiFoodDetectResponse
 import com.example.gjgn_02v.data.model.foods.FoodItemResponse
 import com.example.gjgn_02v.data.model.records.MealRecordRequest
 import com.example.gjgn_02v.data.model.records.MealRecordResponse
@@ -70,19 +70,24 @@ class RecordActivity : AppCompatActivity() {
         }
     }
 
-
     // -------------------------------------------------------
     // 스피너
     // -------------------------------------------------------
     private fun setupMealTypeSpinner() {
         spinnerMealType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: android.view.View?, pos: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: android.view.View?,
+                pos: Int,
+                id: Long
+            ) {
                 selectedMealType = when (pos) {
                     0 -> "breakfast"
                     1 -> "lunch"
                     else -> "dinner"
                 }
             }
+
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
@@ -96,6 +101,7 @@ class RecordActivity : AppCompatActivity() {
                 val q = s.toString().trim()
                 if (q.length >= 2) searchFoods(q)
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -104,7 +110,10 @@ class RecordActivity : AppCompatActivity() {
     private fun searchFoods(query: String) {
         RetrofitClient.api.searchFoods(query)
             .enqueue(object : Callback<List<FoodItemResponse>> {
-                override fun onResponse(call: Call<List<FoodItemResponse>>, res: Response<List<FoodItemResponse>>) {
+                override fun onResponse(
+                    call: Call<List<FoodItemResponse>>,
+                    res: Response<List<FoodItemResponse>>
+                ) {
                     if (res.isSuccessful && res.body() != null) {
                         foods = res.body()!!
                         val names = foods.map { it.name }
@@ -121,6 +130,7 @@ class RecordActivity : AppCompatActivity() {
                         }
                     }
                 }
+
                 override fun onFailure(call: Call<List<FoodItemResponse>>, t: Throwable) {}
             })
     }
@@ -139,7 +149,10 @@ class RecordActivity : AppCompatActivity() {
             )
         ).enqueue(object : Callback<MealRecordResponse> {
 
-            override fun onResponse(call: Call<MealRecordResponse>, response: Response<MealRecordResponse>) {
+            override fun onResponse(
+                call: Call<MealRecordResponse>,
+                response: Response<MealRecordResponse>
+            ) {
                 if (response.isSuccessful) {
                     Toast.makeText(this@RecordActivity, "저장 완료!", Toast.LENGTH_SHORT).show()
                     finish()
@@ -171,7 +184,7 @@ class RecordActivity : AppCompatActivity() {
     }
 
     // -------------------------------------------------------
-    // YOLO 업로드 + 자동 저장 흐름
+    // YOLO 업로드 + 자동 저장
     // -------------------------------------------------------
     private fun uploadImage(uri: Uri) {
         val file = File(getRealPathFromURI(uri))
@@ -192,17 +205,21 @@ class RecordActivity : AppCompatActivity() {
 
                     val result = res.body()!!
 
-                    if (result.items.isEmpty()) {
-                        Toast.makeText(this@RecordActivity, "음식이 인식되지 않았습니다.", Toast.LENGTH_SHORT).show()
+                    if (result.foods.isEmpty()) {
+                        Toast.makeText(
+                            this@RecordActivity,
+                            "음식이 인식되지 않았습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         return
                     }
 
-                    // ⭐ 1) 최고 정확도 음식 자동 선택
-                    val topItem = result.items.maxByOrNull { it.confidence }!!
-                    val predictedLabel = topItem.label
+                    // ⭐ 최고 정확도 음식 선택
+                    val topItem = result.foods.maxByOrNull { it.confidence }!!
+                    val predictedName = topItem.name
 
-                    // ⭐ 2) label로 DB 음식 검색 → 자동 선택 → 자동 저장
-                    autoSearchAndSave(predictedLabel)
+                    // 자동 저장
+                    autoSearchAndSave(predictedName)
                 }
 
                 override fun onFailure(call: Call<AiFoodDetectResponse>, t: Throwable) {
@@ -212,28 +229,29 @@ class RecordActivity : AppCompatActivity() {
     }
 
     // -------------------------------------------------------
-    // YOLO label → DB 검색 → 자동 저장
+    // DB 검색 → 자동 저장
     // -------------------------------------------------------
-    private fun autoSearchAndSave(label: String) {
+    private fun autoSearchAndSave(name: String) {
 
-        RetrofitClient.api.searchFoods(label)
+        RetrofitClient.api.searchFoods(name)
             .enqueue(object : Callback<List<FoodItemResponse>> {
-                override fun onResponse(call: Call<List<FoodItemResponse>>, response: Response<List<FoodItemResponse>>) {
+                override fun onResponse(
+                    call: Call<List<FoodItemResponse>>,
+                    response: Response<List<FoodItemResponse>>
+                ) {
 
                     if (!response.isSuccessful || response.body().isNullOrEmpty()) {
                         AlertDialog.Builder(this@RecordActivity)
                             .setTitle("자동 저장 실패")
-                            .setMessage("인식된 음식($label)과 일치하는 항목이 DB에 없습니다.")
+                            .setMessage("인식된 음식($name)과 일치하는 항목이 DB에 없습니다.")
                             .setPositiveButton("확인", null)
                             .show()
                         return
                     }
 
-                    // ★ 가장 첫 번째 음식 자동 선택
                     val food = response.body()!![0]
                     selectedFood = food
 
-                    // ★ 자동 저장 진행
                     RetrofitClient.api.createRecord(
                         MealRecordRequest(
                             food_id = food.id,
@@ -242,7 +260,10 @@ class RecordActivity : AppCompatActivity() {
                         )
                     ).enqueue(object : Callback<MealRecordResponse> {
 
-                        override fun onResponse(call: Call<MealRecordResponse>, res: Response<MealRecordResponse>) {
+                        override fun onResponse(
+                            call: Call<MealRecordResponse>,
+                            res: Response<MealRecordResponse>
+                        ) {
                             AlertDialog.Builder(this@RecordActivity)
                                 .setTitle("자동 저장 완료")
                                 .setMessage("${food.name} 이(가) ${mealTypeKorean()} 식사로 자동 저장되었습니다!")
@@ -251,7 +272,8 @@ class RecordActivity : AppCompatActivity() {
                         }
 
                         override fun onFailure(call: Call<MealRecordResponse>, t: Throwable) {
-                            Toast.makeText(this@RecordActivity, "저장 실패", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@RecordActivity, "저장 실패", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     })
                 }
@@ -260,7 +282,6 @@ class RecordActivity : AppCompatActivity() {
             })
     }
 
-    // 아침 / 점심 / 저녁 한국어 변환
     private fun mealTypeKorean(): String {
         return when (selectedMealType) {
             "breakfast" -> "아침"
