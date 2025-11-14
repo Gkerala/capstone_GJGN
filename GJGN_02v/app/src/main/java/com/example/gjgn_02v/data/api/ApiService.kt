@@ -18,6 +18,7 @@ import com.example.gjgn_02v.data.model.goals.GoalResponse
 import com.example.gjgn_02v.data.model.goals.GoalStatResponse
 import com.example.gjgn_02v.data.model.goals.UpdateGoalRequest
 import com.example.gjgn_02v.data.model.goals.UpdateGoalResponse
+import com.example.gjgn_02v.data.model.goals.WeeklyWeightResponse
 
 import com.example.gjgn_02v.data.model.home.HomeStatisticsResponse
 
@@ -141,4 +142,7 @@ interface ApiService {
         @Header("Authorization") auth: String,
         @Body refresh: Map<String, String>
     ): Call<Void>
+
+    @GET("goals/weights/weekly/")
+    fun getWeeklyWeight(): Call<WeeklyWeightResponse>
 }

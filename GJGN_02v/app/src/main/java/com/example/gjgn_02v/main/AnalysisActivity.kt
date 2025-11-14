@@ -4,11 +4,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
-import com.example.gjgn_02v.data.model.goals.GoalStatResponse
+import com.example.gjgn_02v.data.model.goals.WeeklyWeightResponse
 import com.example.gjgn_02v.data.model.records.MealRecordResponse
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -30,6 +29,9 @@ class AnalysisActivity : AppCompatActivity() {
         loadWeeklyWeight()
     }
 
+    // ───────────────────────────────────────────────
+    // 📊 1) 주간 칼로리 막대 그래프
+    // ───────────────────────────────────────────────
     private fun loadWeeklyCalories() {
         RetrofitClient.api.getRecordsByDate("weekly")
             .enqueue(object : Callback<List<MealRecordResponse>> {
@@ -60,32 +62,41 @@ class AnalysisActivity : AppCompatActivity() {
             })
     }
 
+    // ───────────────────────────────────────────────
+    // ⚖️ 2) 주간 체중 변화 선 그래프
+    // ───────────────────────────────────────────────
     private fun loadWeeklyWeight() {
-        RetrofitClient.api.getWeeklyAchievement()
-            .enqueue(object : Callback<GoalStatResponse> {
+        RetrofitClient.api.getWeeklyWeight()
+            .enqueue(object : Callback<WeeklyWeightResponse> {
                 override fun onResponse(
-                    call: Call<GoalStatResponse>,
-                    res: Response<GoalStatResponse>
+                    call: Call<WeeklyWeightResponse>,
+                    res: Response<WeeklyWeightResponse>
                 ) {
                     if (!res.isSuccessful || res.body() == null) return
 
-                    val weightList = res.body()!!.weights
+                    val items = res.body()!!.weekly_weight
 
-                    val entries = weightList.mapIndexed { i, w ->
-                        Entry(i.toFloat(), w.toFloat())
+                    // weight == null인 날은 그래프에 표시하지 않음
+                    val entries = items.mapIndexedNotNull { index, item ->
+                        item.weight?.let {
+                            Entry(index.toFloat(), it)
+                        }
                     }
 
+                    if (entries.isEmpty()) return
+
                     val set = LineDataSet(entries, "체중 변화 (kg)")
-                    set.lineWidth = 3f
                     set.color = resources.getColor(R.color.purple_700)
+                    set.setCircleColor(resources.getColor(R.color.purple_700))
                     set.circleRadius = 4f
+                    set.lineWidth = 3f
 
                     lineChartWeight.data = LineData(set)
-                    lineChartWeight.description = Description().apply { text = "" }
+                    lineChartWeight.description.isEnabled = false
                     lineChartWeight.invalidate()
                 }
 
-                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {}
+                override fun onFailure(call: Call<WeeklyWeightResponse>, t: Throwable) {}
             })
     }
 }

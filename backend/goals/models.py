@@ -45,3 +45,14 @@ class NutritionGoal(models.Model):
 
     def __str__(self):
         return f"{self.user.email} 목표"
+
+class WeightRecord(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    weight = models.FloatField()  # kg 단위
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']  # 최신 우선
+
+    def __str__(self):
+        return f"{self.user.email} - {self.weight}kg ({self.created_at})"

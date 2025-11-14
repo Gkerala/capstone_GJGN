@@ -1,13 +1,13 @@
 from datetime import date, datetime, timedelta
 
-from django.db.models import Sum
+from django.db.models import Sum, Max
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from users.models import User
 from foods.models import UserDailyNutrition
-from .models import UserGoal
+from .models import UserGoal, WeightRecord   # ← (⭐ 추가)
 
 
 def calculate_achievement_rate(total_intake, target_value):
@@ -22,6 +22,9 @@ def calculate_achievement_rate(total_intake, target_value):
     return round(min(rate, 100), 2)
 
 
+# ───────────────────────────────────────────────
+# 1) 하루 목표 요약 API
+# ───────────────────────────────────────────────
 class GoalSummaryView(APIView):
     """
     GET /api/goals/summary/?date=2025-11-14
@@ -48,7 +51,7 @@ class GoalSummaryView(APIView):
         except UserGoal.DoesNotExist:
             return Response({"message": "User goal not set."}, status=404)
 
-        # 2) 하루 섭취량 합계 가져오기
+        # 2) 하루 섭취량 합계
         nutrition = (
             UserDailyNutrition.objects.filter(user=user, date=target_date)
             .aggregate(
@@ -59,7 +62,6 @@ class GoalSummaryView(APIView):
             )
         )
 
-        # None → 0 치환
         total_cal = nutrition["total_cal"] or 0
         total_carbs = nutrition["total_carbs"] or 0
         total_protein = nutrition["total_protein"] or 0
@@ -73,7 +75,7 @@ class GoalSummaryView(APIView):
             "fat": calculate_achievement_rate(total_fat, user_goal.daily_fat_goal),
         }
 
-        # 4) 전체 평균 달성률
+        # 4) 전체 평균
         overall_achievement = round(
             (achievement["cal"] + achievement["carbs"] + achievement["protein"] + achievement["fat"]) / 4, 2
         )
@@ -100,6 +102,9 @@ class GoalSummaryView(APIView):
         )
 
 
+# ───────────────────────────────────────────────
+# 2) 주간 목표 달성률 API
+# ───────────────────────────────────────────────
 class WeeklyGoalSummaryView(APIView):
     """
     GET /api/goals/weekly/?start=2025-11-10
@@ -127,7 +132,6 @@ class WeeklyGoalSummaryView(APIView):
         except UserGoal.DoesNotExist:
             return Response({"message": "User goal not set."}, status=404)
 
-        # 요약 저장 배열
         week_data = []
 
         for offset in range(7):
@@ -182,3 +186,43 @@ class WeeklyGoalSummaryView(APIView):
             },
             status=200,
         )
+
+
+# ───────────────────────────────────────────────
+# 3) ⭐ 주간 체중 변화 API (새로 추가)
+# ───────────────────────────────────────────────
+class WeeklyWeightView(APIView):
+    """
+    GET /api/goals/weights/weekly/
+    최근 7일 체중 기록 (하루 1개, 가장 늦은 시간)
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        today = date.today()
+        start = today - timedelta(days=6)
+
+        # 하루 중 가장 늦은 기록만 가져오기
+        records = (
+            UserWeightRecord.objects
+            .filter(user=user, created_at__date__gte=start)
+            .order_by('created_at')
+        )
+
+        # 날짜별 마지막 기록 선택
+        daily_weights = {}
+        for r in records:
+            d = r.created_at.date()
+            daily_weights[d] = r.weight  # 같은 날짜면 덮어쓰기 → 가장 늦은 시간이 남음
+
+        # 7일치 완성
+        result = []
+        for i in range(7):
+            d = start + timedelta(days=i)
+            result.append({
+                "date": d,
+                "weight": daily_weights.get(d)
+            })
+
+        return Response({"weekly_weight": result}, status=200)
