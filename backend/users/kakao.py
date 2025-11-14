@@ -2,7 +2,8 @@ import os
 import requests
 from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
-from users.services.jwt_service import generate_jwt_tokens
+from users.services.jwt_service import JWTService
+
 
 load_dotenv()  # .env 파일 로딩
 
@@ -89,7 +90,7 @@ class KakaoService:
         user = KakaoService.get_or_create_user(kakao_data)
 
         # JWT 생성
-        tokens = generate_jwt_tokens(user)
+        tokens = JWTService.generate_tokens(user)
 
         return {
             "user": user,

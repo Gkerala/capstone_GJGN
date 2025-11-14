@@ -1,228 +1,173 @@
-from datetime import date, datetime, timedelta
+# goals/views.py
 
-from django.db.models import Sum, Max
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
-from users.models import User
+from django.utils import timezone
+from datetime import timedelta, date
+
+from .models import NutritionGoal, WeightRecord
 from foods.models import UserDailyNutrition
-from .models import UserGoal, WeightRecord   # ← (⭐ 추가)
 
 
-def calculate_achievement_rate(total_intake, target_value):
-    """
-    달성률 계산 함수
-    - 섭취량이 목표보다 많아도 100% 초과 불가
-    """
-    if target_value == 0:
-        return 0
-    
-    rate = (total_intake / target_value) * 100
-    return round(min(rate, 100), 2)
-
-
-# ───────────────────────────────────────────────
-# 1) 하루 목표 요약 API
-# ───────────────────────────────────────────────
-class GoalSummaryView(APIView):
-    """
-    GET /api/goals/summary/?date=2025-11-14
-    사용자의 하루 목표 달성률 요약 API
-    """
+# ---------------------------------------------------------
+# 📌 1) 목표 자동 생성 (AutoGoalGenerateAPIView)
+# ---------------------------------------------------------
+class AutoGoalGenerateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user: User = request.user
+    def post(self, request):
+        user = request.user
 
-        # 조회 날짜
-        target_date_str = request.query_params.get("date", None)
-        if target_date_str:
-            try:
-                target_date = datetime.strptime(target_date_str, "%Y-%m-%d").date()
-            except ValueError:
-                return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+        height = user.height or 170
+        weight = user.weight or 60
+        age = user.age or 25
+        gender = user.gender or "male"
+        activity = user.activity_level or 1.4
+
+        # BMR 계산 (Mifflin–St Jeor)
+        if gender == "female":
+            bmr = 10 * weight + 6.25 * height - 5 * age - 161
         else:
-            target_date = date.today()
+            bmr = 10 * weight + 6.25 * height - 5 * age + 5
 
-        # 1) 최신 UserGoal 가져오기
-        try:
-            user_goal: UserGoal = UserGoal.objects.get(user=user)
-        except UserGoal.DoesNotExist:
-            return Response({"message": "User goal not set."}, status=404)
+        tdee = bmr * activity
 
-        # 2) 하루 섭취량 합계
-        nutrition = (
-            UserDailyNutrition.objects.filter(user=user, date=target_date)
-            .aggregate(
-                total_cal=Sum("calories"),
-                total_carbs=Sum("carbs"),
-                total_protein=Sum("protein"),
-                total_fat=Sum("fat"),
-            )
-        )
+        protein = weight * 1.6
+        fat = weight * 0.8
+        carbs = (tdee - (protein * 4 + fat * 9)) / 4
 
-        total_cal = nutrition["total_cal"] or 0
-        total_carbs = nutrition["total_carbs"] or 0
-        total_protein = nutrition["total_protein"] or 0
-        total_fat = nutrition["total_fat"] or 0
-
-        # 3) 달성률 계산
-        achievement = {
-            "cal": calculate_achievement_rate(total_cal, user_goal.daily_calorie_goal),
-            "carbs": calculate_achievement_rate(total_carbs, user_goal.daily_carbs_goal),
-            "protein": calculate_achievement_rate(total_protein, user_goal.daily_protein_goal),
-            "fat": calculate_achievement_rate(total_fat, user_goal.daily_fat_goal),
-        }
-
-        # 4) 전체 평균
-        overall_achievement = round(
-            (achievement["cal"] + achievement["carbs"] + achievement["protein"] + achievement["fat"]) / 4, 2
-        )
-
-        return Response(
-            {
-                "date": target_date,
-                "intake": {
-                    "calories": total_cal,
-                    "carbs": total_carbs,
-                    "protein": total_protein,
-                    "fat": total_fat,
-                },
-                "goal": {
-                    "calories": user_goal.daily_calorie_goal,
-                    "carbs": user_goal.daily_carbs_goal,
-                    "protein": user_goal.daily_protein_goal,
-                    "fat": user_goal.daily_fat_goal,
-                },
-                "achievement_rate": achievement,
-                "overall_achievement": overall_achievement,
-            },
-            status=200,
-        )
-
-
-# ───────────────────────────────────────────────
-# 2) 주간 목표 달성률 API
-# ───────────────────────────────────────────────
-class WeeklyGoalSummaryView(APIView):
-    """
-    GET /api/goals/weekly/?start=2025-11-10
-    주간 목표 달성률 API
-    """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-
-        # 시작 날짜
-        start_str = request.query_params.get("start")
-        if not start_str:
-            return Response({"error": "start=YYYY-MM-DD required"}, status=400)
-        
-        try:
-            start_date = datetime.strptime(start_str, "%Y-%m-%d").date()
-        except ValueError:
-            return Response({"error": "Invalid date format."}, status=400)
-
-        end_date = start_date + timedelta(days=6)
-
-        try:
-            user_goal = UserGoal.objects.get(user=user)
-        except UserGoal.DoesNotExist:
-            return Response({"message": "User goal not set."}, status=404)
-
-        week_data = []
-
-        for offset in range(7):
-            day = start_date + timedelta(days=offset)
-
-            daily = (
-                UserDailyNutrition.objects.filter(user=user, date=day)
-                .aggregate(
-                    cal=Sum("calories"),
-                    carbs=Sum("carbs"),
-                    protein=Sum("protein"),
-                    fat=Sum("fat"),
-                )
-            )
-
-            total_cal = daily["cal"] or 0
-            total_carbs = daily["carbs"] or 0
-            total_protein = daily["protein"] or 0
-            total_fat = daily["fat"] or 0
-
-            achievement = {
-                "cal": calculate_achievement_rate(total_cal, user_goal.daily_calorie_goal),
-                "carbs": calculate_achievement_rate(total_carbs, user_goal.daily_carbs_goal),
-                "protein": calculate_achievement_rate(total_protein, user_goal.daily_protein_goal),
-                "fat": calculate_achievement_rate(total_fat, user_goal.daily_fat_goal),
+        goal, created = NutritionGoal.objects.update_or_create(
+            user=user,
+            defaults={
+                "calorie": int(tdee),
+                "protein": round(protein, 1),
+                "carbs": round(carbs, 1),
+                "fat": round(fat, 1),
+                "bmr": bmr,
+                "activity_level": activity,
             }
-
-            overall = round(
-                (achievement["cal"] + achievement["carbs"] + achievement["protein"] + achievement["fat"]) / 4,
-                2,
-            )
-
-            week_data.append(
-                {
-                    "date": day,
-                    "intake": {
-                        "calories": total_cal,
-                        "carbs": total_carbs,
-                        "protein": total_protein,
-                        "fat": total_fat,
-                    },
-                    "achievement_rate": achievement,
-                    "overall": overall,
-                }
-            )
-
-        return Response(
-            {
-                "start": start_date,
-                "end": end_date,
-                "weekly_summary": week_data,
-            },
-            status=200,
         )
 
+        return Response({
+            "message": "Goal auto-generated",
+            "goal": {
+                "calorie": goal.calorie,
+                "protein": goal.protein,
+                "carbs": goal.carbs,
+                "fat": goal.fat,
+            }
+        }, status=200)
 
-# ───────────────────────────────────────────────
-# 3) ⭐ 주간 체중 변화 API (새로 추가)
-# ───────────────────────────────────────────────
-class WeeklyWeightView(APIView):
-    """
-    GET /api/goals/weights/weekly/
-    최근 7일 체중 기록 (하루 1개, 가장 늦은 시간)
-    """
+
+# ---------------------------------------------------------
+# 📌 2) 목표 조회
+# ---------------------------------------------------------
+class GoalRetrieveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
+
+        try:
+            goal = NutritionGoal.objects.get(user=user)
+        except NutritionGoal.DoesNotExist:
+            return Response({"detail": "No goal found"}, status=404)
+
+        return Response({
+            "calorie": goal.calorie,
+            "protein": goal.protein,
+            "carbs": goal.carbs,
+            "fat": goal.fat,
+            "updated_at": goal.updated_at
+        })
+
+
+# ---------------------------------------------------------
+# 📌 3) 목표 수동 수정
+# ---------------------------------------------------------
+class GoalUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+
+        goal, created = NutritionGoal.objects.get_or_create(user=user)
+
+        goal.calorie = request.data.get("calorie", goal.calorie)
+        goal.protein = request.data.get("protein", goal.protein)
+        goal.carbs = request.data.get("carbs", goal.carbs)
+        goal.fat = request.data.get("fat", goal.fat)
+        goal.save()
+
+        return Response({"message": "Goal updated"})
+
+
+# ---------------------------------------------------------
+# 📌 4) 주간 목표 통계
+# ---------------------------------------------------------
+class WeeklyGoalStatAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
         today = date.today()
-        start = today - timedelta(days=6)
+        start_week = today - timedelta(days=today.weekday())
+        end_week = start_week + timedelta(days=6)
 
-        # 하루 중 가장 늦은 기록만 가져오기
-        records = (
-            UserWeightRecord.objects
-            .filter(user=user, created_at__date__gte=start)
-            .order_by('created_at')
-        )
+        return Response({
+            "start_date": str(start_week),
+            "end_date": str(end_week),
+            "message": "Weekly goal stats (placeholder)"
+        })
 
-        # 날짜별 마지막 기록 선택
-        daily_weights = {}
-        for r in records:
-            d = r.created_at.date()
-            daily_weights[d] = r.weight  # 같은 날짜면 덮어쓰기 → 가장 늦은 시간이 남음
 
-        # 7일치 완성
-        result = []
-        for i in range(7):
-            d = start + timedelta(days=i)
-            result.append({
-                "date": d,
-                "weight": daily_weights.get(d)
-            })
+# ---------------------------------------------------------
+# 📌 5) 월간 목표 통계
+# ---------------------------------------------------------
+class MonthlyGoalStatAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        return Response({"weekly_weight": result}, status=200)
+    def get(self, request):
+        today = date.today()
+        start_month = today.replace(day=1)
+        next_month = start_month.replace(month=start_month.month % 12 + 1, day=1)
+        end_month = next_month - timedelta(days=1)
+
+        return Response({
+            "start_date": str(start_month),
+            "end_date": str(end_month),
+            "message": "Monthly goal stats (placeholder)"
+        })
+
+
+# ---------------------------------------------------------
+# 📌 6) 주간 체중 변화 조회 (WeeklyWeightView)
+# ---------------------------------------------------------
+class WeeklyWeightView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        today = timezone.now().date()
+        week_ago = today - timedelta(days=7)
+
+        weights = WeightRecord.objects.filter(
+            user=user,
+            created_at__date__range=[week_ago, today]
+        ).order_by("created_at")
+
+        data = [
+            {
+                "date": w.created_at.date(),
+                "weight": w.weight
+            }
+            for w in weights
+        ]
+
+        return Response({
+            "period": f"{week_ago} ~ {today}",
+            "records": data
+        })

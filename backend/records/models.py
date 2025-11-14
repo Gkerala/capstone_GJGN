@@ -27,8 +27,8 @@ class MealFood(models.Model):
         on_delete=models.CASCADE,
         related_name="foods"
     )
-    food = models.ForeignKey(Food, on_delete=models.PROTECT)  # 음식 DB 참조
-    amount = models.FloatField(default=1.0)  # 1인분 단위 비율
+    food = models.ForeignKey(Food, on_delete=models.PROTECT)
+    amount = models.FloatField(default=1.0)  # 1인분 단위
     calories = models.FloatField(default=0)
     carbs = models.FloatField(default=0)
     protein = models.FloatField(default=0)
@@ -37,10 +37,19 @@ class MealFood(models.Model):
     def __str__(self):
         return f"{self.record.id} - {self.food.name}"
 
+
 class Weight(models.Model):
-    user = models.ForeignKey("users.CustomUser", on_delete=models.CASCADE)
+    """사용자 몸무게 기록"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="weight_records"  # 🔥 충돌 해결 (기존 'weight'와 충돌)
+    )
     weight = models.FloatField()  # kg
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.email} - {self.weight}kg"

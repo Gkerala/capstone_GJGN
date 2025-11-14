@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+from decouple import config
+
 
 # .env 로드
 load_dotenv()
@@ -110,3 +112,21 @@ WSGI_APPLICATION = "SmartDiet_backend.wsgi.application"
 ASGI_APPLICATION = "SmartDiet_backend.asgi.application"
 
 AI_INFERENCE_URL = config("AI_INFERENCE_URL", default="http://localhost:8001/predict")
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]

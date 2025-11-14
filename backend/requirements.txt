@@ -17,3 +17,6 @@ ultralytics==8.0.130
 # PyTorch (Windows 공식 안정 조합)
 torch==2.0.1
 torchvision==0.15.2
+
+python-decouple
+python-dotenv
