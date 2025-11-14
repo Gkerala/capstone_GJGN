@@ -1,46 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="20dp">
-
-            <TextView
-                android:id="@+id/txt_weekly"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="주간 달성률 불러오는 중..."
-                android:textSize="20sp"
-                android:layout_marginBottom="20dp" />
-
-            <TextView
-                android:id="@+id/txt_monthly"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="월간 달성률 불러오는 중..."
-                android:textSize="20sp"
-                android:layout_marginBottom="20dp" />
-
-        </LinearLayout>
-    </ScrollView>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:menu="@menu/bottom_nav_menu"
-        android:background="@android:color/white" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <!-- 주간 달성률 -->
+        <TextView
+            android:id="@+id/tvWeeklyAchieve"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="주간 달성률: --%"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 월간 달성률 -->
+        <TextView
+            android:id="@+id/tvMonthlyAchieve"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="월간 달성률: --%"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="28dp"/>
+
+        <!-- 칼로리 그래프 -->
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/barChartCalories"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="40dp"/>
+
+        <!-- 체중 변화 그래프 -->
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/lineChartWeight"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"/>
+    </LinearLayout>
+
+</ScrollView>
