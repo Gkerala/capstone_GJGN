@@ -30,59 +30,44 @@ class GoalResetActivity : AppCompatActivity() {
         btnUpdate = findViewById(R.id.btn_update_goal)
 
         loadCurrentGoal()
-        updateGoalListener()
+        btnUpdate.setOnClickListener { updateGoal() }
     }
 
     private fun loadCurrentGoal() {
-        RetrofitClient.api.getGoal()
+        RetrofitClient.api.getGoal().enqueue(object : Callback<GoalResponse> {
+            override fun onResponse(call: Call<GoalResponse>, res: Response<GoalResponse>) {
+                if (res.isSuccessful) {
+                    val g = res.body()!!
+                    inputCal.setText(g.calorie.toString())
+                    inputCarb.setText(g.carb.toString())
+                    inputProtein.setText(g.protein.toString())
+                    inputFat.setText(g.fat.toString())
+                }
+            }
+            override fun onFailure(call: Call<GoalResponse>, t: Throwable) {}
+        })
+    }
+
+    private fun updateGoal() {
+        val req = GoalUpdateRequest(
+            calorie = inputCal.text.toString().toInt(),
+            carb = inputCarb.text.toString().toInt(),
+            protein = inputProtein.text.toString().toInt(),
+            fat = inputFat.text.toString().toInt()
+        )
+
+        RetrofitClient.api.updateGoal(req)
             .enqueue(object : Callback<GoalResponse> {
-                override fun onResponse(
-                    call: Call<GoalResponse>,
-                    response: Response<GoalResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        val g = response.body()!!
-                        inputCal.setText(g.calorie.toString())
-                        inputCarb.setText(g.carb.toString())
-                        inputProtein.setText(g.protein.toString())
-                        inputFat.setText(g.fat.toString())
+                override fun onResponse(call: Call<GoalResponse>, res: Response<GoalResponse>) {
+                    if (res.isSuccessful) {
+                        Toast.makeText(this@GoalResetActivity, "목표 수정 완료!", Toast.LENGTH_SHORT).show()
+                        finish()
                     }
                 }
 
-                override fun onFailure(call: Call<GoalResponse>, t: Throwable) {}
+                override fun onFailure(call: Call<GoalResponse>, t: Throwable) {
+                    Toast.makeText(this@GoalResetActivity, "오류 발생", Toast.LENGTH_SHORT).show()
+                }
             })
-    }
-
-    private fun updateGoalListener() {
-        btnUpdate.setOnClickListener {
-
-            val request = GoalUpdateRequest(
-                calorie = inputCal.text.toString().toInt(),
-                carb = inputCarb.text.toString().toInt(),
-                protein = inputProtein.text.toString().toInt(),
-                fat = inputFat.text.toString().toInt()
-            )
-
-            RetrofitClient.api.updateGoal(request)
-                .enqueue(object : Callback<GoalResponse> {
-                    override fun onResponse(
-                        call: Call<GoalResponse>,
-                        response: Response<GoalResponse>
-                    ) {
-                        if (response.isSuccessful) {
-                            Toast.makeText(
-                                this@GoalResetActivity,
-                                "목표가 수정되었습니다!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            finish()
-                        }
-                    }
-
-                    override fun onFailure(call: Call<GoalResponse>, t: Throwable) {
-                        Toast.makeText(this@GoalResetActivity, "오류 발생", Toast.LENGTH_SHORT).show()
-                    }
-                })
-        }
     }
 }

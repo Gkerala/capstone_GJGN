@@ -28,16 +28,11 @@ class AnalysisActivity : AppCompatActivity() {
     private fun loadWeekly() {
         RetrofitClient.api.getWeeklyAchievement()
             .enqueue(object : Callback<GoalStatResponse> {
-                override fun onResponse(
-                    call: Call<GoalStatResponse>,
-                    response: Response<GoalStatResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        val d = response.body()!!
-                        txtWeekly.text = "주간 달성률: ${d.achievement}%"
+                override fun onResponse(call: Call<GoalStatResponse>, res: Response<GoalStatResponse>) {
+                    if (res.isSuccessful) {
+                        txtWeekly.text = "주간 달성률: ${res.body()!!.achievement}%"
                     }
                 }
-
                 override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {}
             })
     }
@@ -45,16 +40,11 @@ class AnalysisActivity : AppCompatActivity() {
     private fun loadMonthly() {
         RetrofitClient.api.getMonthlyAchievement()
             .enqueue(object : Callback<GoalStatResponse> {
-                override fun onResponse(
-                    call: Call<GoalStatResponse>,
-                    response: Response<GoalStatResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        val d = response.body()!!
-                        txtMonthly.text = "월간 달성률: ${d.achievement}%"
+                override fun onResponse(call: Call<GoalStatResponse>, res: Response<GoalStatResponse>) {
+                    if (res.isSuccessful) {
+                        txtMonthly.text = "월간 달성률: ${res.body()!!.achievement}%"
                     }
                 }
-
                 override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {}
             })
     }

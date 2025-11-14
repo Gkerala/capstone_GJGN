@@ -42,13 +42,13 @@ class ProfileSetupActivity : AppCompatActivity() {
                     call: Call<UserProfileResponse>,
                     response: Response<UserProfileResponse>
                 ) {
-                    if (response.isSuccessful) {
-                        val p = response.body()!!
-                        inputName.setText(p.name)
-                        inputAge.setText(p.age.toString())
-                        inputHeight.setText(p.height.toString())
-                        inputWeight.setText(p.weight.toString())
-                    }
+                    if (!response.isSuccessful) return
+                    val p = response.body()!!
+
+                    inputName.setText(p.name)
+                    inputAge.setText(p.age.toString())
+                    inputHeight.setText(p.height.toString())
+                    inputWeight.setText(p.weight.toString())
                 }
 
                 override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {}
@@ -57,32 +57,27 @@ class ProfileSetupActivity : AppCompatActivity() {
 
     private fun saveProfileListener() {
         btnSave.setOnClickListener {
-
-            val request = UserProfileRequest(
+            val req = UserProfileRequest(
                 name = inputName.text.toString(),
                 age = inputAge.text.toString().toInt(),
                 height = inputHeight.text.toString().toInt(),
                 weight = inputWeight.text.toString().toInt()
             )
 
-            RetrofitClient.api.createOrUpdateProfile(request)
+            RetrofitClient.api.createOrUpdateProfile(req)
                 .enqueue(object : Callback<UserProfileResponse> {
                     override fun onResponse(
                         call: Call<UserProfileResponse>,
                         response: Response<UserProfileResponse>
                     ) {
                         if (response.isSuccessful) {
-                            Toast.makeText(
-                                this@ProfileSetupActivity,
-                                "프로필 저장 완료",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(this@ProfileSetupActivity, "프로필 저장 완료", Toast.LENGTH_SHORT).show()
                             finish()
                         }
                     }
 
                     override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {
-                        Toast.makeText(this@ProfileSetupActivity, "오류 발생", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ProfileSetupActivity, "서버 오류", Toast.LENGTH_SHORT).show()
                     }
                 })
         }

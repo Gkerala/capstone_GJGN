@@ -1,4 +1,5 @@
-package com.example.gjgn_02v.data.model.auth
+package com.example.gjgn_02v.data.model.aut
 
-class KakaoLoginRequest {
-}
+data class KakaoLoginRequest(
+    val kakao_token: String
+)

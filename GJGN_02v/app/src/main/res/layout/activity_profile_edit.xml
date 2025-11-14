@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="0dp"
     android:fillViewport="true">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="24dp"
         android:gravity="center_horizontal">
 
+        <!-- 타이틀 -->
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
@@ -18,69 +21,86 @@
             android:text="내 프로필 수정"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="24dp" />
 
-        <EditText
-            android:id="@+id/etName"
+        <!-- 이름 입력 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="이름"
-            android:inputType="textPersonName"
-            android:layout_marginBottom="16dp" />
+            app:hintEnabled="true"
+            android:layout_marginBottom="16dp">
 
-        <TextView
-            android:id="@+id/tvBirth"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="이름"
+                android:inputType="textPersonName" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 생년월일 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBirth"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="생년월일 선택"
-            android:padding="12dp"
-            android:background="#EEEEEE"
-            android:textSize="16sp"
             android:layout_marginBottom="16dp" />
 
-        <Button
+        <!-- 성별 선택 -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGender"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="성별 선택"
             android:layout_marginBottom="16dp" />
 
-        <Button
+        <!-- 키 -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSetHeight"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="키 설정"
             android:layout_marginBottom="16dp" />
 
-        <Button
+        <!-- 몸무게 -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSetWeight"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="몸무게 설정"
             android:layout_marginBottom="16dp" />
 
-        <Button
+        <!-- 활동량 -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnActivityLevel"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="활동량 선택"
-            android:layout_marginBottom="30dp" />
+            android:layout_marginBottom="28dp" />
 
-        <Button
+        <!-- 저장 버튼 -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="저장"
-            android:backgroundTint="#1976D2"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/teal_700"
+            android:textColor="@android:color/white"
             android:layout_marginBottom="12dp" />
 
-        <Button
+        <!-- 취소 버튼 -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancel"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="취소"
-            android:backgroundTint="#BDBDBD"
-            android:textColor="#FFFFFF" />
+            android:text="취소" />
+
     </LinearLayout>
 </ScrollView>

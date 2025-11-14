@@ -1,4 +1,7 @@
 package com.example.gjgn_02v.data.model.auth
 
-class KakaoLoginResponse {
-}
+data class KakaoLoginResponse(
+    val access: String,
+    val refresh: String? = null,
+    val is_new_user: Boolean
+)

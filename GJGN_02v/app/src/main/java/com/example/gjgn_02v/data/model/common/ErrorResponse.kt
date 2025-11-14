@@ -1,4 +1,6 @@
 package com.example.gjgn_02v.data.model.common
 
-class ErrorResponse {
-}
+data class ErrorResponse(
+    val error: String,
+    val detail: String? = null
+)

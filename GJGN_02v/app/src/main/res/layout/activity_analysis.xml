@@ -5,13 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- ✅ 스크롤 영역 -->
-    <ScrollView
-        android:id="@+id/scrollView"
+    <!-- 스크롤 가능한 콘텐츠 영역 -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottomNavigationView"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:orientation="vertical"
@@ -19,32 +19,40 @@
             android:layout_height="wrap_content"
             android:padding="20dp">
 
-            <TextView
+            <!-- 제목 -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvAnalysisTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="분석 페이지"
-                android:textSize="22sp"
                 android:textStyle="bold"
+                android:textSize="22sp"
                 android:layout_marginBottom="16dp" />
 
-            <!-- 스크롤 테스트용 긴 내용 -->
-            <TextView
+            <!-- 분석 설명 -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvAnalysisContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="(여기에 분석 결과, 그래프 등을 표시)"
-                android:paddingBottom="1000dp" />
-        </LinearLayout>
-    </ScrollView>
+                android:text="(여기에 분석 결과, 그래프, 통계 등의 정보를 표시합니다.)"
+                android:textSize="16sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="24dp" />
 
-    <!-- ✅ 하단 고정 네비게이션 -->
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 하단 네비게이션 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@android:color/white"
+        android:background="?attr/colorSurface"
         app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="labeled"
         app:itemTextColor="@color/bottom_nav_color_selector"
-        app:itemIconTint="@null"/>
+        app:itemIconTint="@color/bottom_nav_color_selector"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

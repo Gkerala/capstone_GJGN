@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import com.example.gjgn_02v.main.MainActivity
 import com.example.gjgn_02v.profile.ProfileSetupActivity
 import com.example.gjgn_02v.utils.TokenManager
 import com.example.gjgn_02v.utils.TokenResponse
@@ -23,35 +24,23 @@ class LoginActivity : ComponentActivity() {
 
         KakaoSdk.init(this, "15717b2f42caeea1ee8e0d45226b3236")
 
-        // ✅ JWT 존재 여부 확인 후 서버 검증
-        val accessToken = TokenManager.getAccessToken(this)
-        val refreshToken = TokenManager.getRefreshToken(this)
+        val access = TokenManager.getAccessToken(this)
+        val refresh = TokenManager.getRefreshToken(this)
 
-        if (!accessToken.isNullOrEmpty() && !refreshToken.isNullOrEmpty()) {
-            verifyTokenWithServer(accessToken)
+        if (!access.isNullOrEmpty() && !refresh.isNullOrEmpty()) {
+            verifyTokenWithServer(access)
             return
         }
 
-        // ✅ 새 로그인 시도
         loginWithKakao()
     }
 
-    private fun verifyTokenWithServer(jwtToken: String) {
-        RetrofitClient.api.getCurrentUser("Bearer $jwtToken")
+    private fun verifyTokenWithServer(jwt: String) {
+        RetrofitClient.api.getCurrentUser("Bearer $jwt")
             .enqueue(object : Callback<UserProfile> {
                 override fun onResponse(call: Call<UserProfile>, response: Response<UserProfile>) {
                     if (response.isSuccessful) {
-                        val profile = response.body()
-                        if (profile?.profile_completed == true) {
-                            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                        } else {
-                            val intent =
-                                Intent(this@LoginActivity, ProfileSetupActivity::class.java)
-                            intent.putExtra("JWT_TOKEN", jwtToken)
-                            intent.putExtra("USER_EMAIL", profile?.email ?: "")
-                            startActivity(intent)
-                        }
-                        finish()
+                        moveAfterLogin(jwt, response.body())
                     } else {
                         TokenManager.clearTokens(this@LoginActivity)
                         loginWithKakao()
@@ -66,7 +55,7 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun loginWithKakao() {
-        UserApiClient.Companion.instance.loginWithKakaoAccount(this) { token, error ->
+        UserApiClient.instance.loginWithKakaoAccount(this) { token, error ->
             if (token != null) handleKakaoLogin(token)
             else {
                 Toast.makeText(this, "카카오 로그인 실패", Toast.LENGTH_SHORT).show()
@@ -76,17 +65,15 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun handleKakaoLogin(token: OAuthToken) {
-        val accessToken = token.accessToken
-        val request = mapOf("access_token" to accessToken)
+        val req = mapOf("access_token" to token.accessToken)
 
-        RetrofitClient.api.loginWithKakao(request)
+        RetrofitClient.api.loginWithKakao(req)
             .enqueue(object : Callback<TokenResponse> {
-                override fun onResponse(call: Call<TokenResponse>, response: Response<TokenResponse>) {
-                    if (response.isSuccessful && response.body() != null) {
-                        val body = response.body()!!
-                        TokenManager.saveTokens(this@LoginActivity, body.access, body.refresh)
-
-                        checkProfileAndProceed(body.access, body.user?.email ?: "unknown@kakao.com")
+                override fun onResponse(call: Call<TokenResponse>, res: Response<TokenResponse>) {
+                    if (res.isSuccessful && res.body() != null) {
+                        val data = res.body()!!
+                        TokenManager.saveTokens(this@LoginActivity, data.access, data.refresh)
+                        moveAfterLogin(data.access, data.user)
                     } else {
                         Toast.makeText(this@LoginActivity, "로그인 실패", Toast.LENGTH_LONG).show()
                     }
@@ -94,43 +81,19 @@ class LoginActivity : ComponentActivity() {
 
                 override fun onFailure(call: Call<TokenResponse>, t: Throwable) {
                     Toast.makeText(this@LoginActivity, "네트워크 오류", Toast.LENGTH_LONG).show()
-                    Log.e("LoginActivity", "카카오 로그인 실패", t)
                 }
             })
     }
 
-    private fun checkProfileAndProceed(jwtToken: String, email: String) {
-        RetrofitClient.api.getCurrentUser("Bearer $jwtToken")
-            .enqueue(object : Callback<UserProfile> {
-                override fun onResponse(call: Call<UserProfile>, response: Response<UserProfile>) {
-                    if (response.isSuccessful) {
-                        val profile = response.body()
-                        if (profile?.profile_completed == true) {
-                            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                        } else {
-                            val intent =
-                                Intent(this@LoginActivity, ProfileSetupActivity::class.java)
-                            intent.putExtra("JWT_TOKEN", jwtToken)
-                            intent.putExtra("USER_EMAIL", email)
-                            startActivity(intent)
-                        }
-                    } else {
-                        goToProfileSetup(jwtToken, email)
-                    }
-                    finish()
-                }
-
-                override fun onFailure(call: Call<UserProfile>, t: Throwable) {
-                    goToProfileSetup(jwtToken, email)
-                    finish()
-                }
-            })
-    }
-
-    private fun goToProfileSetup(jwtToken: String, email: String) {
-        val intent = Intent(this@LoginActivity, ProfileSetupActivity::class.java)
-        intent.putExtra("JWT_TOKEN", jwtToken)
-        intent.putExtra("USER_EMAIL", email)
-        startActivity(intent)
+    private fun moveAfterLogin(jwt: String, profile: UserProfile?) {
+        if (profile?.profile_completed == true) {
+            startActivity(Intent(this, MainActivity::class.java))
+        } else {
+            val intent = Intent(this, ProfileSetupActivity::class.java)
+            intent.putExtra("JWT_TOKEN", jwt)
+            intent.putExtra("USER_EMAIL", profile?.email ?: "")
+            startActivity(intent)
+        }
+        finish()
     }
 }

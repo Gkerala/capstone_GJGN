@@ -1,4 +1,5 @@
 package com.example.gjgn_02v.data.model.foods
 
-class FoodSearchRequest {
-}
+data class FoodSearchRequest(
+    val q: String
+)

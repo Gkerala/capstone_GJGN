@@ -1,4 +1,6 @@
 package com.example.gjgn_02v.data.model.auth
 
-class DeleteUserResponse {
-}
+data class DeleteUserResponse(
+    val success: Boolean,
+    val message: String
+)
