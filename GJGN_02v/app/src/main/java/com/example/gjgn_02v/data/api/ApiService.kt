@@ -1,97 +1,118 @@
 package com.example.gjgn_02v.data.api
 
+import com.example.gjgn_02v.data.model.auth.KakaoLoginRequest
+import com.example.gjgn_02v.data.model.auth.KakaoLoginResponse
+import com.example.gjgn_02v.data.model.auth.UserProfileRequest
+import com.example.gjgn_02v.data.model.auth.UserProfileResponse
+import com.example.gjgn_02v.data.model.auth.DeleteUserResponse
+
+import com.example.gjgn_02v.data.model.common.BaseResponse
+
+import com.example.gjgn_02v.data.model.foods.FoodSearchResponse
+import com.example.gjgn_02v.data.model.foods.SaveMealRequest
+import com.example.gjgn_02v.data.model.foods.SaveMealResponse
+import com.example.gjgn_02v.data.model.foods.AiFoodDetectResponse
+
+import com.example.gjgn_02v.data.model.goals.GoalResponse
+import com.example.gjgn_02v.data.model.goals.UpdateGoalRequest
+import com.example.gjgn_02v.data.model.goals.UpdateGoalResponse
+
+import com.example.gjgn_02v.data.model.home.HomeStatisticsResponse
+
+import com.example.gjgn_02v.data.model.records.MealRecordRequest
+import com.example.gjgn_02v.data.model.records.MealRecordResponse
+
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.*
 
 interface ApiService {
 
-    // ---------------------------------------------------------
-    // 🔐 AUTH / USER
-    // ---------------------------------------------------------
+    // -------------------------------------------------------------
+    // 🔐 1) Auth & User
+    // -------------------------------------------------------------
 
-    // 로그인 (카카오 토큰 → JWT)
     @POST("api/users/login/")
-    fun loginWithKakao(@Body request: LoginRequest): Call<LoginResponse>
+    fun loginWithKakao(
+        @Body request: KakaoLoginRequest
+    ): Call<KakaoLoginResponse>
 
-    // 내 프로필 조회
     @GET("api/users/me/")
     fun getMyProfile(): Call<UserProfileResponse>
 
-    // 프로필 생성 / 수정
-    @POST("api/users/")
-    fun createOrUpdateProfile(@Body request: UserProfileRequest): Call<UserProfileResponse>
+    @PUT("api/users/me/")
+    fun updateMyProfile(
+        @Body request: UserProfileRequest
+    ): Call<UserProfileResponse>
 
-    // 회원 탈퇴
     @DELETE("api/users/")
-    fun deleteUser(): Call<BasicResponse>
+    fun deleteUser(): Call<DeleteUserResponse>
 
-    // 로그아웃
     @POST("api/users/logout/")
-    fun logout(): Call<BasicResponse>
+    fun logout(): Call<BaseResponse>
 
 
-    // ---------------------------------------------------------
-    // 🎯 GOALS (목표)
-    // ---------------------------------------------------------
+    // -------------------------------------------------------------
+    // 🎯 2) Goals
+    // -------------------------------------------------------------
 
-    // 자동 생성 (초기 프로필 기반 목표 계산)
-    @POST("api/goals/auto/")
-    fun autoGenerateGoal(@Body request: AutoGoalRequest): Call<GoalResponse>
-
-    // 조회
     @GET("api/goals/")
     fun getGoal(): Call<GoalResponse>
 
-    // 수정
     @PATCH("api/goals/")
-    fun updateGoal(@Body request: GoalUpdateRequest): Call<GoalResponse>
-
-    // 주간 통계
-    @GET("api/goals/weekly/")
-    fun getWeeklyAchievement(): Call<GoalStatResponse>
-
-    // 월간 통계
-    @GET("api/goals/monthly/")
-    fun getMonthlyAchievement(): Call<GoalStatResponse>
+    fun updateGoal(
+        @Body request: UpdateGoalRequest
+    ): Call<UpdateGoalResponse>
 
 
-    // ---------------------------------------------------------
-    // 🍱 FOODS (검색)
-    // ---------------------------------------------------------
+    // -------------------------------------------------------------
+    // 🍱 3) Foods
+    // -------------------------------------------------------------
 
     @GET("api/foods/search/")
     fun searchFoods(
         @Query("q") query: String
-    ): Call<List<FoodItemResponse>>
+    ): Call<List<FoodSearchResponse>>
+
+    @POST("api/foods/save/")
+    fun saveMeal(
+        @Body request: SaveMealRequest
+    ): Call<SaveMealResponse>
 
 
-    // ---------------------------------------------------------
-    // 🍽 RECORDS (식단 기록)
-    // ---------------------------------------------------------
+    // -------------------------------------------------------------
+    // 🍽 4) Records (식단 기록)
+    // -------------------------------------------------------------
 
-    // 식단 저장
     @POST("api/records/")
-    fun createRecord(@Body request: MealRecordRequest): Call<MealRecordResponse>
+    fun createRecord(
+        @Body request: MealRecordRequest
+    ): Call<MealRecordResponse>
 
-    // 오늘 기록 조회
     @GET("api/records/today/")
     fun getTodayRecords(): Call<List<MealRecordResponse>>
 
-    // 특정 날짜 기록 조회
     @GET("api/records/date/")
     fun getRecordsByDate(
-        @Query("date") date: String // "2025-01-01" 형식
+        @Query("date") date: String
     ): Call<List<MealRecordResponse>>
 
 
-    // ---------------------------------------------------------
-    // 🤖 AI (이미지 음식 인식)
-    // ---------------------------------------------------------
+    // -------------------------------------------------------------
+    // 🤖 5) AI (YOLO 음식 검출)
+    // -------------------------------------------------------------
 
     @Multipart
     @POST("api/ai/food-detect/")
     fun detectFood(
         @Part image: MultipartBody.Part
     ): Call<AiFoodDetectResponse>
+
+
+    // -------------------------------------------------------------
+    // 📊 6) Home 통계
+    // -------------------------------------------------------------
+
+    @GET("api/home/statistics/")
+    fun getHomeStatistics(): Call<HomeStatisticsResponse>
 }

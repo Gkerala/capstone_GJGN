@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.utils.TokenManager
 import com.example.gjgn_02v.data.api.RetrofitClient
-import com.example.gjgn_02v.model.BasicResponse
+import com.example.gjgn_02v.data.model.common.BaseResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -20,7 +20,7 @@ class MyPageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_page)
 
-        btnDelete = findViewById(R.id.btn_delete_user)
+        btnDelete = findViewById(R.id.btnDeleteAccount)
 
         btnDelete.setOnClickListener {
             deleteAccount()
@@ -29,19 +29,20 @@ class MyPageActivity : AppCompatActivity() {
 
     private fun deleteAccount() {
         RetrofitClient.api.deleteUser()
-            .enqueue(object : Callback<BasicResponse> {
+            .enqueue(object : Callback<BaseResponse> {
                 override fun onResponse(
-                    call: Call<BasicResponse>,
-                    response: Response<BasicResponse>
+                    call: Call<BaseResponse>,
+                    response: Response<BaseResponse>
                 ) {
                     if (response.isSuccessful) {
                         TokenManager.clearTokens(this@MyPageActivity)
-                        Toast.makeText(this@MyPageActivity, "탈퇴 완료", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MyPageActivity,
+                            "탈퇴 완료", Toast.LENGTH_SHORT).show()
                         finish()
                     }
                 }
 
-                override fun onFailure(call: Call<BasicResponse>, t: Throwable) {}
+                override fun onFailure(call: Call<BaseResponse>, t: Throwable) {}
             })
     }
 }

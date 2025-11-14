@@ -6,4 +6,11 @@
     <string name="my_info">내 정보</string>
     <string name="logout">로그아웃</string>
     <string name="delete_account">회원탈퇴</string>
+
+    <string-array name="meal_types">
+        <item>아침</item>
+        <item>점심</item>
+        <item>저녁</item>
+    </string-array>
+
 </resources>
