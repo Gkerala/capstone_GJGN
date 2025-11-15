@@ -8,6 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="red_600">#D32F2F</color>
+    <color name="gray_light">#EEEEEE</color>
+
 
 
     <!-- 네비게이션용 색상 -->

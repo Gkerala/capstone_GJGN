@@ -1,41 +1,24 @@
 package com.example.gjgn_02v.data.api
 
-import com.example.gjgn_02v.data.model.auth.KakaoLoginRequest
-import com.example.gjgn_02v.data.model.auth.KakaoLoginResponse
-import com.example.gjgn_02v.data.model.auth.UserProfileRequest
-import com.example.gjgn_02v.data.model.auth.UserProfileResponse
-import com.example.gjgn_02v.data.model.auth.DeleteUserResponse
-
+import com.example.gjgn_02v.data.model.auth.*
 import com.example.gjgn_02v.data.model.common.BaseResponse
-
-import com.example.gjgn_02v.data.model.foods.FoodSearchResponse
-import com.example.gjgn_02v.data.model.foods.SaveMealRequest
-import com.example.gjgn_02v.data.model.foods.SaveMealResponse
-import com.example.gjgn_02v.data.model.foods.AiFoodDetectResponse
-import com.example.gjgn_02v.data.model.foods.FoodItemResponse
-
-import com.example.gjgn_02v.data.model.goals.GoalResponse
-import com.example.gjgn_02v.data.model.goals.GoalStatResponse
-import com.example.gjgn_02v.data.model.goals.UpdateGoalRequest
-import com.example.gjgn_02v.data.model.goals.UpdateGoalResponse
-import com.example.gjgn_02v.data.model.goals.WeeklyWeightResponse
-
+import com.example.gjgn_02v.data.model.foods.*
+import com.example.gjgn_02v.data.model.goals.*
 import com.example.gjgn_02v.data.model.home.HomeStatisticsResponse
-
 import com.example.gjgn_02v.data.model.records.MealRecordRequest
 import com.example.gjgn_02v.data.model.records.MealRecordResponse
 
 import okhttp3.MultipartBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
 
     // -------------------------------------------------------------
-    // 🔐 1) Auth & User
+    // 🔐 Auth
     // -------------------------------------------------------------
-
-    @POST("api/users/login/")
+    @POST("api/auth/login/kakao/")
     fun loginWithKakao(
         @Body request: KakaoLoginRequest
     ): Call<KakaoLoginResponse>
@@ -54,11 +37,25 @@ interface ApiService {
     @POST("api/users/logout/")
     fun logout(): Call<BaseResponse>
 
+    // -------------------------------------------------------------
+    // Logout / Delete User with Token
+    // -------------------------------------------------------------
+    @POST("api/users/logout/")
+    fun logoutUser(
+        @Header("Authorization") auth: String,
+        @Body refresh: Map<String, String>
+    ): Call<Void>
+
+    @HTTP(method = "DELETE", path = "api/users/delete/", hasBody = true)
+    fun deleteUser(
+        @Header("Authorization") auth: String,
+        @Body refresh: Map<String, String>
+    ): Call<Void>
+
 
     // -------------------------------------------------------------
-    // 🎯 2) Goals
+    // 🎯 Goals
     // -------------------------------------------------------------
-
     @GET("api/goals/")
     fun getGoal(): Call<GoalResponse>
 
@@ -69,13 +66,10 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 🍱 3) Foods
+    // 🍱 Foods
     // -------------------------------------------------------------
-
     @GET("api/foods/search/")
-    fun searchFoods(
-        @Query("q") query: String
-    ): Call<List<FoodItemResponse>>
+    fun searchFoods(@Query("q") query: String): Call<List<FoodItemResponse>>
 
     @POST("api/foods/save/")
     fun saveMeal(
@@ -84,13 +78,18 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 🍽 4) Records (식단 기록)
+    // 🍽 Records
     // -------------------------------------------------------------
-
     @POST("api/records/")
     fun createRecord(
         @Body request: MealRecordRequest
     ): Call<MealRecordResponse>
+
+    // 🔥 여러개 저장용 / Raw Map 저장
+    @POST("api/records/")
+    suspend fun createRecordRaw(
+        @Body req: Map<String, String>
+    ): Response<Any>
 
     @GET("api/records/today/")
     fun getTodayRecords(): Call<List<MealRecordResponse>>
@@ -102,9 +101,8 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 🤖 5) AI (YOLO 음식 검출)
+    // 🤖 AI YOLO Food Detect
     // -------------------------------------------------------------
-
     @Multipart
     @POST("api/ai/food-detect/")
     fun detectFood(
@@ -113,35 +111,29 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 📊 6) Home 통계
+    // 🥗 Nutrition API (최종 사용)
     // -------------------------------------------------------------
+    @GET("api/foods/nutrition/")
+    suspend fun getNutrition(
+        @Query("name") foodName: String
+    ): Response<NutritionResponse>
 
-    @GET("api/home/statistics/")
-    fun getHomeStatistics(): Call<HomeStatisticsResponse>
 
-    // 현재 로그인 사용자 정보 조회
-    @GET("api/users/me/")
-    fun getCurrentUser(
-        @Header("Authorization") token: String
-    ): Call<UserProfileResponse>
-
-    @GET("api/analysis/weekly/")
+    // -------------------------------------------------------------
+    // 📊 분석 API
+    // -------------------------------------------------------------
+    @GET("api/records/analysis/weekly/")
     fun getWeeklyAchievement(): Call<GoalStatResponse>
 
-    @GET("api/analysis/monthly/")
+    @GET("api/records/analysis/monthly/")
     fun getMonthlyAchievement(): Call<GoalStatResponse>
 
-    @POST("api/logout/")
-    fun logoutUser(
-        @Header("Authorization") auth: String,
-        @Body refresh: Map<String, String>
-    ): Call<Void>
 
-    @HTTP(method = "DELETE", path = "api/user/delete/", hasBody = true)
-    fun deleteUser(
-        @Header("Authorization") auth: String,
-        @Body refresh: Map<String, String>
-    ): Call<Void>
+    // -------------------------------------------------------------
+    // 홈 통계
+    // -------------------------------------------------------------
+    @GET("api/home/statistics/")
+    fun getHomeStatistics(): Call<HomeStatisticsResponse>
 
     @GET("goals/weights/weekly/")
     fun getWeeklyWeight(): Call<WeeklyWeightResponse>

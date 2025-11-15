@@ -18,10 +18,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var tvTodayKcal: TextView
     private lateinit var tvTodayCount: TextView
-
     private lateinit var tvWeekly: TextView
     private lateinit var tvMonthly: TextView
-
     private lateinit var tvRecent1: TextView
     private lateinit var tvRecent2: TextView
 
@@ -39,15 +37,14 @@ class MainActivity : AppCompatActivity() {
     private fun initViews() {
         tvTodayKcal = findViewById(R.id.tvTodayKcal)
         tvTodayCount = findViewById(R.id.tvTodayCount)
-
         tvWeekly = findViewById(R.id.tvWeekly)
         tvMonthly = findViewById(R.id.tvMonthly)
-
         tvRecent1 = findViewById(R.id.tvRecentFood1)
         tvRecent2 = findViewById(R.id.tvRecentFood2)
     }
 
-    // 오늘 요약
+
+    // 🔥 오늘 기록 불러오기
     private fun loadTodayRecords() {
         RetrofitClient.api.getTodayRecords()
             .enqueue(object : Callback<List<MealRecordResponse>> {
@@ -55,26 +52,32 @@ class MainActivity : AppCompatActivity() {
                     call: Call<List<MealRecordResponse>>,
                     response: Response<List<MealRecordResponse>>
                 ) {
-                    if (!response.isSuccessful || response.body() == null) return
+                    if (!response.isSuccessful || response.body() == null) {
+                        tvTodayKcal.text = "0 kcal"
+                        tvTodayCount.text = "0 회"
+                        return
+                    }
 
                     val list = response.body()!!
-
                     val totalKcal = list.sumOf { it.calories }
                     val count = list.size
 
                     tvTodayKcal.text = "$totalKcal kcal"
                     tvTodayCount.text = "$count 회"
 
-                    // 최신 2개만 ID 기반으로 표시
                     if (list.isNotEmpty()) tvRecent1.text = "음식 #${list[0].food_id}"
                     if (list.size >= 2) tvRecent2.text = "음식 #${list[1].food_id}"
                 }
 
-                override fun onFailure(call: Call<List<MealRecordResponse>>, t: Throwable) {}
+                override fun onFailure(call: Call<List<MealRecordResponse>>, t: Throwable) {
+                    tvTodayKcal.text = "0 kcal"
+                    tvTodayCount.text = "0 회"
+                }
             })
     }
 
-    // 주간 달성률
+
+    // 🔥 주간 달성률
     private fun loadWeeklyStat() {
         RetrofitClient.api.getWeeklyAchievement()
             .enqueue(object : Callback<GoalStatResponse> {
@@ -82,15 +85,21 @@ class MainActivity : AppCompatActivity() {
                     call: Call<GoalStatResponse>,
                     res: Response<GoalStatResponse>
                 ) {
-                    if (res.isSuccessful) {
-                        tvWeekly.text = "${res.body()!!.achievement}%"
+                    if (!res.isSuccessful || res.body() == null) {
+                        tvWeekly.text = "0%"
+                        return
                     }
+                    tvWeekly.text = "${res.body()!!.achievement}%"
                 }
-                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {}
+
+                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {
+                    tvWeekly.text = "0%"
+                }
             })
     }
 
-    // 월간 달성률
+
+    // 🔥 월간 달성률
     private fun loadMonthlyStat() {
         RetrofitClient.api.getMonthlyAchievement()
             .enqueue(object : Callback<GoalStatResponse> {
@@ -98,15 +107,21 @@ class MainActivity : AppCompatActivity() {
                     call: Call<GoalStatResponse>,
                     res: Response<GoalStatResponse>
                 ) {
-                    if (res.isSuccessful) {
-                        tvMonthly.text = "${res.body()!!.achievement}%"
+                    if (!res.isSuccessful || res.body() == null) {
+                        tvMonthly.text = "0%"
+                        return
                     }
+                    tvMonthly.text = "${res.body()!!.achievement}%"
                 }
-                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {}
+
+                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {
+                    tvMonthly.text = "0%"
+                }
             })
     }
 
-    // 네비게이션
+
+    // 하단 네비게이션
     private fun setupBottomNav() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNav.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED

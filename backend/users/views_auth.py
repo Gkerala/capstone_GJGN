@@ -7,13 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 
 
 class KakaoLoginView(APIView):
-    """
-    프론트에서 카카오 Access Token을 보내면:
-    1) KakaoService 통해 사용자 정보 조회
-    2) CustomUser 생성/업데이트
-    3) JWT 토큰 발급
-    """
-
     def post(self, request):
         access_token = request.data.get("access_token", None)
 
@@ -28,16 +21,24 @@ class KakaoLoginView(APIView):
             user = result["user"]
             tokens = result["tokens"]
 
-            return Response({
+            response_data = {
                 "user": UserSerializer(user).data,
-                "tokens": tokens
-            }, status=status.HTTP_200_OK)
+                "access": tokens.get("access"),
+                "refresh": tokens.get("refresh"),
+                "is_new_user": result.get("is_new_user", False)
+            }
+
+            print("\n=== 📌 Kakao Login Response JSON ===")
+            print(response_data)
+            print("====================================\n")
+
+            return Response(response_data, status=status.HTTP_200_OK)
 
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"error": f"서버 오류: {str(e)}"},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": f"서버 오류: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class UserGoalUpdateView(APIView):
     permission_classes = [IsAuthenticated]

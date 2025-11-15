@@ -1,21 +1,25 @@
 package com.example.gjgn_02v.main
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
 import com.example.gjgn_02v.data.model.foods.AiFoodDetectResponse
 import com.example.gjgn_02v.data.model.foods.FoodItemResponse
+import com.example.gjgn_02v.data.model.foods.NutritionResponse
 import com.example.gjgn_02v.data.model.records.MealRecordRequest
 import com.example.gjgn_02v.data.model.records.MealRecordResponse
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -26,18 +30,33 @@ import java.io.File
 
 class RecordActivity : AppCompatActivity() {
 
-    private lateinit var searchInput: EditText
-    private lateinit var listView: ListView
-    private lateinit var saveButton: Button
-    private lateinit var selectedFoodText: TextView
-    private lateinit var btnSelectImage: Button
-    private lateinit var spinnerMealType: Spinner
+    private lateinit var btnBreakfast: Button
+    private lateinit var btnLunch: Button
+    private lateinit var btnDinner: Button
 
-    private var foods = listOf<FoodItemResponse>()
+    private lateinit var btnTakePhoto: Button
+    private lateinit var btnSelectImage: Button
+
+    private lateinit var searchInput: EditText
+    private lateinit var listSearch: ListView
+
+    private lateinit var imgPreview: ImageView
+    private lateinit var analysisContainer: LinearLayout
+
+    private lateinit var btnSave: Button
+
+    // 검색해서 선택된 음식
     private var selectedFood: FoodItemResponse? = null
-    private var selectedUri: Uri? = null
+
+    // Nutrition API 단일 결과 저장
+    private var singleNutritionResult: NutritionResponse? = null
+
+    // YOLO 감지 음식 리스트
+    private val nutritionList = mutableListOf<NutritionResponse>()
 
     private var selectedMealType = "breakfast"
+    private var foods = listOf<FoodItemResponse>()
+    private var selectedUri: Uri? = null
 
     companion object {
         private const val PICK_IMAGE = 2001
@@ -47,61 +66,78 @@ class RecordActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_record)
 
-        searchInput = findViewById(R.id.search_input)
-        listView = findViewById(R.id.list_foods)
-        saveButton = findViewById(R.id.btn_save_meal)
-        selectedFoodText = findViewById(R.id.txt_selected_food)
+        initViews()
+        setupMealButtons()
+        setupSearchInput()
+        setupBottomNav()
+
+        btnTakePhoto.setOnClickListener {
+            Toast.makeText(this, "카메라 기능은 추후 추가됩니다.", Toast.LENGTH_SHORT).show()
+        }
+
+        btnSelectImage.setOnClickListener { pickImageFromGallery() }
+
+        btnSave.setOnClickListener { saveRecord() }
+    }
+
+    private fun initViews() {
+        btnBreakfast = findViewById(R.id.btnBreakfast)
+        btnLunch = findViewById(R.id.btnLunch)
+        btnDinner = findViewById(R.id.btnDinner)
+
+        btnTakePhoto = findViewById(R.id.btnTakePhoto)
         btnSelectImage = findViewById(R.id.btnSelectImage)
-        spinnerMealType = findViewById(R.id.spinnerMealType)
 
-        setupMealTypeSpinner()
-        setupSearchListener()
+        searchInput = findViewById(R.id.inputSearch)
+        listSearch = findViewById(R.id.listSearchResults)
 
-        saveButton.setOnClickListener {
-            if (selectedFood == null) {
-                Toast.makeText(this, "음식을 선택하세요!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            saveSelectedFood()
-        }
+        imgPreview = findViewById(R.id.imgPreview)
+        analysisContainer = findViewById(R.id.analysisContainer)
 
-        btnSelectImage.setOnClickListener {
-            pickImageFromGallery()
-        }
+        btnSave = findViewById(R.id.btnSave)
     }
 
-    // -------------------------------------------------------
-    // 스피너
-    // -------------------------------------------------------
-    private fun setupMealTypeSpinner() {
-        spinnerMealType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: android.view.View?,
-                pos: Int,
-                id: Long
-            ) {
-                selectedMealType = when (pos) {
-                    0 -> "breakfast"
-                    1 -> "lunch"
-                    else -> "dinner"
-                }
-            }
+    // ------------------------------------------
+    // 1) Meal buttons
+    // ------------------------------------------
+    private fun setupMealButtons() {
+        val buttons = listOf(btnBreakfast, btnLunch, btnDinner)
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+        fun focus(btn: Button) {
+            buttons.forEach {
+                it.setBackgroundColor(getColor(R.color.gray_light))
+                it.setTextColor(getColor(R.color.black))
+            }
+            btn.setBackgroundColor(getColor(R.color.teal_700))
+            btn.setTextColor(getColor(android.R.color.white))
         }
+
+        btnBreakfast.setOnClickListener {
+            selectedMealType = "breakfast"
+            focus(btnBreakfast)
+        }
+        btnLunch.setOnClickListener {
+            selectedMealType = "lunch"
+            focus(btnLunch)
+        }
+        btnDinner.setOnClickListener {
+            selectedMealType = "dinner"
+            focus(btnDinner)
+        }
+
+        focus(btnBreakfast)
     }
 
-    // -------------------------------------------------------
-    // 검색
-    // -------------------------------------------------------
-    private fun setupSearchListener() {
+    // ------------------------------------------
+    // 2) 음식 검색
+    // ------------------------------------------
+    private fun setupSearchInput() {
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val q = s.toString().trim()
                 if (q.length >= 2) searchFoods(q)
+                else listSearch.visibility = View.GONE
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -114,20 +150,28 @@ class RecordActivity : AppCompatActivity() {
                     call: Call<List<FoodItemResponse>>,
                     res: Response<List<FoodItemResponse>>
                 ) {
-                    if (res.isSuccessful && res.body() != null) {
-                        foods = res.body()!!
-                        val names = foods.map { it.name }
+                    if (!res.isSuccessful || res.body().isNullOrEmpty()) {
+                        listSearch.visibility = View.GONE
+                        return
+                    }
 
-                        listView.adapter = ArrayAdapter(
-                            this@RecordActivity,
-                            android.R.layout.simple_list_item_1,
-                            names
-                        )
+                    foods = res.body()!!
+                    val names = foods.map { it.name }
 
-                        listView.setOnItemClickListener { _, _, i, _ ->
-                            selectedFood = foods[i]
-                            selectedFoodText.text = "선택됨: ${foods[i].name}"
-                        }
+                    listSearch.adapter = ArrayAdapter(
+                        this@RecordActivity,
+                        android.R.layout.simple_list_item_1,
+                        names
+                    )
+                    listSearch.visibility = View.VISIBLE
+
+                    listSearch.setOnItemClickListener { _, _, i, _ ->
+                        selectedFood = foods[i]
+                        selectedUri = null
+                        imgPreview.visibility = View.GONE
+
+                        loadSingleNutrition(foods[i].name)
+                        listSearch.visibility = View.GONE
                     }
                 }
 
@@ -135,39 +179,9 @@ class RecordActivity : AppCompatActivity() {
             })
     }
 
-    // -------------------------------------------------------
-    // 수동 저장
-    // -------------------------------------------------------
-    private fun saveSelectedFood() {
-        val food = selectedFood ?: return
-
-        RetrofitClient.api.createRecord(
-            MealRecordRequest(
-                food_id = food.id,
-                amount = 1,
-                meal_type = selectedMealType
-            )
-        ).enqueue(object : Callback<MealRecordResponse> {
-
-            override fun onResponse(
-                call: Call<MealRecordResponse>,
-                response: Response<MealRecordResponse>
-            ) {
-                if (response.isSuccessful) {
-                    Toast.makeText(this@RecordActivity, "저장 완료!", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-            }
-
-            override fun onFailure(call: Call<MealRecordResponse>, t: Throwable) {
-                Toast.makeText(this@RecordActivity, "저장 실패", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    // -------------------------------------------------------
-    // 이미지 선택
-    // -------------------------------------------------------
+    // ------------------------------------------
+    // 3) 이미지 선택
+    // ------------------------------------------
     private fun pickImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
@@ -178,14 +192,25 @@ class RecordActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-            selectedUri = data?.data
-            selectedUri?.let { uploadImage(it) }
+            selectedUri = data?.data ?: return
+
+            // 검색 음식 초기화
+            selectedFood = null
+            singleNutritionResult = null
+
+            imgPreview.setImageURI(selectedUri)
+            imgPreview.visibility = View.VISIBLE
+
+            analysisContainer.removeAllViews()
+            nutritionList.clear()
+
+            uploadImage(selectedUri!!)
         }
     }
 
-    // -------------------------------------------------------
-    // YOLO 업로드 + 자동 저장
-    // -------------------------------------------------------
+    // ------------------------------------------
+    // 4) YOLO 음식 감지
+    // ------------------------------------------
     private fun uploadImage(uri: Uri) {
         val file = File(getRealPathFromURI(uri))
         val reqFile = file.asRequestBody("image/*".toMediaTypeOrNull())
@@ -193,7 +218,6 @@ class RecordActivity : AppCompatActivity() {
 
         RetrofitClient.api.detectFood(multipart)
             .enqueue(object : Callback<AiFoodDetectResponse> {
-
                 override fun onResponse(
                     call: Call<AiFoodDetectResponse>,
                     res: Response<AiFoodDetectResponse>
@@ -204,99 +228,201 @@ class RecordActivity : AppCompatActivity() {
                     }
 
                     val result = res.body()!!
-
                     if (result.foods.isEmpty()) {
-                        Toast.makeText(
-                            this@RecordActivity,
-                            "음식이 인식되지 않았습니다.",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@RecordActivity, "음식을 감지하지 못했습니다.", Toast.LENGTH_SHORT).show()
                         return
                     }
 
-                    // ⭐ 최고 정확도 음식 선택
-                    val topItem = result.foods.maxByOrNull { it.confidence }!!
-                    val predictedName = topItem.name
-
-                    // 자동 저장
-                    autoSearchAndSave(predictedName)
+                    val names = result.foods.map { it.name }
+                    fetchNutritionForFoods(names)
                 }
 
-                override fun onFailure(call: Call<AiFoodDetectResponse>, t: Throwable) {
-                    Toast.makeText(this@RecordActivity, "네트워크 오류", Toast.LENGTH_SHORT).show()
-                }
+                override fun onFailure(call: Call<AiFoodDetectResponse>, t: Throwable) {}
             })
     }
 
-    // -------------------------------------------------------
-    // DB 검색 → 자동 저장
-    // -------------------------------------------------------
-    private fun autoSearchAndSave(name: String) {
+    // ------------------------------------------
+    // 5) Nutrition API 여러 개 조회
+    // ------------------------------------------
+    private fun fetchNutritionForFoods(names: List<String>) {
+        lifecycleScope.launch {
+            nutritionList.clear()
 
-        RetrofitClient.api.searchFoods(name)
-            .enqueue(object : Callback<List<FoodItemResponse>> {
+            for (name in names) {
+                try {
+                    val res = RetrofitClient.api.getNutrition(name)
+                    if (res.isSuccessful && res.body()?.success == true) {
+                        nutritionList.add(res.body()!!)
+                    }
+                } catch (_: Exception) {}
+            }
+
+            updateNutritionUI()
+        }
+    }
+
+    // ------------------------------------------
+    // 6) 감지된 음식 UI
+    // ------------------------------------------
+    private fun updateNutritionUI() {
+        analysisContainer.removeAllViews()
+
+        nutritionList.forEachIndexed { idx, item ->
+            val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
+
+            val chk = view.findViewById<CheckBox>(R.id.chkSelect)
+            view.findViewById<TextView>(R.id.txtName).text = item.name
+            view.findViewById<TextView>(R.id.txtKcal).text = "${item.calories ?: 0} kcal"
+            view.findViewById<TextView>(R.id.txtCarbs).text = "탄수화물: ${item.carbs ?: 0}"
+            view.findViewById<TextView>(R.id.txtProtein).text = "단백질: ${item.protein ?: 0}"
+            view.findViewById<TextView>(R.id.txtFat).text = "지방: ${item.fat ?: 0}"
+            view.findViewById<TextView>(R.id.txtSugar).text = "당: ${item.sugar ?: 0}"
+
+            chk.setOnCheckedChangeListener { _, isChecked ->
+                nutritionList[idx] = nutritionList[idx].copy(
+                    serving_size = if (isChecked) "selected" else "unselected"
+                )
+            }
+
+            analysisContainer.addView(view)
+        }
+    }
+
+    // ------------------------------------------
+    // 🔥 단일 음식 영양정보
+    // ------------------------------------------
+    private fun loadSingleNutrition(foodName: String) {
+        lifecycleScope.launch {
+            try {
+                val res = RetrofitClient.api.getNutrition(foodName)
+
+                if (!res.isSuccessful || res.body() == null) {
+                    Toast.makeText(this@RecordActivity, "영양정보 없음", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val n = res.body()!!
+                singleNutritionResult = n
+
+                analysisContainer.removeAllViews()
+
+                val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
+
+                view.findViewById<TextView>(R.id.txtName).text = n.name ?: "-"
+                view.findViewById<TextView>(R.id.txtKcal).text = "${n.calories ?: 0} kcal"
+                view.findViewById<TextView>(R.id.txtCarbs).text = "탄수화물: ${n.carbs ?: 0}"
+                view.findViewById<TextView>(R.id.txtProtein).text = "단백질: ${n.protein ?: 0}"
+                view.findViewById<TextView>(R.id.txtFat).text = "지방: ${n.fat ?: 0}"
+                view.findViewById<TextView>(R.id.txtSugar).text = "당: ${n.sugar ?: 0}"
+
+                // 단일이므로 체크박스 비활성
+                view.findViewById<CheckBox>(R.id.chkSelect).visibility = View.GONE
+
+                analysisContainer.addView(view)
+
+            } catch (e: Exception) {
+                Toast.makeText(this@RecordActivity, "영양정보 불러오기 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // ------------------------------------------
+    // 🔥 저장 버튼 → 검색/YOLO 모두 처리
+    // ------------------------------------------
+    private fun saveRecord() {
+
+        val food = selectedFood
+        val nutrition = singleNutritionResult
+
+        if (food == null && nutrition == null && nutritionList.none { it.serving_size == "selected" }) {
+            Toast.makeText(this, "음식을 선택하세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 1) 검색 단일 음식
+        if (food != null && nutrition != null) {
+            val req = MealRecordRequest(
+                food_id = food.id,
+                meal_type = selectedMealType,
+                amount = 1,
+                name = nutrition.name,
+                calories = nutrition.calories,
+                carbs = nutrition.carbs,
+                protein = nutrition.protein,
+                fat = nutrition.fat,
+                sugar = nutrition.sugar
+            )
+            sendRecordToServer(req)
+            return
+        }
+
+        // 2) YOLO → 체크박스 선택된 음식 여러 개 저장
+        val selectedItems = nutritionList.filter { it.serving_size == "selected" }
+        if (selectedItems.isNotEmpty()) {
+            saveMultipleFoods(selectedItems)
+        }
+    }
+
+    private fun sendRecordToServer(req: MealRecordRequest) {
+        RetrofitClient.api.createRecord(req)
+            .enqueue(object : Callback<MealRecordResponse> {
                 override fun onResponse(
-                    call: Call<List<FoodItemResponse>>,
-                    response: Response<List<FoodItemResponse>>
+                    call: Call<MealRecordResponse>,
+                    res: Response<MealRecordResponse>
                 ) {
-
-                    if (!response.isSuccessful || response.body().isNullOrEmpty()) {
-                        AlertDialog.Builder(this@RecordActivity)
-                            .setTitle("자동 저장 실패")
-                            .setMessage("인식된 음식($name)과 일치하는 항목이 DB에 없습니다.")
-                            .setPositiveButton("확인", null)
-                            .show()
-                        return
+                    if (res.isSuccessful) {
+                        Toast.makeText(this@RecordActivity, "저장 완료!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    } else {
+                        Toast.makeText(this@RecordActivity, "저장 실패", Toast.LENGTH_SHORT).show()
                     }
-
-                    val food = response.body()!![0]
-                    selectedFood = food
-
-                    RetrofitClient.api.createRecord(
-                        MealRecordRequest(
-                            food_id = food.id,
-                            amount = 1,
-                            meal_type = selectedMealType
-                        )
-                    ).enqueue(object : Callback<MealRecordResponse> {
-
-                        override fun onResponse(
-                            call: Call<MealRecordResponse>,
-                            res: Response<MealRecordResponse>
-                        ) {
-                            AlertDialog.Builder(this@RecordActivity)
-                                .setTitle("자동 저장 완료")
-                                .setMessage("${food.name} 이(가) ${mealTypeKorean()} 식사로 자동 저장되었습니다!")
-                                .setPositiveButton("확인") { _, _ -> finish() }
-                                .show()
-                        }
-
-                        override fun onFailure(call: Call<MealRecordResponse>, t: Throwable) {
-                            Toast.makeText(this@RecordActivity, "저장 실패", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    })
                 }
 
-                override fun onFailure(call: Call<List<FoodItemResponse>>, t: Throwable) {}
+                override fun onFailure(call: Call<MealRecordResponse>, t: Throwable) {
+                    Toast.makeText(this@RecordActivity, "서버 오류", Toast.LENGTH_SHORT).show()
+                }
             })
     }
 
-    private fun mealTypeKorean(): String {
-        return when (selectedMealType) {
-            "breakfast" -> "아침"
-            "lunch" -> "점심"
-            else -> "저녁"
+    private fun saveMultipleFoods(items: List<NutritionResponse>) {
+        lifecycleScope.launch {
+            for (n in items) {
+                val req = MealRecordRequest(
+                    food_id = null,
+                    meal_type = selectedMealType,
+                    amount = 1,
+                    name = n.name,
+                    calories = n.calories,
+                    carbs = n.carbs,
+                    protein = n.protein,
+                    fat = n.fat,
+                    sugar = n.sugar
+                )
+                sendRecordToServer(req)
+            }
         }
     }
 
     private fun getRealPathFromURI(uri: Uri): String {
-        val projection = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = contentResolver.query(uri, projection, null, null, null)
+        val cursor = contentResolver.query(uri, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
         cursor?.moveToFirst()
-        val idx = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-        val result = cursor?.getString(idx!!)
+        val index = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        val result = cursor?.getString(index!!)
         cursor?.close()
         return result ?: ""
+    }
+
+    private fun setupBottomNav() {
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNav.selectedItemId = R.id.menu_record
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_main -> startActivity(Intent(this, MainActivity::class.java))
+                R.id.menu_analysis -> startActivity(Intent(this, AnalysisActivity::class.java))
+                R.id.menu_mypage -> startActivity(Intent(this, MyPageActivity::class.java))
+            }
+            true
+        }
     }
 }

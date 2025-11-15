@@ -5,88 +5,148 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <!-- ⭐ 스크롤 영역 (메인 콘텐츠) -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:padding="16dp"
+        android:layout_above="@+id/bottomArea">
 
-        <!-- 검색창 -->
-        <com.google.android.material.textfield.TextInputLayout
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="음식 검색"
-            app:boxBackgroundMode="outline"
-            android:layout_margin="16dp">
+            android:layout_height="wrap_content">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/search_input"
+            <!-- ⭐ 식사 선택 (아침/점심/저녁) -->
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                android:gravity="center"
+                android:layout_marginBottom="16dp">
 
-        <!-- 리스트 -->
-        <ListView
-            android:id="@+id/list_foods"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:dividerHeight="10dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp" />
+                <Button
+                    android:id="@+id/btnBreakfast"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="아침" />
 
-        <!-- 선택된 음식 -->
-        <TextView
-            android:id="@+id/txt_selected_food"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="선택된 음식: 없음"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:padding="12dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"/>
+                <Button
+                    android:id="@+id/btnLunch"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="점심" />
 
-        <!-- Spinner -->
-        <Spinner
-            android:id="@+id/spinnerMealType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:padding="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
-            android:entries="@array/meal_types"/>
+                <Button
+                    android:id="@+id/btnDinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="저녁" />
+            </LinearLayout>
 
+            <!-- ⭐ 사진찍기 & 이미지 업로드 -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginBottom="16dp">
 
-        <!-- 사진 선택 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSelectImage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="사진 선택"
-            android:layout_margin="16dp"/>
+                <Button
+                    android:id="@+id/btnTakePhoto"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="사진 찍기" />
 
-        <!-- 저장 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_save_meal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="저장하기"
-            android:backgroundTint="@color/teal_700"
-            android:textColor="@android:color/white"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"/>
-    </LinearLayout>
+                <Button
+                    android:id="@+id/btnSelectImage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="이미지 등록" />
+            </LinearLayout>
 
-    <!-- 하단 네비 -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
+            <!-- ⭐ 음식 검색창 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="음식 검색"
+                app:boxBackgroundMode="outline">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/inputSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- ⭐ 자동완성 리스트 -->
+            <ListView
+                android:id="@+id/listSearchResults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:dividerHeight="8dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- ⭐ 이미지 미리보기 (검색 아래) -->
+            <ImageView
+                android:id="@+id/imgPreview"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:layout_marginTop="20dp"
+                android:background="#DDDDDD" />
+
+            <!-- ⭐ AI 음식 분석 결과 (다중 객체) -->
+            <LinearLayout
+                android:id="@+id/analysisContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="16dp"
+                android:padding="8dp"
+                android:background="#F7F7F7">
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ⭐ 하단 고정 버튼 + 네비게이션 -->
+    <LinearLayout
+        android:id="@+id/bottomArea"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:menu="@menu/bottom_nav_menu"/>
+        android:layout_gravity="bottom">
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="등록하기"
+            android:backgroundTint="@color/teal_700"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:padding="14dp" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:menu="@menu/bottom_nav_menu" />
+
+    </LinearLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

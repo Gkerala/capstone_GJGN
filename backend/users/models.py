@@ -17,7 +17,10 @@ def profile_upload_path(instance, filename):
 class CustomUser(AbstractUser):
     kakao_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     nickname = models.CharField(max_length=50, blank=True)
-    profile_image = models.ImageField(upload_to=profile_upload_path, null=True, blank=True)
+    profile_image = models.URLField(blank=True, null=True)
+    
+    # email optional
+    email = models.EmailField(null=True, blank=True)
     
     # 기초 정보
     height = models.FloatField(null=True, blank=True)   # cm
