@@ -12,7 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.GJGN_02v">
+        android:theme="@style/Theme.GJGN">
 
         <!-- ✅ Kakao SDK 앱 키 등록 -->
         <meta-data

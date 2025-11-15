@@ -23,6 +23,10 @@ ALLOWED_HOSTS = ["*"]
 # Installed Apps
 # -----------------------------
 INSTALLED_APPS = [
+    # Custom user model을 가장 먼저!
+    "users",
+
+    # Django 기본 앱들
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -35,12 +39,12 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
 
-    # Apps
-    "users",
+    # Local apps
     "foods",
     "records",
     "goals",
 ]
+
 
 AUTH_USER_MODEL = "users.CustomUser"
 

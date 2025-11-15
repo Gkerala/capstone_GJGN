@@ -7,6 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="red_600">#D32F2F</color>
+
 
     <!-- 네비게이션용 색상 -->
     <color name="nav_selected">#2196F3</color> <!-- 파란색 -->

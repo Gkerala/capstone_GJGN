@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:padding="20dp"
     android:fillViewport="true">
 
     <LinearLayout
@@ -10,14 +10,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- 주간 칼로리 타이틀 -->
+        <!-- 주간 칼로리 -->
         <TextView
             android:id="@+id/tvWeeklyTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="주간 섭취 칼로리"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold"
+            android:textColor="#333333"
             android:layout_marginBottom="12dp" />
 
         <!-- BarChart -->
@@ -26,14 +27,15 @@
             android:layout_width="match_parent"
             android:layout_height="300dp" />
 
-        <!-- 체중 변화 타이틀 -->
+        <!-- 체중 변화 -->
         <TextView
             android:id="@+id/tvWeightTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="체중 변화"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold"
+            android:textColor="#333333"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="12dp" />
 
