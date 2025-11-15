@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -212,8 +213,10 @@ class RecordActivity : AppCompatActivity() {
     // 4) YOLO 음식 감지
     // ------------------------------------------
     private fun uploadImage(uri: Uri) {
+        Log.d("RECORD_DEBUG", "uploadImage() 호출됨, URI = $uri")
         val file = File(getRealPathFromURI(uri))
         val reqFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+        Log.d("RECORD_DEBUG", "파일 경로 = ${file.absolutePath}")
         val multipart = MultipartBody.Part.createFormData("image", file.name, reqFile)
 
         RetrofitClient.api.detectFood(multipart)
@@ -228,6 +231,7 @@ class RecordActivity : AppCompatActivity() {
                     }
 
                     val result = res.body()!!
+                    Log.d("RECORD_DEBUG", "YOLO 감지 결과 = ${result.foods}")
                     if (result.foods.isEmpty()) {
                         Toast.makeText(this@RecordActivity, "음식을 감지하지 못했습니다.", Toast.LENGTH_SHORT).show()
                         return
@@ -253,6 +257,7 @@ class RecordActivity : AppCompatActivity() {
                     val res = RetrofitClient.api.getNutrition(name)
                     if (res.isSuccessful && res.body()?.success == true) {
                         nutritionList.add(res.body()!!)
+                        Log.d("RECORD_DEBUG", "Nutrition 조회 시작: ${names.size}개")
                     }
                 } catch (_: Exception) {}
             }
@@ -265,6 +270,7 @@ class RecordActivity : AppCompatActivity() {
     // 6) 감지된 음식 UI
     // ------------------------------------------
     private fun updateNutritionUI() {
+        Log.d("RECORD_DEBUG", "updateNutritionUI() 호출됨, nutritionList size = ${nutritionList.size}")
         analysisContainer.removeAllViews()
 
         nutritionList.forEachIndexed { idx, item ->
@@ -295,6 +301,7 @@ class RecordActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val res = RetrofitClient.api.getNutrition(foodName)
+                Log.d("RECORD_DEBUG", "Nutrition 응답 (${foodName}): code=${res.code()}, body=${res.body()}")
 
                 if (!res.isSuccessful || res.body() == null) {
                     Toast.makeText(this@RecordActivity, "영양정보 없음", Toast.LENGTH_SHORT).show()
@@ -331,37 +338,39 @@ class RecordActivity : AppCompatActivity() {
     // ------------------------------------------
     private fun saveRecord() {
 
-        val food = selectedFood
-        val nutrition = singleNutritionResult
-
-        if (food == null && nutrition == null && nutritionList.none { it.serving_size == "selected" }) {
-            Toast.makeText(this, "음식을 선택하세요.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // 1) 검색 단일 음식
-        if (food != null && nutrition != null) {
+        // ----------------------------
+        // 1) 검색으로 선택된 경우
+        // ----------------------------
+        if (selectedFood != null) {
             val req = MealRecordRequest(
-                food_id = food.id,
+                food_id = selectedFood!!.id,
                 meal_type = selectedMealType,
                 amount = 1,
-                name = nutrition.name,
-                calories = nutrition.calories,
-                carbs = nutrition.carbs,
-                protein = nutrition.protein,
-                fat = nutrition.fat,
-                sugar = nutrition.sugar
+                name = selectedFood!!.name,
+                calories = selectedFood!!.calorie,
+                carbs = selectedFood!!.carb,
+                protein = selectedFood!!.protein,
+                fat = selectedFood!!.fat,
+                sugar = null
             )
             sendRecordToServer(req)
             return
         }
 
-        // 2) YOLO → 체크박스 선택된 음식 여러 개 저장
+        // ----------------------------
+        // 2) YOLO 감지 → 체크된 음식만 저장
+        // ----------------------------
         val selectedItems = nutritionList.filter { it.serving_size == "selected" }
-        if (selectedItems.isNotEmpty()) {
-            saveMultipleFoods(selectedItems)
+
+        if (selectedItems.isEmpty()) {
+            Toast.makeText(this, "음식을 선택해주세요.", Toast.LENGTH_SHORT).show()
+            return
         }
+
+        // 여러 항목 저장
+        saveMultipleFoods(selectedItems)
     }
+
 
     private fun sendRecordToServer(req: MealRecordRequest) {
         RetrofitClient.api.createRecord(req)
