@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <CheckBox
+        android:id="@+id/chkSelect"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:padding="4dp" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/txtName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Food"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- 🔥 g(gram) 표시 추가 -->
+        <TextView
+            android:id="@+id/txtGrams"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100g" />
+
+        <TextView
+            android:id="@+id/txtKcal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 kcal" />
+
+        <TextView
+            android:id="@+id/txtCarbs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="탄수화물: -" />
+
+        <TextView
+            android:id="@+id/txtProtein"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="단백질: -" />
+
+        <TextView
+            android:id="@+id/txtFat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="지방: -" />
+
+        <TextView
+            android:id="@+id/txtSugar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="당: -" />
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="수정하기"/>
+
+    </LinearLayout>
+
+</LinearLayout>
