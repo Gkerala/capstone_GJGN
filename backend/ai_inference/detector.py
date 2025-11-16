@@ -2,7 +2,16 @@
 from ultralytics import YOLO
 import os
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "best.pt")
+# backend/ai_inference/
+CURRENT_DIR = os.path.dirname(__file__)
+
+# backend/
+BASE_DIR = os.path.dirname(CURRENT_DIR)
+
+# backend/ai_inference/yolo_model/best.pt
+MODEL_PATH = os.path.join(CURRENT_DIR, "yolo_model", "best.pt")
+
+# 모델 로드
 model = YOLO(MODEL_PATH)
 
 

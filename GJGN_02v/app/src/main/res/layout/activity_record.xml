@@ -5,20 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- ⭐ 스크롤 영역 (메인 콘텐츠) -->
+    <!-- ⭐ 스크롤 영역 -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
         android:padding="16dp"
-        android:layout_above="@+id/bottomArea">
+        android:paddingBottom="140dp"> <!-- ⭐ bottomArea 안 가리도록 -->
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- ⭐ 식사 선택 (아침/점심/저녁) -->
+            <!-- 식사 선택 -->
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -50,7 +50,7 @@
                     android:text="저녁" />
             </LinearLayout>
 
-            <!-- ⭐ 사진찍기 & 이미지 업로드 -->
+            <!-- 사진찍기 + 업로드 -->
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -74,31 +74,47 @@
                     android:text="이미지 등록" />
             </LinearLayout>
 
-            <!-- ⭐ 음식 검색창 -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutSearch"
+            <!-- 검색 -->
+            <LinearLayout
+                android:id="@+id/searchRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="음식 검색"
-                app:boxBackgroundMode="outline">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inputSearch"
-                    android:layout_width="match_parent"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutSearch"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:inputType="text"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_weight="1"
+                    android:hint="음식 검색"
+                    app:boxBackgroundMode="outline">
 
-            <!-- ⭐ 자동완성 리스트 -->
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/inputSearch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/btnSearchFood"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="검색"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
+
+            <!-- 검색 결과 리스트 -->
             <ListView
                 android:id="@+id/listSearchResults"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
                 android:dividerHeight="8dp"
+                android:visibility="gone"
                 android:layout_marginTop="8dp" />
 
-            <!-- ⭐ 이미지 미리보기 (검색 아래) -->
+            <!-- 이미지 미리보기 -->
             <ImageView
                 android:id="@+id/imgPreview"
                 android:layout_width="match_parent"
@@ -108,7 +124,7 @@
                 android:layout_marginTop="20dp"
                 android:background="#DDDDDD" />
 
-            <!-- ⭐ AI 음식 분석 결과 (다중 객체) -->
+            <!-- 분석 결과 -->
             <LinearLayout
                 android:id="@+id/analysisContainer"
                 android:layout_width="match_parent"
@@ -123,7 +139,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- ⭐ 하단 고정 버튼 + 네비게이션 -->
+    <!-- ⭐ 하단 고정 영역 -->
     <LinearLayout
         android:id="@+id/bottomArea"
         android:orientation="vertical"
@@ -146,7 +162,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:menu="@menu/bottom_nav_menu" />
-
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

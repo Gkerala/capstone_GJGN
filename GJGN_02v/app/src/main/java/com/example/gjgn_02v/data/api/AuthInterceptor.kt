@@ -1,25 +1,24 @@
 package com.example.gjgn_02v.data.api
 
 import android.content.Context
+import com.example.gjgn_02v.utils.TokenManager
 import okhttp3.Interceptor
 import okhttp3.Response
 
-class AuthInterceptor : Interceptor {
+class AuthInterceptor(private val context: Context) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
 
-        // Context를 직접 참조할 수 없으니 TokenStore의 static context 사용
-        val token = TokenStore.cachedToken
+        val token = TokenManager.getAccessToken(context)
 
-        val newRequest = if (token != null) {
-            request.newBuilder()
+        val request = if (!token.isNullOrEmpty()) {
+            chain.request().newBuilder()
                 .addHeader("Authorization", "Bearer $token")
                 .build()
         } else {
-            request
+            chain.request()
         }
 
-        return chain.proceed(newRequest)
+        return chain.proceed(request)
     }
 }

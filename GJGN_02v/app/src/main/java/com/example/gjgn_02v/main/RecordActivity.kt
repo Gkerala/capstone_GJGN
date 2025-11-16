@@ -1,6 +1,7 @@
 package com.example.gjgn_02v.main
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -28,6 +29,10 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import okhttp3.RequestBody.Companion.toRequestBody
+import androidx.appcompat.app.AlertDialog
+import android.widget.EditText
+
 
 class RecordActivity : AppCompatActivity() {
 
@@ -46,13 +51,9 @@ class RecordActivity : AppCompatActivity() {
 
     private lateinit var btnSave: Button
 
-    // 검색해서 선택된 음식
     private var selectedFood: FoodItemResponse? = null
-
-    // Nutrition API 단일 결과 저장
     private var singleNutritionResult: NutritionResponse? = null
 
-    // YOLO 감지 음식 리스트
     private val nutritionList = mutableListOf<NutritionResponse>()
 
     private var selectedMealType = "breakfast"
@@ -77,7 +78,6 @@ class RecordActivity : AppCompatActivity() {
         }
 
         btnSelectImage.setOnClickListener { pickImageFromGallery() }
-
         btnSave.setOnClickListener { saveRecord() }
     }
 
@@ -96,6 +96,8 @@ class RecordActivity : AppCompatActivity() {
         analysisContainer = findViewById(R.id.analysisContainer)
 
         btnSave = findViewById(R.id.btnSave)
+
+        analysisContainer.visibility = View.VISIBLE
     }
 
     // ------------------------------------------
@@ -130,34 +132,60 @@ class RecordActivity : AppCompatActivity() {
     }
 
     // ------------------------------------------
-    // 2) 음식 검색
-    // ------------------------------------------
+// 2) 음식 검색 + 디버그 로그 추가
+// ------------------------------------------
     private fun setupSearchInput() {
         searchInput.addTextChangedListener(object : TextWatcher {
+
             override fun afterTextChanged(s: Editable?) {
                 val q = s.toString().trim()
-                if (q.length >= 2) searchFoods(q)
-                else listSearch.visibility = View.GONE
+                Log.d("SEARCH_DEBUG", "afterTextChanged() 입력: $q")
+
+                if (q.length >= 2) {
+                    Log.d("SEARCH_DEBUG", "2글자 이상 → searchFoods() 호출")
+                    searchFoods(q)
+                } else {
+                    Log.d("SEARCH_DEBUG", "입력 2글자 미만 → 검색 숨김")
+                    listSearch.visibility = View.GONE
+                }
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
     }
 
     private fun searchFoods(query: String) {
+
+        Log.d("SEARCH_DEBUG", "searchFoods() 시작, query = $query")
+
         RetrofitClient.api.searchFoods(query)
             .enqueue(object : Callback<List<FoodItemResponse>> {
                 override fun onResponse(
                     call: Call<List<FoodItemResponse>>,
                     res: Response<List<FoodItemResponse>>
                 ) {
-                    if (!res.isSuccessful || res.body().isNullOrEmpty()) {
+                    Log.d("SEARCH_DEBUG", "searchFoods() API 응답 수신")
+
+                    if (!res.isSuccessful) {
+                        Log.e("SEARCH_DEBUG", "❌ API 실패: ${res.code()} / ${res.errorBody()?.string()}")
                         listSearch.visibility = View.GONE
                         return
                     }
 
-                    foods = res.body()!!
+                    val body = res.body()
+                    Log.d("SEARCH_DEBUG", "검색 결과 개수: ${body?.size ?: 0}")
+
+                    if (body.isNullOrEmpty()) {
+                        Log.d("SEARCH_DEBUG", "검색 결과 없음 → 리스트 숨김")
+                        listSearch.visibility = View.GONE
+                        return
+                    }
+
+                    foods = body
                     val names = foods.map { it.name }
+
+                    Log.d("SEARCH_DEBUG", "리스트뷰 표시 음식들: $names")
 
                     listSearch.adapter = ArrayAdapter(
                         this@RecordActivity,
@@ -167,18 +195,25 @@ class RecordActivity : AppCompatActivity() {
                     listSearch.visibility = View.VISIBLE
 
                     listSearch.setOnItemClickListener { _, _, i, _ ->
+                        Log.d("SEARCH_DEBUG", "리스트 항목 클릭됨: index=$i, name=${foods[i].name}")
+
                         selectedFood = foods[i]
                         selectedUri = null
                         imgPreview.visibility = View.GONE
 
+                        Log.d("SEARCH_DEBUG", "단일 음식 Nutrition 조회 시작")
                         loadSingleNutrition(foods[i].name)
+
                         listSearch.visibility = View.GONE
                     }
                 }
 
-                override fun onFailure(call: Call<List<FoodItemResponse>>, t: Throwable) {}
+                override fun onFailure(call: Call<List<FoodItemResponse>>, t: Throwable) {
+                    Log.e("SEARCH_DEBUG", "❌ 검색 API onFailure: ${t.message}")
+                }
             })
     }
+
 
     // ------------------------------------------
     // 3) 이미지 선택
@@ -195,7 +230,6 @@ class RecordActivity : AppCompatActivity() {
         if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             selectedUri = data?.data ?: return
 
-            // 검색 음식 초기화
             selectedFood = null
             singleNutritionResult = null
 
@@ -204,62 +238,87 @@ class RecordActivity : AppCompatActivity() {
 
             analysisContainer.removeAllViews()
             nutritionList.clear()
+            analysisContainer.visibility = View.VISIBLE
 
             uploadImage(selectedUri!!)
         }
     }
 
     // ------------------------------------------
-    // 4) YOLO 음식 감지
+    // 4) YOLO detect
     // ------------------------------------------
     private fun uploadImage(uri: Uri) {
         Log.d("RECORD_DEBUG", "uploadImage() 호출됨, URI = $uri")
-        val file = File(getRealPathFromURI(uri))
-        val reqFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-        Log.d("RECORD_DEBUG", "파일 경로 = ${file.absolutePath}")
-        val multipart = MultipartBody.Part.createFormData("image", file.name, reqFile)
+
+        val inputStream = contentResolver.openInputStream(uri)
+        if (inputStream == null) {
+            Log.e("RECORD_DEBUG", "❌ inputStream null")
+            return
+        }
+
+        val bytes = inputStream.readBytes()
+        inputStream.close()
+
+        val reqFile = bytes.toRequestBody("image/*".toMediaTypeOrNull())
+        val multipart = MultipartBody.Part.createFormData(
+            "image",
+            "upload.jpg",
+            reqFile
+        )
 
         RetrofitClient.api.detectFood(multipart)
             .enqueue(object : Callback<AiFoodDetectResponse> {
+
                 override fun onResponse(
                     call: Call<AiFoodDetectResponse>,
                     res: Response<AiFoodDetectResponse>
                 ) {
-                    if (!res.isSuccessful || res.body() == null) {
-                        Toast.makeText(this@RecordActivity, "서버 오류", Toast.LENGTH_SHORT).show()
+                    if (!res.isSuccessful) {
+                        Log.e("RECORD_DEBUG", "YOLO 실패: ${res.errorBody()?.string()}")
                         return
                     }
 
-                    val result = res.body()!!
-                    Log.d("RECORD_DEBUG", "YOLO 감지 결과 = ${result.foods}")
-                    if (result.foods.isEmpty()) {
+                    val result = res.body()
+                    if (result == null || result.foods.isEmpty()) {
                         Toast.makeText(this@RecordActivity, "음식을 감지하지 못했습니다.", Toast.LENGTH_SHORT).show()
                         return
                     }
 
-                    val names = result.foods.map { it.name }
-                    fetchNutritionForFoods(names)
+                    fetchNutritionForFoods(result.foods.map { it.name })
                 }
 
-                override fun onFailure(call: Call<AiFoodDetectResponse>, t: Throwable) {}
+                override fun onFailure(call: Call<AiFoodDetectResponse>, t: Throwable) {
+                    Log.e("RECORD_DEBUG", "YOLO onFailure(): ${t.message}")
+                }
             })
     }
 
     // ------------------------------------------
-    // 5) Nutrition API 여러 개 조회
+    // 5) Nutrition 여러 개 조회
     // ------------------------------------------
     private fun fetchNutritionForFoods(names: List<String>) {
         lifecycleScope.launch {
             nutritionList.clear()
+            analysisContainer.removeAllViews()
+            analysisContainer.visibility = View.VISIBLE
 
-            for (name in names) {
+            // 음식명이 null 또는 빈 문자열일 수 있으므로 필터링
+            val validNames = names.filter { !it.isNullOrBlank() }
+
+            for (name in validNames) {
                 try {
                     val res = RetrofitClient.api.getNutrition(name)
+
                     if (res.isSuccessful && res.body()?.success == true) {
-                        nutritionList.add(res.body()!!)
-                        Log.d("RECORD_DEBUG", "Nutrition 조회 시작: ${names.size}개")
+                        val item = res.body()!!
+                        nutritionList.add(item)
+                    } else {
+                        Log.e("NUTRITION", "⚠️ Fail: $name → ${res.errorBody()?.string()}")
                     }
-                } catch (_: Exception) {}
+
+                } catch (e: Exception) {
+                    Log.e("NUTRITION", "❌ Exception: $name → ${e.message}")
+                }
             }
 
             updateNutritionUI()
@@ -270,19 +329,67 @@ class RecordActivity : AppCompatActivity() {
     // 6) 감지된 음식 UI
     // ------------------------------------------
     private fun updateNutritionUI() {
-        Log.d("RECORD_DEBUG", "updateNutritionUI() 호출됨, nutritionList size = ${nutritionList.size}")
         analysisContainer.removeAllViews()
+        analysisContainer.visibility = View.VISIBLE
 
         nutritionList.forEachIndexed { idx, item ->
             val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
 
             val chk = view.findViewById<CheckBox>(R.id.chkSelect)
-            view.findViewById<TextView>(R.id.txtName).text = item.name
-            view.findViewById<TextView>(R.id.txtKcal).text = "${item.calories ?: 0} kcal"
-            view.findViewById<TextView>(R.id.txtCarbs).text = "탄수화물: ${item.carbs ?: 0}"
-            view.findViewById<TextView>(R.id.txtProtein).text = "단백질: ${item.protein ?: 0}"
-            view.findViewById<TextView>(R.id.txtFat).text = "지방: ${item.fat ?: 0}"
-            view.findViewById<TextView>(R.id.txtSugar).text = "당: ${item.sugar ?: 0}"
+            val txtGrams = view.findViewById<TextView>(R.id.txtGrams)
+            val txtKcal = view.findViewById<TextView>(R.id.txtKcal)
+            val txtCarbs = view.findViewById<TextView>(R.id.txtCarbs)
+            val txtProtein = view.findViewById<TextView>(R.id.txtProtein)
+            val txtFat = view.findViewById<TextView>(R.id.txtFat)
+            val txtSugar = view.findViewById<TextView>(R.id.txtSugar)
+            val btnEdit = view.findViewById<Button>(R.id.btnEdit)
+
+            // ---------------------
+            // 초기 UI 표시
+            // ---------------------
+            view.findViewById<TextView>(R.id.txtName).text = item.name ?: "-"
+            txtGrams.text = "${item.serving_size ?: "100"} g"
+            txtKcal.text = "${item.calories ?: 0f} kcal"
+            txtCarbs.text = "탄수화물: ${item.carbs ?: 0f}"
+            txtProtein.text = "단백질: ${item.protein ?: 0f}"
+            txtFat.text = "지방: ${item.fat ?: 0f}"
+            txtSugar.text = "당: ${item.sugar ?: 0f}"
+
+            // ---------------------
+            // g 수정 → 자동 보정
+            // ---------------------
+            btnEdit.setOnClickListener {
+                val dialog = AlertDialog.Builder(this)
+                dialog.setTitle("섭취량(g) 수정")
+
+                val input = EditText(this)
+                input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                input.hint = "예: 250"
+                dialog.setView(input)
+
+                dialog.setPositiveButton("변경") { _: DialogInterface, _: Int ->
+                    val newGram = input.text.toString().toIntOrNull()
+
+                    if (newGram != null && newGram > 0) {
+
+                        // 자동 보정
+                        val updated = scaleNutrition(item, newGram)
+
+                        nutritionList[idx] = updated
+
+                        txtGrams.text = "${updated.serving_size} g"
+                        txtKcal.text = "${updated.calories}"
+                        txtCarbs.text = "탄수화물: ${updated.carbs}"
+                        txtProtein.text = "단백질: ${updated.protein}"
+                        txtFat.text = "지방: ${updated.fat}"
+                        txtSugar.text = "당: ${updated.sugar}"
+                    }
+                }
+
+                dialog.setNegativeButton("취소", null)
+                dialog.show()
+            }
+
 
             chk.setOnCheckedChangeListener { _, isChecked ->
                 nutritionList[idx] = nutritionList[idx].copy(
@@ -294,17 +401,20 @@ class RecordActivity : AppCompatActivity() {
         }
     }
 
+
+
+
+
     // ------------------------------------------
-    // 🔥 단일 음식 영양정보
+    // 7) 단일 음식 Nutrition
     // ------------------------------------------
     private fun loadSingleNutrition(foodName: String) {
         lifecycleScope.launch {
             try {
                 val res = RetrofitClient.api.getNutrition(foodName)
-                Log.d("RECORD_DEBUG", "Nutrition 응답 (${foodName}): code=${res.code()}, body=${res.body()}")
 
                 if (!res.isSuccessful || res.body() == null) {
-                    Toast.makeText(this@RecordActivity, "영양정보 없음", Toast.LENGTH_SHORT).show()
+                    Log.e("NUTRITION", "❌ 단일 음식 조회 실패: ${res.errorBody()?.string()}")
                     return@launch
                 }
 
@@ -312,6 +422,7 @@ class RecordActivity : AppCompatActivity() {
                 singleNutritionResult = n
 
                 analysisContainer.removeAllViews()
+                analysisContainer.visibility = View.VISIBLE
 
                 val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
 
@@ -322,25 +433,24 @@ class RecordActivity : AppCompatActivity() {
                 view.findViewById<TextView>(R.id.txtFat).text = "지방: ${n.fat ?: 0}"
                 view.findViewById<TextView>(R.id.txtSugar).text = "당: ${n.sugar ?: 0}"
 
-                // 단일이므로 체크박스 비활성
-                view.findViewById<CheckBox>(R.id.chkSelect).visibility = View.GONE
+                // 🔥 단일 음식 g 표시
+                view.findViewById<TextView>(R.id.txtGrams).text =
+                    "${n.serving_size ?: "100"} g"
 
                 analysisContainer.addView(view)
 
             } catch (e: Exception) {
-                Toast.makeText(this@RecordActivity, "영양정보 불러오기 실패", Toast.LENGTH_SHORT).show()
+                Log.e("NUTRITION", "❌ loadSingleNutrition() Exception: ${e.message}")
             }
         }
     }
 
+
     // ------------------------------------------
-    // 🔥 저장 버튼 → 검색/YOLO 모두 처리
+    // 8) 저장 버튼
     // ------------------------------------------
     private fun saveRecord() {
 
-        // ----------------------------
-        // 1) 검색으로 선택된 경우
-        // ----------------------------
         if (selectedFood != null) {
             val req = MealRecordRequest(
                 food_id = selectedFood!!.id,
@@ -357,9 +467,6 @@ class RecordActivity : AppCompatActivity() {
             return
         }
 
-        // ----------------------------
-        // 2) YOLO 감지 → 체크된 음식만 저장
-        // ----------------------------
         val selectedItems = nutritionList.filter { it.serving_size == "selected" }
 
         if (selectedItems.isEmpty()) {
@@ -367,10 +474,8 @@ class RecordActivity : AppCompatActivity() {
             return
         }
 
-        // 여러 항목 저장
         saveMultipleFoods(selectedItems)
     }
-
 
     private fun sendRecordToServer(req: MealRecordRequest) {
         RetrofitClient.api.createRecord(req)
@@ -434,4 +539,27 @@ class RecordActivity : AppCompatActivity() {
             true
         }
     }
+
+    private fun scaleNutrition(
+        original: NutritionResponse,
+        newGram: Int
+    ): NutritionResponse {
+
+        // 원래 serving_size가 null 또는 숫자 아님 → 100g 기준
+        val baseGram = (original.serving_size?.toIntOrNull() ?: 100)
+
+        val ratio = newGram.toFloat() / baseGram.toFloat()
+
+        return NutritionResponse(
+            success = original.success,
+            name = original.name,
+            serving_size = newGram.toString(),
+            calories = (original.calories ?: 0f) * ratio,
+            carbs = (original.carbs ?: 0f) * ratio,
+            protein = (original.protein ?: 0f) * ratio,
+            fat = (original.fat ?: 0f) * ratio,
+            sugar = (original.sugar ?: 0f) * ratio
+        )
+    }
+
 }

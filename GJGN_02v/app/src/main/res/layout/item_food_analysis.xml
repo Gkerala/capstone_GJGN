@@ -7,7 +7,7 @@
 
     <CheckBox
         android:id="@+id/chkSelect"
-        android:layout_width="40dp"
+        android:layout_width="80dp"
         android:layout_height="wrap_content"
         android:padding="4dp" />
 
@@ -24,6 +24,13 @@
             android:text="Food"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <!-- 🔥 g(gram) 표시 추가 -->
+        <TextView
+            android:id="@+id/txtGrams"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100g" />
 
         <TextView
             android:id="@+id/txtKcal"
@@ -54,6 +61,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="당: -" />
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="수정하기"/>
+
     </LinearLayout>
 
 </LinearLayout>

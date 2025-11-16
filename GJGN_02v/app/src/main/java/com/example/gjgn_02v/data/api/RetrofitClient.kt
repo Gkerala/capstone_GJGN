@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.example.gjgn_02v.App
 
 object RetrofitClient {
 
@@ -13,8 +14,9 @@ object RetrofitClient {
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(logging)
-        .addInterceptor(AuthInterceptor()) // 🔥 JWT 자동 첨부
+        .addInterceptor(AuthInterceptor(App.context)) // 🔥 context 전달
         .build()
+
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
