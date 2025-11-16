@@ -69,7 +69,11 @@ interface ApiService {
     // 🍱 Foods
     // -------------------------------------------------------------
     @GET("api/foods/search/")
-    fun searchFoods(@Query("q") query: String): Call<List<FoodItemResponse>>
+    fun searchFoods(
+        @Query("q") query: String
+    ): Call<FoodSearchResponse>
+
+
 
     @POST("api/foods/save/")
     fun saveMeal(

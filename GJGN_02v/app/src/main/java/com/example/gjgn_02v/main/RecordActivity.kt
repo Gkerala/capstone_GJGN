@@ -32,6 +32,7 @@ import java.io.File
 import okhttp3.RequestBody.Companion.toRequestBody
 import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
+import com.example.gjgn_02v.data.model.foods.FoodSearchResponse
 
 
 class RecordActivity : AppCompatActivity() {
@@ -90,7 +91,7 @@ class RecordActivity : AppCompatActivity() {
         btnSelectImage = findViewById(R.id.btnSelectImage)
 
         searchInput = findViewById(R.id.inputSearch)
-        listSearch = findViewById(R.id.listSearchResults)
+        val searchResultContainer = findViewById<LinearLayout>(R.id.searchResultContainer)
 
         imgPreview = findViewById(R.id.imgPreview)
         analysisContainer = findViewById(R.id.analysisContainer)
@@ -139,16 +140,16 @@ class RecordActivity : AppCompatActivity() {
 
             override fun afterTextChanged(s: Editable?) {
                 val q = s.toString().trim()
-                Log.d("SEARCH_DEBUG", "afterTextChanged() 입력: $q")
+                val searchContainer = findViewById<LinearLayout>(R.id.searchResultContainer)
 
                 if (q.length >= 2) {
-                    Log.d("SEARCH_DEBUG", "2글자 이상 → searchFoods() 호출")
                     searchFoods(q)
                 } else {
-                    Log.d("SEARCH_DEBUG", "입력 2글자 미만 → 검색 숨김")
-                    listSearch.visibility = View.GONE
+                    searchContainer.visibility = View.GONE
+                    searchContainer.removeAllViews()
                 }
             }
+
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -160,59 +161,67 @@ class RecordActivity : AppCompatActivity() {
         Log.d("SEARCH_DEBUG", "searchFoods() 시작, query = $query")
 
         RetrofitClient.api.searchFoods(query)
-            .enqueue(object : Callback<List<FoodItemResponse>> {
+            .enqueue(object : Callback<FoodSearchResponse> {
+
                 override fun onResponse(
-                    call: Call<List<FoodItemResponse>>,
-                    res: Response<List<FoodItemResponse>>
+                    call: Call<FoodSearchResponse>,
+                    res: Response<FoodSearchResponse>
                 ) {
-                    Log.d("SEARCH_DEBUG", "searchFoods() API 응답 수신")
+                    Log.d("SEARCH_DEBUG", "API 응답 도착")
+
+                    val searchContainer = findViewById<LinearLayout>(R.id.searchResultContainer)
+                    searchContainer.removeAllViews()
 
                     if (!res.isSuccessful) {
-                        Log.e("SEARCH_DEBUG", "❌ API 실패: ${res.code()} / ${res.errorBody()?.string()}")
-                        listSearch.visibility = View.GONE
+                        Log.e("SEARCH_DEBUG", "❌ 실패: ${res.code()} / ${res.errorBody()?.string()}")
+                        searchContainer.visibility = View.GONE
                         return
                     }
 
                     val body = res.body()
-                    Log.d("SEARCH_DEBUG", "검색 결과 개수: ${body?.size ?: 0}")
 
-                    if (body.isNullOrEmpty()) {
-                        Log.d("SEARCH_DEBUG", "검색 결과 없음 → 리스트 숨김")
-                        listSearch.visibility = View.GONE
+                    if (body == null || body.results.isEmpty()) {
+                        Log.d("SEARCH_DEBUG", "검색 결과 없음")
+                        searchContainer.visibility = View.GONE
                         return
                     }
 
-                    foods = body
-                    val names = foods.map { it.name }
+                    foods = body.results
+                    searchContainer.visibility = View.VISIBLE
 
-                    Log.d("SEARCH_DEBUG", "리스트뷰 표시 음식들: $names")
+                    Log.d("SEARCH_DEBUG", "검색 결과 개수: ${foods.size}")
 
-                    listSearch.adapter = ArrayAdapter(
-                        this@RecordActivity,
-                        android.R.layout.simple_list_item_1,
-                        names
-                    )
-                    listSearch.visibility = View.VISIBLE
+                    for (item in foods) {
+                        val tv = TextView(this@RecordActivity).apply {
+                            text = item.name
+                            textSize = 16f
+                            setPadding(30, 25, 30, 25)
+                            setBackgroundResource(android.R.color.white)
 
-                    listSearch.setOnItemClickListener { _, _, i, _ ->
-                        Log.d("SEARCH_DEBUG", "리스트 항목 클릭됨: index=$i, name=${foods[i].name}")
+                            setOnClickListener {
+                                Log.d("SEARCH_DEBUG", "항목 클릭됨: ${item.name}")
 
-                        selectedFood = foods[i]
-                        selectedUri = null
-                        imgPreview.visibility = View.GONE
+                                selectedFood = item
+                                selectedUri = null
+                                imgPreview.visibility = View.GONE
 
-                        Log.d("SEARCH_DEBUG", "단일 음식 Nutrition 조회 시작")
-                        loadSingleNutrition(foods[i].name)
+                                loadSingleNutrition(item.name)
 
-                        listSearch.visibility = View.GONE
+                                searchContainer.visibility = View.GONE
+                            }
+                        }
+
+                        searchContainer.addView(tv)
                     }
                 }
 
-                override fun onFailure(call: Call<List<FoodItemResponse>>, t: Throwable) {
-                    Log.e("SEARCH_DEBUG", "❌ 검색 API onFailure: ${t.message}")
+                override fun onFailure(call: Call<FoodSearchResponse>, t: Throwable) {
+                    Log.e("SEARCH_DEBUG", "❌ 검색 API 실패: ${t.message}")
                 }
             })
     }
+
+
 
 
     // ------------------------------------------
@@ -378,7 +387,7 @@ class RecordActivity : AppCompatActivity() {
                         nutritionList[idx] = updated
 
                         txtGrams.text = "${updated.serving_size} g"
-                        txtKcal.text = "${updated.calories}"
+                        txtKcal.text = "${updated.calories} kcal"
                         txtCarbs.text = "탄수화물: ${updated.carbs}"
                         txtProtein.text = "단백질: ${updated.protein}"
                         txtFat.text = "지방: ${updated.fat}"
@@ -562,4 +571,5 @@ class RecordActivity : AppCompatActivity() {
         )
     }
 
+    
 }

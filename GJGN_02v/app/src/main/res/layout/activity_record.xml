@@ -10,8 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:padding="16dp"
-        android:paddingBottom="140dp"> <!-- ⭐ bottomArea 안 가리도록 -->
+        android:paddingBottom="180dp">
 
         <LinearLayout
             android:orientation="vertical"
@@ -74,7 +73,7 @@
                     android:text="이미지 등록" />
             </LinearLayout>
 
-            <!-- 검색 -->
+            <!-- 검색 UI -->
             <LinearLayout
                 android:id="@+id/searchRow"
                 android:layout_width="match_parent"
@@ -105,12 +104,12 @@
                     android:layout_marginStart="8dp"/>
             </LinearLayout>
 
-            <!-- 검색 결과 리스트 -->
-            <ListView
-                android:id="@+id/listSearchResults"
+            <!-- ⭐ 검색 결과를 LinearLayout으로 바꿈 (스크롤 완전 정상화) -->
+            <LinearLayout
+                android:id="@+id/searchResultContainer"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:dividerHeight="8dp"
                 android:visibility="gone"
                 android:layout_marginTop="8dp" />
 
@@ -133,10 +132,9 @@
                 android:visibility="gone"
                 android:layout_marginTop="16dp"
                 android:padding="8dp"
-                android:background="#F7F7F7">
-            </LinearLayout>
-
+                android:background="#F7F7F7" />
         </LinearLayout>
+
     </ScrollView>
 
     <!-- ⭐ 하단 고정 영역 -->
