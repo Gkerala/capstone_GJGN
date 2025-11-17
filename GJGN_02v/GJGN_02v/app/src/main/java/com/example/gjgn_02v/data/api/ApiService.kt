@@ -147,13 +147,6 @@ interface ApiService {
     @POST("goals/weights/")
     fun createWeight(
         @Body weightRequest: WeightRequest
-    ): Call<BasicResponse>
+    ): Call<WeightResponse>
 
-    data class WeightRequest(
-        val weight: Double
-    )
-
-    data class BasicResponse(
-        val message: String
-    )
 }

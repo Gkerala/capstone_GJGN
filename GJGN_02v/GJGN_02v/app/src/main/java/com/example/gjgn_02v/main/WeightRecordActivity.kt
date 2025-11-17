@@ -27,7 +27,6 @@ class WeightRecordActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_weight_record)
 
-        /** ▼ NumberPicker 세팅 */
         val np100 = findViewById<NumberPicker>(R.id.np100)
         val np10 = findViewById<NumberPicker>(R.id.np10)
         val np1 = findViewById<NumberPicker>(R.id.np1)
@@ -38,24 +37,19 @@ class WeightRecordActivity : AppCompatActivity() {
         np1.minValue = 0; np1.maxValue = 9
         npDecimal.minValue = 0; npDecimal.maxValue = 9
 
-        /** ▼ 등록 버튼 */
         findViewById<android.widget.Button>(R.id.btnSave).setOnClickListener {
             val weight = "${np100.value}${np10.value}${np1.value}.${npDecimal.value}".toFloat()
-
-            saveWeight(weight)
+            saveWeightToLocal(weight)
         }
     }
 
-    /** ▼ 체중 저장 후 이전 페이지로 돌아가기 */
-    private fun saveWeight(weight: Float) {
+    /** ▼ DB에 체중 저장 */
+    private fun saveWeightToLocal(weight: Float) {
         val date = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
 
         lifecycleScope.launch {
             db.weightDao().insert(
-                WeightEntity(
-                    weight = weight,
-                    date = date
-                )
+                WeightEntity(weight = weight, date = date)
             )
 
             Toast.makeText(
@@ -64,8 +58,7 @@ class WeightRecordActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
 
-            finish()  // 저장 후 이전 페이지 이동
+            finish()
         }
     }
-
 }
