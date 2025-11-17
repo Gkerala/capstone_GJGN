@@ -1,7 +1,8 @@
 package com.example.gjgn_02v.data.model.goals
 
 data class WeeklyWeightResponse(
-    val weekly_weight: List<WeightItem>
+    val period: String?,
+    val records: List<WeightItem>?
 )
 
 data class WeightItem(

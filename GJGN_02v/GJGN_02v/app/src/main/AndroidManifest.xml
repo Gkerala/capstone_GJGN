@@ -69,10 +69,19 @@
 
         <!-- 기록 페이지 -->
         <activity
-            android:name=".main.RecordActivity"
+            android:name=".main.RecordSelectActivity"
             android:exported="true"
             android:label="기록"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <activity
+            android:name=".main.MealRecordActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".main.WeightRecordActivity"
+            android:exported="false" />
+
 
         <!-- 분석 페이지 -->
         <activity

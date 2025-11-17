@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.menu_main -> return@setOnItemSelectedListener true
-                R.id.menu_record -> startActivity(Intent(this, RecordActivity::class.java))
+                R.id.menu_record -> startActivity(Intent(this, RecordSelectActivity::class.java))
                 R.id.menu_analysis -> startActivity(Intent(this, AnalysisActivity::class.java))
                 R.id.menu_mypage -> startActivity(Intent(this, MyPageActivity::class.java))
             }

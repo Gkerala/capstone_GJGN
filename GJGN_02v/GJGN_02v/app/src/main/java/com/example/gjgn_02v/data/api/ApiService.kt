@@ -1,5 +1,6 @@
 package com.example.gjgn_02v.data.api
 
+import com.example.gjgn_02v.data.model.analysis.WeeklyAnalysisResponse
 import com.example.gjgn_02v.data.model.auth.*
 import com.example.gjgn_02v.data.model.common.BaseResponse
 import com.example.gjgn_02v.data.model.foods.*
@@ -7,7 +8,6 @@ import com.example.gjgn_02v.data.model.goals.*
 import com.example.gjgn_02v.data.model.home.HomeStatisticsResponse
 import com.example.gjgn_02v.data.model.records.MealRecordRequest
 import com.example.gjgn_02v.data.model.records.MealRecordResponse
-
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Response
@@ -37,9 +37,7 @@ interface ApiService {
     @POST("api/users/logout/")
     fun logout(): Call<BaseResponse>
 
-    // -------------------------------------------------------------
-    // Logout / Delete User with Token
-    // -------------------------------------------------------------
+    // Logout / Delete User (Token)
     @POST("api/users/logout/")
     fun logoutUser(
         @Header("Authorization") auth: String,
@@ -73,8 +71,6 @@ interface ApiService {
         @Query("q") query: String
     ): Call<FoodSearchResponse>
 
-
-
     @POST("api/foods/save/")
     fun saveMeal(
         @Body request: SaveMealRequest
@@ -82,20 +78,19 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 🍽 Records
+    // 🍽️ Records
     // -------------------------------------------------------------
     @POST("api/records/")
     fun createRecord(
         @Body request: MealRecordRequest
     ): Call<MealRecordResponse>
 
-    // 🔥 여러개 저장용 / Raw Map 저장
     @POST("api/records/")
     suspend fun createRecordRaw(
         @Body req: Map<String, String>
     ): Response<Any>
 
-    @GET("api/records/today/")
+    @GET("api/records/today/stat/")
     fun getTodayRecords(): Call<List<MealRecordResponse>>
 
     @GET("api/records/date/")
@@ -105,7 +100,7 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 🤖 AI YOLO Food Detect
+    // 🤖 YOLO AI 분석
     // -------------------------------------------------------------
     @Multipart
     @POST("api/ai/food-detect/")
@@ -115,7 +110,7 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 🥗 Nutrition API (최종 사용)
+    // 🥗 Nutrition (최종)
     // -------------------------------------------------------------
     @GET("api/foods/nutrition/")
     suspend fun getNutrition(
@@ -127,6 +122,9 @@ interface ApiService {
     // 📊 분석 API
     // -------------------------------------------------------------
     @GET("api/records/analysis/weekly/")
+    fun getWeeklyAnalysis(): Call<WeeklyAnalysisResponse>
+
+    @GET("api/records/week/stat/")
     fun getWeeklyAchievement(): Call<GoalStatResponse>
 
     @GET("api/records/analysis/monthly/")
@@ -134,11 +132,28 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 홈 통계
+    // 🏠 홈 통계
     // -------------------------------------------------------------
     @GET("api/home/statistics/")
     fun getHomeStatistics(): Call<HomeStatisticsResponse>
 
-    @GET("goals/weights/weekly/")
+
+    // -------------------------------------------------------------
+    // ⚖️ 체중 API
+    // -------------------------------------------------------------
+    @GET("api/goals/weights/weekly/")
     fun getWeeklyWeight(): Call<WeeklyWeightResponse>
+
+    @POST("goals/weights/")
+    fun createWeight(
+        @Body weightRequest: WeightRequest
+    ): Call<BasicResponse>
+
+    data class WeightRequest(
+        val weight: Double
+    )
+
+    data class BasicResponse(
+        val message: String
+    )
 }

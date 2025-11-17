@@ -1,3 +1,5 @@
+// --- 프로젝트 루트 build.gradle.kts ---
+
 pluginManagement {
     repositories {
         google {
@@ -10,10 +12,10 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
 
-        // ✅ 카카오 SDK 저장소
+        // 카카오 SDK
         maven { url = uri("https://devrepo.kakao.com/nexus/content/groups/public/") }
 
-        // ✅ MPAndroidChart(JitPack) 저장소
+        // MPAndroidChart (JitPack)
         maven { url = uri("https://jitpack.io") }
     }
 }
@@ -24,10 +26,10 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
 
-        // ✅ 카카오 SDK 저장소
+        // 카카오 SDK
         maven { url = uri("https://devrepo.kakao.com/nexus/content/groups/public/") }
 
-        // ✅ MPAndroidChart(JitPack)
+        // MPAndroidChart (JitPack)
         maven { url = uri("https://jitpack.io") }
     }
 }
