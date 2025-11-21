@@ -67,7 +67,7 @@ class LoginActivity : ComponentActivity() {
                     }
 
                     val data = response.body()!!
-                    Log.d("LoginActivity", "서버 로그인 성공 / profileComplete=${data.is_profile_complete}")
+                    Log.d("LoginActivity", "서버 로그인 성공 / profileComplete=${data.is_new_user}")
 
                     TokenManager.saveTokens(
                         this@LoginActivity,
@@ -76,14 +76,15 @@ class LoginActivity : ComponentActivity() {
                     )
 
                     // ⭐ 핵심 로직: 프로필 완료 여부에 따라 이동
-                    if (data.is_profile_complete == false) {
-                        Log.d("LoginActivity", "프로필 미완료 → ProfileSetupActivity 이동")
+                    if (data.is_new_user) {
+                        // 신규유저 → 프로필 설정
                         startActivity(Intent(this@LoginActivity, ProfileSetupActivity::class.java))
+                        Log.d("LoginActivity", "신규 유저 → ProfileSetupActivity 이동")
                     } else {
-                        Log.d("LoginActivity", "프로필 완료 → MainActivity 이동")
+                        // 기존유저 → 메인
+                        Log.d("LoginActivity", "기존 유저 → MainActivity 이동")
                         startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     }
-
                     finish()
                 }
 

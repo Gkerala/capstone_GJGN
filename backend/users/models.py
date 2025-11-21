@@ -1,3 +1,4 @@
+# backend/users/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
@@ -47,23 +48,18 @@ User = get_user_model()   # <-- CustomUser 자동 연결됨
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    gender = models.CharField(max_length=10)
-    height = models.FloatField()
-    weight = models.FloatField()
-    age = models.IntegerField()
-    activity_level = models.CharField(max_length=20)   # sedentary, light, ...
+    gender = models.CharField(max_length=10, null=True, blank=True)
+    height = models.FloatField(null=True, blank=True)
+    weight = models.FloatField(null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True)
+    activity_level = models.CharField(max_length=20, null=True, blank=True)
 
-    goal_mode = models.CharField(max_length=20, default="maintain")  
-    # maintain / lose / gain
-
-    # 자동 목표 계산 결과
+    goal_mode = models.CharField(max_length=20, default="maintain")
     goal_calories = models.IntegerField(null=True, blank=True)
     goal_carbs = models.IntegerField(null=True, blank=True)
     goal_protein = models.IntegerField(null=True, blank=True)
     goal_fat = models.IntegerField(null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.user.username} Profile"
 
 
 # -----------------------------

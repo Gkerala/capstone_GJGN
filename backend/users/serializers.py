@@ -1,3 +1,4 @@
+# backend/users/serializers.py
 from rest_framework import serializers
 from .models import CustomUser, UserGoal, UserProfile
 from datetime import date

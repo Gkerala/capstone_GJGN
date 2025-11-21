@@ -1,6 +1,6 @@
 # backend/users/urls.py
 from django.urls import path
-from users.views import UserDetailView, UserFullProfileUpdateView
+from users.views import UserDetailView, UserFullProfileUpdateView, UserDeleteView
 from users.views_goal import (
     UserGoalUpdateAPIView,
     UserGoalRetrieveAPIView,
@@ -21,4 +21,6 @@ urlpatterns = [
     path("me/goal/update/", UserGoalUpdateAPIView.as_view(), name="goal-update"),
     
     path("me/profile/", UserFullProfileUpdateView.as_view()),
+    #회원탈퇴
+    path("delete/", UserDeleteView.as_view()),
 ]

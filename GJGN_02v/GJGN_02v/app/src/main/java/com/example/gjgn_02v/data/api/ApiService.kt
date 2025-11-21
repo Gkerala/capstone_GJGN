@@ -32,29 +32,26 @@ interface ApiService {
         @Body request: UserProfileRequest
     ): Call<UserProfileResponse>
 
-    @DELETE("api/users/")
-    fun deleteUser(): Call<DeleteUserResponse>
-
-    @POST("api/users/logout/")
-    fun logout(): Call<BaseResponse>
-
+    // ⭐ 프로필(온보딩) 전체 저장
     @PUT("api/users/me/profile/")
     fun updateFullProfile(
         @Body request: FullProfileRequest
     ): Call<UserProfileResponse>
 
 
-    // Logout / Delete User (Token)
+    // -------------------------------------------------------------
+    // 🔐 Logout & Delete User
+    // -------------------------------------------------------------
     @POST("api/users/logout/")
     fun logoutUser(
         @Header("Authorization") auth: String,
-        @Body refresh: Map<String, String>
+        @Body refreshToken: Map<String, String>
     ): Call<Void>
 
     @HTTP(method = "DELETE", path = "api/users/delete/", hasBody = true)
     fun deleteUser(
         @Header("Authorization") auth: String,
-        @Body refresh: Map<String, String>
+        @Body refreshToken: Map<String, String>
     ): Call<Void>
 
 
@@ -74,59 +71,38 @@ interface ApiService {
     // 🍱 Foods
     // -------------------------------------------------------------
     @GET("api/foods/search/")
-    fun searchFoods(
-        @Query("q") query: String
-    ): Call<FoodSearchResponse>
+    fun searchFoods(@Query("q") query: String): Call<FoodSearchResponse>
 
     @POST("api/foods/save/")
-    fun saveMeal(
-        @Body request: SaveMealRequest
-    ): Call<SaveMealResponse>
+    fun saveMeal(@Body request: SaveMealRequest): Call<SaveMealResponse>
 
 
     // -------------------------------------------------------------
     // 🍽️ Records
     // -------------------------------------------------------------
     @POST("api/records/")
-    fun createRecord(
-        @Body request: MealRecordRequest
-    ): Call<MealRecordResponse>
+    fun createRecord(@Body request: MealRecordRequest): Call<MealRecordResponse>
 
     @POST("api/records/")
-    suspend fun createRecordRaw(
-        @Body req: Map<String, String>
-    ): Response<Any>
+    suspend fun createRecordRaw(@Body req: Map<String, String>): Response<Any>
 
     @GET("api/records/today/stat/")
     fun getTodayRecords(): Call<List<MealRecordResponse>>
 
     @GET("api/records/date/")
-    fun getRecordsByDate(
-        @Query("date") date: String
-    ): Call<List<MealRecordResponse>>
+    fun getRecordsByDate(@Query("date") date: String): Call<List<MealRecordResponse>>
 
 
     // -------------------------------------------------------------
-    // 🤖 YOLO AI 분석
+    // 🤖 YOLO AI
     // -------------------------------------------------------------
     @Multipart
     @POST("api/ai/food-detect/")
-    fun detectFood(
-        @Part image: MultipartBody.Part
-    ): Call<AiFoodDetectResponse>
+    fun detectFood(@Part image: MultipartBody.Part): Call<AiFoodDetectResponse>
 
 
     // -------------------------------------------------------------
-    // 🥗 Nutrition (최종)
-    // -------------------------------------------------------------
-    @GET("api/foods/nutrition/")
-    suspend fun getNutrition(
-        @Query("name") foodName: String
-    ): Response<NutritionResponse>
-
-
-    // -------------------------------------------------------------
-    // 📊 분석 API
+    // 📊 분석
     // -------------------------------------------------------------
     @GET("api/records/analysis/weekly/")
     fun getWeeklyAnalysis(): Call<WeeklyAnalysisResponse>
@@ -146,14 +122,11 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // ⚖️ 체중 API
+    // ⚖️ 체중
     // -------------------------------------------------------------
     @GET("api/goals/weights/weekly/")
     fun getWeeklyWeight(): Call<WeeklyWeightResponse>
 
     @POST("api/goals/weights/")
-    fun createWeight(
-        @Body weightRequest: WeightRequest
-    ): Call<WeightResponse>
-
+    fun createWeight(@Body weightRequest: WeightRequest): Call<WeightResponse>
 }
