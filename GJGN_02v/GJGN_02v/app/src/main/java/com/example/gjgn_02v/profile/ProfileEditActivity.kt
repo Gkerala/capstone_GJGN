@@ -5,9 +5,13 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
+import com.example.gjgn_02v.data.model.mypage.EditActivityLevelActivity
+import com.example.gjgn_02v.data.model.mypage.EditBirthActivity
+import com.example.gjgn_02v.data.model.mypage.EditGenderActivity
+import com.example.gjgn_02v.data.model.mypage.EditHeightActivity
+import com.example.gjgn_02v.data.model.mypage.EditNameActivity
+import com.example.gjgn_02v.data.model.mypage.EditWeightActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.example.gjgn_02v.data.model.mypage.*
-import com.google.android.material.textfield.TextInputEditText
 
 class ProfileEditActivity : AppCompatActivity() {
 
@@ -71,9 +75,7 @@ class ProfileEditActivity : AppCompatActivity() {
         }
 
         // 뒤로가기 → 마이페이지로 이동
-        btnBack.setOnClickListener {
-            finish()
-        }
+        btnBack.setOnClickListener { finish() }
     }
 
     private fun setupBottomNav() {
@@ -92,61 +94,9 @@ class ProfileEditActivity : AppCompatActivity() {
                     startActivity(Intent(this, AnalysisActivity::class.java))
 
                 R.id.menu_mypage ->
-                    finish()   // 이미 내 정보 페이지 있으므로 닫기
+                    finish()   // 이미 내 정보 페이지이므로 닫기
             }
             true
         }
     }
-    class EditNameActivity : AppCompatActivity() {
-
-        private lateinit var etName: TextInputEditText
-        private lateinit var btnSave: Button
-        private lateinit var btnBack: Button
-
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            setContentView(R.layout.activity_edit_name)
-
-            etName = findViewById(R.id.etName)
-            btnSave = findViewById(R.id.btnSave)
-            btnBack = findViewById(R.id.btnBack)
-
-            btnSave.setOnClickListener {
-                val newName = etName.text.toString().trim()
-                if (newName.isEmpty()) return@setOnClickListener
-                updateProfile("name", newName)
-            }
-
-            btnBack.setOnClickListener { finish() }
-
-            setupBottomNav()
-        }
-
-        private fun updateProfile(key: String, value: String) {
-            RetrofitClient.api.updateUserInfo(mapOf(key to value))
-                .enqueue(object : Callback<UserResponse> {
-                    override fun onResponse(call: Call<UserResponse>, res: Response<UserResponse>) {
-                        finish()
-                    }
-                    override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-                        finish()
-                    }
-                })
-        }
-
-        private fun setupBottomNav() {
-            val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
-            bottomNav.selectedItemId = R.id.menu_mypage
-            bottomNav.setOnItemSelectedListener {
-                when (it.itemId) {
-                    R.id.menu_main -> startActivity(Intent(this, MainActivity::class.java))
-                    R.id.menu_record -> startActivity(Intent(this, RecordSelectActivity::class.java))
-                    R.id.menu_analysis -> startActivity(Intent(this, AnalysisActivity::class.java))
-                    R.id.menu_mypage -> finish()
-                }
-                true
-            }
-        }
-    }
-
 }
