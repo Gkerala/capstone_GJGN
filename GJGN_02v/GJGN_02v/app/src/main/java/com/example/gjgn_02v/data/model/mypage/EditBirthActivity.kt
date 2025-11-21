@@ -34,8 +34,7 @@ class EditBirthActivity : AppCompatActivity() {
             birth = birth,
             gender = null,
             height = null,
-            weight = null,
-            activity_level = null
+            weight = null
         )
 
         RetrofitClient.api.updateMyProfile(request)
