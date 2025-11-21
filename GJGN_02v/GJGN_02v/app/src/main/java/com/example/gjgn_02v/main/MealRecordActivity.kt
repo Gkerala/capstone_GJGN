@@ -33,6 +33,7 @@ import android.widget.EditText
 import com.example.gjgn_02v.data.model.foods.FoodSearchResponse
 
 
+
 class MealRecordActivity : AppCompatActivity() {
 
     private lateinit var btnBreakfast: Button

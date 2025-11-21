@@ -8,5 +8,6 @@ data class NutritionResponse(
     val protein: Float?,
     val fat: Float?,
     val sugar: Float?,
-    val serving_size: String?
+    val serving_size: String?,
+    var selected: Boolean = false
 )
