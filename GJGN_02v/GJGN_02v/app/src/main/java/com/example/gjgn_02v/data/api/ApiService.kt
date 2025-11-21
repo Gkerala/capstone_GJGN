@@ -40,19 +40,11 @@ interface ApiService {
 
 
     // -------------------------------------------------------------
-    // 🔐 Logout & Delete User
+    // 🔐 Delete User
     // -------------------------------------------------------------
-    @POST("api/users/logout/")
-    fun logoutUser(
-        @Header("Authorization") auth: String,
-        @Body refreshToken: Map<String, String>
-    ): Call<Void>
 
-    @HTTP(method = "DELETE", path = "api/users/delete/", hasBody = true)
-    fun deleteUser(
-        @Header("Authorization") auth: String,
-        @Body refreshToken: Map<String, String>
-    ): Call<Void>
+    @DELETE("api/users/delete/")
+    fun deleteUser(): Call<Void>
 
 
     // -------------------------------------------------------------

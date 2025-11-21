@@ -50,24 +50,26 @@ class MyPageActivity : AppCompatActivity() {
 
     private fun deleteUser() {
         val access = TokenManager.getAccessToken(this)
-        val refresh = TokenManager.getRefreshToken(this)
 
-        if (access == null || refresh == null) {
-            handleLogoutSuccess("회원탈퇴 완료(토큰 없음)")
+        if (access == null) {
+            handleLogoutSuccess("회원탈퇴 완료")
             return
         }
 
-        RetrofitClient.api.deleteUser("Bearer $access", mapOf("refresh_token" to refresh))
+        RetrofitClient.api.deleteUser()
             .enqueue(object : Callback<Void> {
-                override fun onResponse(call: Call<Void>, res: Response<Void>) {
-                    logoutUser()
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    handleLogoutSuccess("회원탈퇴 완료")
                 }
 
                 override fun onFailure(call: Call<Void>, t: Throwable) {
                     handleLogoutSuccess("회원탈퇴 실패 — 강제 로그아웃")
                 }
             })
+
+
     }
+
 
     private fun handleLogoutSuccess(msg: String) {
         TokenManager.clearTokens(this)
