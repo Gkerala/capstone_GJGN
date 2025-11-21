@@ -5,6 +5,6 @@ data class UserProfileRequest(
     val birth: String? = null,
     val gender: String? = null,
     val height: Float? = null,
-    val weight: Float? = null,
-    val activity_level: Int? = null
+    val weight: Float? = null
 )
+

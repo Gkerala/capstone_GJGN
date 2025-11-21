@@ -11,6 +11,8 @@ import com.example.gjgn_02v.data.model.mypage.EditGenderActivity
 import com.example.gjgn_02v.data.model.mypage.EditHeightActivity
 import com.example.gjgn_02v.data.model.mypage.EditNameActivity
 import com.example.gjgn_02v.data.model.mypage.EditWeightActivity
+import com.example.gjgn_02v.data.model.mypage.EditGoalTypeActivity
+import com.example.gjgn_02v.data.model.mypage.EditGoalWeightActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class ProfileEditActivity : AppCompatActivity() {
@@ -21,6 +23,11 @@ class ProfileEditActivity : AppCompatActivity() {
     private lateinit var btnEditHeight: Button
     private lateinit var btnEditWeight: Button
     private lateinit var btnEditActivity: Button
+
+    // ⭐ 추가된 버튼
+    private lateinit var btnEditGoalType: Button
+    private lateinit var btnEditGoalWeight: Button
+
     private lateinit var btnBack: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,42 +46,51 @@ class ProfileEditActivity : AppCompatActivity() {
         btnEditHeight = findViewById(R.id.btnEditHeight)
         btnEditWeight = findViewById(R.id.btnEditWeight)
         btnEditActivity = findViewById(R.id.btnEditActivity)
+
+        // ⭐ 목표 유형 / 목표 체중 수정 버튼
+        btnEditGoalType = findViewById(R.id.btnEditGoalType)
+        btnEditGoalWeight = findViewById(R.id.btnEditGoalWeight)
+
         btnBack = findViewById(R.id.btnBack)
     }
 
     private fun setupListeners() {
 
-        // 이름 수정
         btnEditName.setOnClickListener {
             startActivity(Intent(this, EditNameActivity::class.java))
         }
 
-        // 생년월일 수정
         btnEditBirth.setOnClickListener {
             startActivity(Intent(this, EditBirthActivity::class.java))
         }
 
-        // 성별 수정
         btnEditGender.setOnClickListener {
             startActivity(Intent(this, EditGenderActivity::class.java))
         }
 
-        // 키 수정
         btnEditHeight.setOnClickListener {
             startActivity(Intent(this, EditHeightActivity::class.java))
         }
 
-        // 몸무게 수정
         btnEditWeight.setOnClickListener {
             startActivity(Intent(this, EditWeightActivity::class.java))
         }
 
-        // 활동량 수정
         btnEditActivity.setOnClickListener {
             startActivity(Intent(this, EditActivityLevelActivity::class.java))
         }
 
-        // 뒤로가기 → 마이페이지로 이동
+        // ⭐ 목표 유형 수정
+        btnEditGoalType.setOnClickListener {
+            startActivity(Intent(this, EditGoalTypeActivity::class.java))
+        }
+
+        // ⭐ 목표 체중 수정
+        btnEditGoalWeight.setOnClickListener {
+            startActivity(Intent(this, EditGoalWeightActivity::class.java))
+        }
+
+        // 뒤로가기
         btnBack.setOnClickListener { finish() }
     }
 
@@ -94,7 +110,7 @@ class ProfileEditActivity : AppCompatActivity() {
                     startActivity(Intent(this, AnalysisActivity::class.java))
 
                 R.id.menu_mypage ->
-                    finish()   // 이미 내 정보 페이지이므로 닫기
+                    finish()
             }
             true
         }

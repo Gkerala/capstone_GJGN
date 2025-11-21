@@ -69,6 +69,20 @@
                 android:text="활동량 수정"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEditGoalType"
+                android:text="목표 유형 수정"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEditGoalWeight"
+                android:text="목표 체중 수정"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"/>
 
             <!-- 뒤로가기 버튼 (하단) -->
