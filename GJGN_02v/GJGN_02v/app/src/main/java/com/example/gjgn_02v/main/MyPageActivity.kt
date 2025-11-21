@@ -34,24 +34,19 @@ class MyPageActivity : AppCompatActivity() {
     }
 
     private fun logoutUser() {
-        val access = TokenManager.getAccessToken(this)
-        val refresh = TokenManager.getRefreshToken(this)
+        // 1) 토큰 삭제
+        TokenManager.clearTokens(this)
 
-        if (access == null || refresh == null) {
-            handleLogoutSuccess("토큰 없음 — 강제 로그아웃")
-            return
-        }
+        // 2) 로그인 화면으로 이동
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
 
-        RetrofitClient.api.logoutUser("Bearer $access", mapOf("refresh_token" to refresh))
-            .enqueue(object : Callback<Void> {
-                override fun onResponse(call: Call<Void>, res: Response<Void>) {
-                    handleLogoutSuccess("로그아웃 완료")
-                }
-                override fun onFailure(call: Call<Void>, t: Throwable) {
-                    handleLogoutSuccess("네트워크 오류 — 로그아웃 처리됨")
-                }
-            })
+        // 3) 안내 메시지
+        Toast.makeText(this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
     }
+
 
     private fun deleteUser() {
         val access = TokenManager.getAccessToken(this)
