@@ -173,18 +173,34 @@ class WeeklyWeightView(APIView):
 
 
 # ---------------------------------------------------------
-# 📌 7) 체중 기록 생성
+# 📌 7) 체중 기록 생성 (디버깅 포함)
 # ---------------------------------------------------------
 class WeightRecordCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # 🔍 디버깅 로그
+        print("📌 [DEBUG] WeightRecordCreateView POST 호출됨")
+        print("➡ request.data :", request.data)
+        print("➡ request.user :", request.user)
+        print("➡ request.auth :", request.auth)
+
         serializer = WeightRecordCreateSerializer(data=request.data)
+
         if serializer.is_valid():
-            WeightRecord.objects.create(
+            print("✔ [DEBUG] Serializer 검증 성공")
+            weight_value = serializer.validated_data.get("weight")
+            print(f"➡ 저장될 weight 값: {weight_value}")
+
+            new_record = WeightRecord.objects.create(
                 user=request.user,
-                weight=serializer.validated_data["weight"]
+                weight=weight_value
             )
+            print(f"✔ [DEBUG] WeightRecord 저장 완료 (id={new_record.id})")
+
             return Response({"message": "Weight recorded successfully"}, status=201)
 
+        # 🔥 검증 실패 시 오류 출력
+        print("❌ [ERROR] Serializer 검증 실패:", serializer.errors)
         return Response(serializer.errors, status=400)
+

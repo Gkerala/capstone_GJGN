@@ -37,42 +37,6 @@ class RecordSelectActivity : AppCompatActivity() {
         }
     }
 
-    /** 체중 등록 요청 (서버 전송) */
-    private fun saveWeight(weight: Float) {
-
-        val request = WeightRequest(weight)
-
-        RetrofitClient.api.createWeight(request)
-            .enqueue(object : Callback<WeightResponse> {
-                override fun onResponse(
-                    call: Call<WeightResponse>,
-                    response: Response<WeightResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        Toast.makeText(
-                            this@RecordSelectActivity,
-                            "체중이 저장되었습니다!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            this@RecordSelectActivity,
-                            "저장 실패: ${response.code()}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<WeightResponse>, t: Throwable) {
-                    Toast.makeText(
-                        this@RecordSelectActivity,
-                        "서버 연결 실패",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            })
-    }
-
     /** 하단 네비게이션 */
     private fun setupBottomNav() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)

@@ -4,24 +4,16 @@ import android.os.Bundle
 import android.widget.NumberPicker
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import com.example.gjgn_02v.R
-import com.example.gjgn_02v.data.model.records.AppDatabase
-import com.example.gjgn_02v.data.model.records.WeightEntity
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
+import com.example.gjgn_02v.data.api.RetrofitClient
+import com.example.gjgn_02v.data.model.goals.WeightRequest
+import com.example.gjgn_02v.data.model.goals.WeightResponse
+import com.example.gjgn_02v.utils.TokenManager
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class WeightRecordActivity : AppCompatActivity() {
-
-    private val db by lazy {
-        Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java,
-            "smartdiet_db"
-        ).build()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,26 +31,48 @@ class WeightRecordActivity : AppCompatActivity() {
 
         findViewById<android.widget.Button>(R.id.btnSave).setOnClickListener {
             val weight = "${np100.value}${np10.value}${np1.value}.${npDecimal.value}".toFloat()
-            saveWeightToLocal(weight)
+
+            // 🔥 서버에 체중 저장
+            saveWeight(weight)
         }
     }
 
-    /** ▼ DB에 체중 저장 */
-    private fun saveWeightToLocal(weight: Float) {
-        val date = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
+    /** ▼ 서버에 체중 저장 (saveWeight 그대로 적용) */
+    private fun saveWeight(weight: Float) {
 
-        lifecycleScope.launch {
-            db.weightDao().insert(
-                WeightEntity(weight = weight, date = date)
-            )
+        val request = WeightRequest(weight)
 
-            Toast.makeText(
-                this@WeightRecordActivity,
-                "체중이 저장되었습니다!",
-                Toast.LENGTH_SHORT
-            ).show()
+        RetrofitClient.api.createWeight(request)
+            .enqueue(object : Callback<WeightResponse> {
+                override fun onResponse(
+                    call: Call<WeightResponse>,
+                    response: Response<WeightResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(
+                            this@WeightRecordActivity,
+                            "체중이 서버에 저장되었습니다!",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
-            finish()
-        }
+                        finish()
+                    } else {
+                        Toast.makeText(
+                            this@WeightRecordActivity,
+                            "저장 실패: ${response.code()}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<WeightResponse>, t: Throwable) {
+                    Toast.makeText(
+                        this@WeightRecordActivity,
+                        "서버 연결 실패",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
     }
+
 }

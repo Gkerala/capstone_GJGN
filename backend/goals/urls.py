@@ -17,5 +17,5 @@ urlpatterns = [
     path("weekly/", WeeklyGoalStatAPIView.as_view()),
     path("monthly/", MonthlyGoalStatAPIView.as_view()),
     path("weights/weekly/", WeeklyWeightView.as_view()),   
-    path("weights/", WeightRecordCreateView.as_view()),  # POST
+    path("weights/", WeightRecordCreateView.as_view()),  
 ]

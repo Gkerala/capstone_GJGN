@@ -12,19 +12,19 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         val token = TokenManager.getAccessToken(context)
 
         println("🔥 AuthInterceptor - Loaded Token: $token")
+        println("🚀 Request URL: ${chain.request().url}")
+        println("🚀 Request Method: ${chain.request().method}")
 
-        val request = if (!token.isNullOrEmpty()) {
-            chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer $token")
-                .build()
-        } else {
-            println("🚨 AuthInterceptor - Token is NULL or EMPTY")
-            chain.request()
-        }
+        val newRequest = chain.request().newBuilder().apply {
+            if (!token.isNullOrEmpty()) {
+                addHeader("Authorization", "Bearer $token")
+            } else {
+                println("🚨 AuthInterceptor - Token is NULL or EMPTY")
+            }
+        }.build()
 
-        println("📡 Final Authorization Header: ${request.header("Authorization")}")
+        println("📡 Final Authorization Header: ${newRequest.header("Authorization")}")
 
-        return chain.proceed(request)
+        return chain.proceed(newRequest)
     }
 }
-

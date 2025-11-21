@@ -1,11 +1,11 @@
+#backend/users/kakao.py
 import os
 import requests
 from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
 from users.services.jwt_service import JWTService
 
-
-load_dotenv()  # .env 파일 로딩
+load_dotenv()
 
 User = get_user_model()
 
@@ -17,12 +17,11 @@ KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
 class KakaoService:
     """
-    Kakao Access Token → Kakao User Info → CustomUser 생성/조회 → JWT 발급
+    Kakao Access Token → Kakao User Info → CustomUser 조회/생성 → JWT 발급
     """
 
     @staticmethod
     def get_kakao_user_info(access_token: str) -> dict:
-        """카카오 access token으로 사용자 정보 요청"""
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
@@ -36,9 +35,7 @@ class KakaoService:
         return response.json()
 
     @staticmethod
-    def get_or_create_user(kakao_data: dict) -> User:
-        """카카오 데이터 기반 CustomUser 조회/생성"""
-
+    def get_or_create_user(kakao_data: dict):
         kakao_id = kakao_data.get("id")
         if not kakao_id:
             raise ValueError("카카오 ID 없음")
@@ -48,10 +45,8 @@ class KakaoService:
 
         nickname = profile.get("nickname", "카카오사용자")
         profile_image = profile.get("profile_image_url", "")
+        email = kakao_account.get("email")
 
-        email = kakao_account.get("email")  # optional
-
-        # CustomUser 에 kakao_id 필드가 반드시 있어야 한다!!
         user, created = User.objects.get_or_create(
             kakao_id=kakao_id,
             defaults={
@@ -62,37 +57,49 @@ class KakaoService:
             },
         )
 
-        # nickname이나 프로필이 바뀌면 업데이트
+        # 기존 사용자 프로필 업데이트
         if not created:
-            update_needed = False
+            updated = False
 
             if nickname and user.nickname != nickname:
                 user.nickname = nickname
-                update_needed = True
+                updated = True
 
             if profile_image and user.profile_image != profile_image:
                 user.profile_image = profile_image
-                update_needed = True
+                updated = True
 
             if email and user.email != email:
                 user.email = email
-                update_needed = True
+                updated = True
 
-            if update_needed:
+            if updated:
                 user.save()
 
-        return user
+        return user, created
 
     @staticmethod
     def login_with_kakao(access_token: str) -> dict:
-        """카카오 로그인 → User 반환 + JWT 생성"""
         kakao_data = KakaoService.get_kakao_user_info(access_token)
-        user = KakaoService.get_or_create_user(kakao_data)
 
-        # JWT 생성
+        user, created = KakaoService.get_or_create_user(kakao_data)
+
+        # 🔥 프로필이 완성되었는지 체크
+        profile_fields = [
+            user.height,
+            user.weight,
+            user.age,
+            user.gender,
+            user.activity_level
+        ]
+
+        is_profile_complete = all(profile_fields)
+
         tokens = JWTService.generate_tokens(user)
 
         return {
             "user": user,
             "tokens": tokens,
+            "is_new_user": created,
+            "is_profile_complete": is_profile_complete,
         }

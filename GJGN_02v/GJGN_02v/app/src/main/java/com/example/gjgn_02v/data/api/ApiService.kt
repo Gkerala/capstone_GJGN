@@ -144,7 +144,7 @@ interface ApiService {
     @GET("api/goals/weights/weekly/")
     fun getWeeklyWeight(): Call<WeeklyWeightResponse>
 
-    @POST("goals/weights/")
+    @POST("api/goals/weights/")
     fun createWeight(
         @Body weightRequest: WeightRequest
     ): Call<WeightResponse>

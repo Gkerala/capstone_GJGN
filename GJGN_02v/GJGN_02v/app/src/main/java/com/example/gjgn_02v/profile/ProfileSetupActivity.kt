@@ -1,128 +1,90 @@
+/**
+ * ProfileSetupActivity
+ * ------------------------------------------------------
+ * - 6단계 프로필 설정 전체 흐름을 관리하는 Activity
+ * - nextPage(), prevPage() 로 단계 이동
+ * - 모든 입력값은 ProfileSetupViewModel 에 저장됨
+ */
+
 package com.example.gjgn_02v.profile
 
+import android.content.Intent
 import android.os.Bundle
-import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import com.example.gjgn_02v.main.MainActivity
 import com.example.gjgn_02v.R
-import com.example.gjgn_02v.data.api.RetrofitClient
-import com.example.gjgn_02v.data.model.auth.UserProfileRequest
-import com.example.gjgn_02v.data.model.auth.UserProfileResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class ProfileSetupActivity : AppCompatActivity() {
 
-    private lateinit var toggleGender: com.google.android.material.button.MaterialButtonToggleGroup
-    private lateinit var btnMale: com.google.android.material.button.MaterialButton
-    private lateinit var btnFemale: com.google.android.material.button.MaterialButton
+    private lateinit var viewModel: ProfileSetupViewModel
 
-    private lateinit var etHeight: EditText
-    private lateinit var etWeight: EditText
-    private lateinit var etAge: EditText
-    private lateinit var btnSave: com.google.android.material.button.MaterialButton
+    /**
+     * 6단계 Fragment 리스트
+     */
+    private val fragments = listOf(
+        GenderFragment(),          // 1단계
+        BirthFragment(),           // 2단계
+        BodyFragment(),            // 3단계
+        TargetWeightFragment(),    // 4단계
+        ActivityGoalFragment(),    // 5단계
+        SummaryFragment()          // 6단계 (최종 확인)
+    )
 
-    private var gender: String = "male"   // 기본값
+    private var currentIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile_setup)
 
-        // ───────────────────────────────
-        // XML 매핑
-        // ───────────────────────────────
-        toggleGender = findViewById(R.id.toggleGender)
-        btnMale = findViewById(R.id.btnMale)
-        btnFemale = findViewById(R.id.btnFemale)
+        // ViewModel 초기화
+        viewModel = ViewModelProvider(this)[ProfileSetupViewModel::class.java]
 
-        etHeight = findViewById(R.id.etHeight)
-        etWeight = findViewById(R.id.etWeight)
-        etAge = findViewById(R.id.etAge)
-
-        btnSave = findViewById(R.id.btnSaveProfile)
-
-        // 성별 선택
-        toggleGender.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                gender = if (checkedId == R.id.btnMale) "male" else "female"
-            }
-        }
-
-        loadProfile()
-        saveProfile()
+        // 첫 번째 화면 표시 (성별)
+        loadFragment(0)
     }
 
-    private fun loadProfile() {
-        RetrofitClient.api.getMyProfile()
-            .enqueue(object : Callback<UserProfileResponse> {
-                override fun onResponse(
-                    call: Call<UserProfileResponse>,
-                    response: Response<UserProfileResponse>
-                ) {
-                    if (!response.isSuccessful || response.body() == null) return
-                    val p = response.body()!!
-
-                    // Height & Weight
-                    etHeight.setText(p.height.toInt().toString())
-                    etWeight.setText(p.weight.toInt().toString())
-                    etAge.setText(p.age.toString())
-
-                    // Gender 선택
-                    if (p.gender == "male") btnMale.isChecked = true
-                    else btnFemale.isChecked = true
-                }
-
-                override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {}
-            })
+    /**
+     * 다음 단계 이동
+     */
+    fun nextPage() {
+        if (currentIndex < fragments.size - 1) {
+            currentIndex++
+            loadFragment(currentIndex)
+        }
     }
 
-    private fun saveProfile() {
-        btnSave.setOnClickListener {
-
-            if (etHeight.text.isBlank() || etWeight.text.isBlank() || etAge.text.isBlank()) {
-                Toast.makeText(this, "모든 값을 입력해주세요.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val req = UserProfileRequest(
-                name = "사용자",                // 기본값 (XML에 입력창 없음)
-                birth = "2000-01-01",          // 기본값
-                gender = gender,
-                height = etHeight.text.toString().toInt(),
-                weight = etWeight.text.toString().toInt(),
-                activity_level = "medium"       // 기본값
-            )
-
-            RetrofitClient.api.updateMyProfile(req)
-                .enqueue(object : Callback<UserProfileResponse> {
-                    override fun onResponse(
-                        call: Call<UserProfileResponse>,
-                        response: Response<UserProfileResponse>
-                    ) {
-                        if (response.isSuccessful) {
-                            Toast.makeText(
-                                this@ProfileSetupActivity,
-                                "프로필 저장 완료",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            finish()
-                        } else {
-                            Toast.makeText(
-                                this@ProfileSetupActivity,
-                                "저장 실패",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-
-                    override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {
-                        Toast.makeText(
-                            this@ProfileSetupActivity,
-                            "서버 오류",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                })
+    /**
+     * 이전 단계 이동
+     */
+    fun prevPage() {
+        if (currentIndex > 0) {
+            currentIndex--
+            loadFragment(currentIndex)
         }
+    }
+
+    /**
+     * Fragment 화면 전환 함수
+     */
+    private fun loadFragment(index: Int) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.profileSetupContainer, fragments[index])
+            .commit()
+    }
+
+    /**
+     * 6단계 Summary 화면에서 호출
+     * → 모든 정보 확인 후 실제 저장 로직 실행
+     */
+    fun finishProfileSetup() {
+
+        // TODO: Retrofit API 로 서버에 최종 프로필 저장
+        //       viewModel.gender, viewModel.height ... 모두 들어있음
+
+        // 저장 완료 후 메인 페이지 이동
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }

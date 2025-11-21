@@ -32,3 +32,8 @@ class UserGoalUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("하루 목표 칼로리는 최소 800 이상이어야 합니다.")
 
         return data
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["nickname", "height", "weight", "profile_image"]

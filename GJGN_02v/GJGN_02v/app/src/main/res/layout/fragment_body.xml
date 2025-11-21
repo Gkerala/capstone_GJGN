@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvBodyTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="키와 몸무게를 입력하세요"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp" />
+
+        <!-- =====================================================
+             키 입력
+        ====================================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="키 (cm)"
+            android:textSize="16sp"
+            android:layout_marginBottom="10dp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- 100의 자리 -->
+            <NumberPicker
+                android:id="@+id/npHeight100"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minValue="0"
+                android:maxValue="9"/>
+
+            <!-- 10의 자리 -->
+            <NumberPicker
+                android:id="@+id/npHeight10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minValue="0"
+                android:maxValue="9"/>
+
+            <!-- 1의 자리 -->
+            <NumberPicker
+                android:id="@+id/npHeight1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minValue="0"
+                android:maxValue="9"/>
+
+            <!-- 소수점 표시 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="."
+                android:textSize="30sp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"/>
+
+            <!-- 소수점 첫째 자리 -->
+            <NumberPicker
+                android:id="@+id/npHeightDecimal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minValue="0"
+                android:maxValue="9"/>
+        </LinearLayout>
+
+        <!-- =====================================================
+             몸무게 입력
+        ====================================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="몸무게 (kg)"
+            android:textSize="16sp"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="10dp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- 100의 자리 -->
+            <NumberPicker
+                android:id="@+id/npWeight100"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minValue="0"
+                android:maxValue="9"/>
+
+            <!-- 10의 자리 -->
+            <NumberPicker
+                android:id="@+id/npWeight10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minValue="0"
+                android:maxValue="9"/>
+
+            <!-- 1의 자리 -->
+            <NumberPicker
+                android:id="@+id/npWeight1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minValue="0"
+                android:maxValue="9"/>
+
+            <!-- 소숫점 표시 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="."
+                android:textSize="30sp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"/>
+
+            <!-- 소수점 첫째 자리 -->
+            <NumberPicker
+                android:id="@+id/npWeightDecimal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minValue="0"
+                android:maxValue="9"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnNextBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="다음"
+            android:layout_marginTop="30dp"
+            android:backgroundTint="@color/purple_500"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</ScrollView>

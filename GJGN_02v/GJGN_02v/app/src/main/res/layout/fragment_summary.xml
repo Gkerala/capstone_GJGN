@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvSummaryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="입력 정보를 확인해주세요"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- 성별 -->
+        <TextView
+            android:id="@+id/tvSummaryGender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 생년월일 -->
+        <TextView
+            android:id="@+id/tvSummaryBirth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 키 -->
+        <TextView
+            android:id="@+id/tvSummaryHeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 몸무게 -->
+        <TextView
+            android:id="@+id/tvSummaryWeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 목표 체중 -->
+        <TextView
+            android:id="@+id/tvSummaryTarget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 활동량 -->
+        <TextView
+            android:id="@+id/tvSummaryActivity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 목표 유형 -->
+        <TextView
+            android:id="@+id/tvSummaryGoal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_marginBottom="30dp"/>
+
+        <!-- 완료 버튼 -->
+        <Button
+            android:id="@+id/btnFinish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="완료"
+            android:backgroundTint="@color/purple_500"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+</ScrollView>
