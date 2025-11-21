@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from users.serializers import UserSerializer, UserProfileUpdateSerializer
+from users.serializers import UserSerializer, UserProfileUpdateSerializer, FullProfileUpdateSerializer
 
 
 class UserDetailView(APIView):
@@ -36,3 +36,18 @@ class UserDetailView(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserFullProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        serializer = FullProfileUpdateSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = serializer.update(request.user, serializer.validated_data)
+            return Response({
+                "message": "프로필이 성공적으로 저장되었습니다.",
+                "user": UserSerializer(user).data
+            })
+
+        return Response(serializer.errors, status=400)

@@ -10,10 +10,12 @@ package com.example.gjgn_02v.profile
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.gjgn_02v.main.MainActivity
 import com.example.gjgn_02v.R
+import com.example.gjgn_02v.data.model.auth.UserProfileResponse
 
 class ProfileSetupActivity : AppCompatActivity() {
 
@@ -79,12 +81,34 @@ class ProfileSetupActivity : AppCompatActivity() {
      */
     fun finishProfileSetup() {
 
-        // TODO: Retrofit API 로 서버에 최종 프로필 저장
-        //       viewModel.gender, viewModel.height ... 모두 들어있음
+        val request = FullProfileRequest(
+            gender = viewModel.gender!!,
+            birth = viewModel.birth!!,
+            height = viewModel.height!!,
+            weight = viewModel.weight!!,
+            target_weight = viewModel.targetWeight!!,
+            activity_level = viewModel.activityLevel!!,
+            goal_type = viewModel.goalType!!
+        )
 
-        // 저장 완료 후 메인 페이지 이동
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-        finish()
+        ApiClient.apiService.updateFullProfile(request)
+            .enqueue(object : Callback<UserProfileResponse> {
+                override fun onResponse(
+                    call: Call<UserProfileResponse>,
+                    response: Response<UserProfileResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        startActivity(Intent(this@ProfileSetupActivity, MainActivity::class.java))
+                        finish()
+                    } else {
+                        Log.e("ProfileSave", "Fail: ${response.errorBody()?.string()}")
+                    }
+                }
+
+                override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {
+                    Log.e("ProfileSave", "Network Error", t)
+                }
+            })
     }
+
 }

@@ -8,6 +8,7 @@ import com.example.gjgn_02v.data.model.goals.*
 import com.example.gjgn_02v.data.model.home.HomeStatisticsResponse
 import com.example.gjgn_02v.data.model.records.MealRecordRequest
 import com.example.gjgn_02v.data.model.records.MealRecordResponse
+import com.example.gjgn_02v.profile.FullProfileRequest
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Response
@@ -36,6 +37,12 @@ interface ApiService {
 
     @POST("api/users/logout/")
     fun logout(): Call<BaseResponse>
+
+    @PUT("api/users/me/profile/")
+    fun updateFullProfile(
+        @Body request: FullProfileRequest
+    ): Call<UserProfileResponse>
+
 
     // Logout / Delete User (Token)
     @POST("api/users/logout/")
