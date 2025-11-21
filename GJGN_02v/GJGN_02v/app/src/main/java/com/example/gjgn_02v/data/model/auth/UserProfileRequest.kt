@@ -1,10 +1,10 @@
 package com.example.gjgn_02v.data.model.auth
 
 data class UserProfileRequest(
-    val name: String,
-    val birth: String,          // yyyy-MM-dd 형태
-    val gender: String,         // male / female
-    val height: Int,
-    val weight: Int,
-    val activity_level: String  // low / medium / high
+    val name: String? = null,
+    val birth: String? = null,
+    val gender: String? = null,
+    val height: Float? = null,
+    val weight: Float? = null,
+    val activity_level: Int? = null
 )
