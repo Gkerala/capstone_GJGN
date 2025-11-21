@@ -27,16 +27,24 @@ interface ApiService {
     @GET("api/users/me/")
     fun getMyProfile(): Call<UserProfileResponse>
 
-    @PUT("api/users/me/")
-    fun updateMyProfile(
-        @Body request: UserProfileRequest
-    ): Call<UserProfileResponse>
 
     // ⭐ 프로필(온보딩) 전체 저장
     @PUT("api/users/me/profile/")
     fun updateFullProfile(
         @Body request: FullProfileRequest
     ): Call<UserProfileResponse>
+
+    @PATCH("/user/update-profile/")
+    fun updateMyProfile(
+        @Body request: UserProfileRequest
+    ): Call<UserProfileResponse>
+
+    // ▶ 목표 정보 수정
+    @PATCH("/api/goals/update/")
+    fun updateGoal(
+        @Body request: UpdateGoalRequest
+    ): Call<UpdateGoalResponse>
+
 
 
     // -------------------------------------------------------------
@@ -52,11 +60,6 @@ interface ApiService {
     // -------------------------------------------------------------
     @GET("api/goals/")
     fun getGoal(): Call<GoalResponse>
-
-    @PATCH("api/goals/")
-    fun updateGoal(
-        @Body request: UpdateGoalRequest
-    ): Call<UpdateGoalResponse>
 
 
     // -------------------------------------------------------------

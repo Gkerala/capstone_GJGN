@@ -3,10 +3,10 @@ package com.example.gjgn_02v.data.model.mypage
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.gjgn_02v.databinding.ActivityEditGoalTypeBinding
 import com.example.gjgn_02v.data.api.RetrofitClient
-import com.example.gjgn_02v.data.model.auth.UserGoalRequest
-import com.example.gjgn_02v.data.model.auth.UserGoalResponse
+import com.example.gjgn_02v.data.model.goals.UpdateGoalRequest
+import com.example.gjgn_02v.data.model.goals.UpdateGoalResponse
+import com.example.gjgn_02v.databinding.ActivityEditGoalTypeBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -32,29 +32,33 @@ class EditGoalTypeActivity : AppCompatActivity() {
             return
         }
 
-        // 서버가 사용하는 goal_type 값을 매핑
         val goalType: Int = when (selectedId) {
-            binding.rbMaintain.id -> 1  // 유지
-            binding.rbLose.id -> 2      // 감량
-            binding.rbGain.id -> 3      // 증량
-            else -> 1
+            binding.rbLoseWeight.id -> 1
+            binding.rbKeepWeight.id -> 2
+            binding.rbGainWeight.id -> 3
+            else -> 2
         }
 
-        val request = UserGoalRequest(
+        val request = UpdateGoalRequest(
             goal_type = goalType,
-            goal_weight = null
+            goal_weight = null,
+            activity_level = null,
+            kcal = null,
+            carb = null,
+            protein = null,
+            fat = null
         )
 
-        RetrofitClient.api.updateUserGoal(request)
-            .enqueue(object : Callback<UserGoalResponse> {
+        RetrofitClient.api.updateGoal(request)
+            .enqueue(object : Callback<UpdateGoalResponse> {
                 override fun onResponse(
-                    call: Call<UserGoalResponse>,
-                    response: Response<UserGoalResponse>
+                    call: Call<UpdateGoalResponse>,
+                    response: Response<UpdateGoalResponse>
                 ) {
                     if (response.isSuccessful) {
                         Toast.makeText(
                             this@EditGoalTypeActivity,
-                            "목표 유형이 변경되었습니다.",
+                            "목표 유형이 수정되었습니다.",
                             Toast.LENGTH_SHORT
                         ).show()
                         finish()
@@ -67,10 +71,10 @@ class EditGoalTypeActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<UserGoalResponse>, t: Throwable) {
+                override fun onFailure(call: Call<UpdateGoalResponse>, t: Throwable) {
                     Toast.makeText(
                         this@EditGoalTypeActivity,
-                        "서버 오류",
+                        "서버 오류 발생",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

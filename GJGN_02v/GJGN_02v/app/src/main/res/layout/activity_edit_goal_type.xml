@@ -6,35 +6,35 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:text="목표 유형 수정"
-        android:textSize="22sp"
+        android:text="목표 유형 선택"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
     <RadioGroup
-        android:id="@+id/rgGoalType"
+        android:id="@+id/radioGroupGoalType"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <RadioButton
             android:id="@+id/rbLoseWeight"
+            android:text="체중 감량"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="체중 감량" />
+            android:layout_height="wrap_content" />
 
         <RadioButton
-            android:id="@+id/rbMaintain"
+            android:id="@+id/rbKeepWeight"
+            android:text="체중 유지"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="체중 유지" />
+            android:layout_height="wrap_content" />
 
         <RadioButton
-            android:id="@+id/rbGainMuscle"
+            android:id="@+id/rbGainWeight"
+            android:text="체중 증가"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="근육량 증가" />
+            android:layout_height="wrap_content" />
     </RadioGroup>
 
     <com.google.android.material.button.MaterialButton
@@ -42,12 +42,13 @@
         android:text="저장"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="24dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBack"
         android:text="뒤로가기"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="12dp" />
+
 </LinearLayout>
