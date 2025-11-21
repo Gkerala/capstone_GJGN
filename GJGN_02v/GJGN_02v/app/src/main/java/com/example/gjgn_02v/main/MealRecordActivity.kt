@@ -570,5 +570,5 @@ class MealRecordActivity : AppCompatActivity() {
         )
     }
 
-    
+
 }

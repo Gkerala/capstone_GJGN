@@ -76,6 +76,10 @@ interface ApiService {
     @POST("api/foods/save/")
     fun saveMeal(@Body request: SaveMealRequest): Call<SaveMealResponse>
 
+    @GET("foods/nutrition/")
+    suspend fun getNutrition(
+        @Query("name") name: String
+    ): Response<NutritionResponse>
 
     // -------------------------------------------------------------
     // 🍽️ Records
