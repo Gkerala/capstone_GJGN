@@ -8,7 +8,7 @@ import com.example.gjgn_02v.data.model.goals.*
 import com.example.gjgn_02v.data.model.home.HomeStatisticsResponse
 import com.example.gjgn_02v.data.model.records.MealRecordRequest
 import com.example.gjgn_02v.data.model.records.MealRecordResponse
-import com.example.gjgn_02v.profile.FullProfileRequest
+import com.example.gjgn_02v.data.model.auth.FullProfileRequest
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Response

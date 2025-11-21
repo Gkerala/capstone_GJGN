@@ -1,11 +1,3 @@
-/**
- * ProfileSetupActivity
- * ------------------------------------------------------
- * - 6단계 프로필 설정 전체 흐름을 관리하는 Activity
- * - nextPage(), prevPage() 로 단계 이동
- * - 모든 입력값은 ProfileSetupViewModel 에 저장됨
- */
-
 package com.example.gjgn_02v.profile
 
 import android.content.Intent
@@ -13,24 +5,27 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.example.gjgn_02v.main.MainActivity
 import com.example.gjgn_02v.R
+import com.example.gjgn_02v.data.api.RetrofitClient
+import com.example.gjgn_02v.data.model.auth.FullProfileRequest
 import com.example.gjgn_02v.data.model.auth.UserProfileResponse
+import com.example.gjgn_02v.main.MainActivity
+import com.google.gson.Gson
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class ProfileSetupActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ProfileSetupViewModel
 
-    /**
-     * 6단계 Fragment 리스트
-     */
     private val fragments = listOf(
-        GenderFragment(),          // 1단계
-        BirthFragment(),           // 2단계
-        BodyFragment(),            // 3단계
-        TargetWeightFragment(),    // 4단계
-        ActivityGoalFragment(),    // 5단계
-        SummaryFragment()          // 6단계 (최종 확인)
+        GenderFragment(),
+        BirthFragment(),
+        BodyFragment(),
+        TargetWeightFragment(),
+        ActivityGoalFragment(),
+        SummaryFragment()
     )
 
     private var currentIndex = 0
@@ -39,47 +34,43 @@ class ProfileSetupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile_setup)
 
-        // ViewModel 초기화
         viewModel = ViewModelProvider(this)[ProfileSetupViewModel::class.java]
 
-        // 첫 번째 화면 표시 (성별)
         loadFragment(0)
     }
 
-    /**
-     * 다음 단계 이동
-     */
     fun nextPage() {
         if (currentIndex < fragments.size - 1) {
             currentIndex++
+            Log.d("PROFILE_DEBUG", "nextPage → $currentIndex 단계 이동")
             loadFragment(currentIndex)
+        } else {
+            Log.d("PROFILE_DEBUG", "모든 단계를 완료 → finishProfileSetup() 실행")
+            finishProfileSetup()
         }
     }
 
-    /**
-     * 이전 단계 이동
-     */
     fun prevPage() {
         if (currentIndex > 0) {
             currentIndex--
+            Log.d("PROFILE_DEBUG", "prevPage → $currentIndex 단계 이동")
             loadFragment(currentIndex)
         }
     }
 
-    /**
-     * Fragment 화면 전환 함수
-     */
     private fun loadFragment(index: Int) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.profileSetupContainer, fragments[index])
             .commit()
     }
 
-    /**
-     * 6단계 Summary 화면에서 호출
-     * → 모든 정보 확인 후 실제 저장 로직 실행
-     */
+    /** 최종 저장 */
     fun finishProfileSetup() {
+
+        if (!validateAllFields()) {
+            Log.e("PROFILE_DEBUG", "❌ 프로필 데이터 중 null 존재 → 저장 중단")
+            return
+        }
 
         val request = FullProfileRequest(
             gender = viewModel.gender!!,
@@ -91,24 +82,43 @@ class ProfileSetupActivity : AppCompatActivity() {
             goal_type = viewModel.goalType!!
         )
 
-        ApiClient.apiService.updateFullProfile(request)
+        Log.d("PROFILE_DEBUG", "서버로 보낼 JSON = " + Gson().toJson(request))
+
+        RetrofitClient.api.updateFullProfile(request)
             .enqueue(object : Callback<UserProfileResponse> {
+
                 override fun onResponse(
                     call: Call<UserProfileResponse>,
                     response: Response<UserProfileResponse>
                 ) {
+                    Log.d("PROFILE_DEBUG", "응답 코드 = ${response.code()}")
+
                     if (response.isSuccessful) {
+                        Log.d("PROFILE_DEBUG", "프로필 저장 성공 → MainActivity 이동")
                         startActivity(Intent(this@ProfileSetupActivity, MainActivity::class.java))
                         finish()
                     } else {
-                        Log.e("ProfileSave", "Fail: ${response.errorBody()?.string()}")
+                        Log.e(
+                            "PROFILE_DEBUG",
+                            "프로필 저장 실패: ${response.errorBody()?.string()}"
+                        )
                     }
                 }
 
                 override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {
-                    Log.e("ProfileSave", "Network Error", t)
+                    Log.e("PROFILE_DEBUG", "네트워크 오류", t)
                 }
             })
     }
 
+    /** null 값 검증 */
+    private fun validateAllFields(): Boolean {
+        return viewModel.gender != null &&
+                viewModel.birth != null &&
+                viewModel.height != null &&
+                viewModel.weight != null &&
+                viewModel.targetWeight != null &&
+                viewModel.activityLevel != null &&
+                viewModel.goalType != null
+    }
 }

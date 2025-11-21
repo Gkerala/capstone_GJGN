@@ -20,31 +20,21 @@
         android:orientation="horizontal"
         android:gravity="center">
 
-        <!-- 100의 자리 -->
         <NumberPicker
             android:id="@+id/npTarget100"
             android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:minValue="0"
-            android:maxValue="9" />
+            android:layout_height="wrap_content" />
 
-        <!-- 10의 자리 -->
         <NumberPicker
             android:id="@+id/npTarget10"
             android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:minValue="0"
-            android:maxValue="9" />
+            android:layout_height="wrap_content" />
 
-        <!-- 1의 자리 -->
         <NumberPicker
             android:id="@+id/npTarget1"
             android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:minValue="0"
-            android:maxValue="9" />
+            android:layout_height="wrap_content" />
 
-        <!-- 소수점 문자 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -53,13 +43,10 @@
             android:layout_marginLeft="6dp"
             android:layout_marginRight="6dp" />
 
-        <!-- 소수점 첫째 자리 -->
         <NumberPicker
             android:id="@+id/npTargetDecimal"
             android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:minValue="0"
-            android:maxValue="9" />
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <Button

@@ -1,4 +1,4 @@
-package com.example.gjgn_02v.profile
+package com.example.gjgn_02v.data.model.auth
 
 data class FullProfileRequest(
     val gender: String,
