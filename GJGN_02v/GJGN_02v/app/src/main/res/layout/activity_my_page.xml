@@ -36,20 +36,6 @@
                 android:text="프로필 수정"
                 android:layout_marginBottom="16dp"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnEditGoalType"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="목표 유형 변경"
-                android:layout_marginBottom="16dp"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnEditGoalWeight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="목표 체중 변경"
-                android:layout_marginBottom="32dp"/>
-
             <!-- 기존 로그아웃 / 회원탈퇴 버튼 (아래로 이동됨) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"

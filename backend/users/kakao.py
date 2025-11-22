@@ -90,7 +90,6 @@ class KakaoService:
             user.weight,
             user.age,
             user.gender,
-            user.activity_level
         ]
 
         is_profile_complete = all(profile_fields)

@@ -1,12 +1,11 @@
 # goals/views.py
-
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework import status
 
-from django.utils import timezone
 from datetime import timedelta, date
+from django.utils import timezone
 
 from .models import NutritionGoal, WeightRecord
 from foods.models import UserDailyNutrition
@@ -17,9 +16,9 @@ from .serializers import (
 )
 
 
-# ---------------------------------------------------------
-# 📌 1) 목표 자동 생성
-# ---------------------------------------------------------
+# -------------------------------
+# 1) 목표 자동 생성
+# -------------------------------
 class AutoGoalGenerateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -32,20 +31,20 @@ class AutoGoalGenerateAPIView(APIView):
         gender = user.gender or "male"
         activity = user.activity_level or 1.4
 
-        # BMR (Mifflin–St Jeor)
+        # BMR
         if gender == "female":
             bmr = 10 * weight + 6.25 * height - 5 * age - 161
         else:
             bmr = 10 * weight + 6.25 * height - 5 * age + 5
 
-        tdee = bmr * activity
+        tdee = bmr * float(activity)
 
-        # 탄단지 추천 분배
+        # 탄단지 분배
         protein = weight * 1.6
         fat = weight * 0.8
         carbs = (tdee - (protein * 4 + fat * 9)) / 4
 
-        goal, created = NutritionGoal.objects.update_or_create(
+        goal, _ = NutritionGoal.objects.update_or_create(
             user=user,
             defaults={
                 "calorie": int(tdee),
@@ -59,18 +58,13 @@ class AutoGoalGenerateAPIView(APIView):
 
         return Response({
             "message": "Goal auto-generated",
-            "goal": {
-                "calorie": goal.calorie,
-                "protein": goal.protein,
-                "carbs": goal.carbs,
-                "fat": goal.fat,
-            }
+            "goal": NutritionGoalSerializer(goal).data
         }, status=200)
 
 
-# ---------------------------------------------------------
-# 📌 2) 목표 조회
-# ---------------------------------------------------------
+# -------------------------------
+# 2) 목표 조회
+# -------------------------------
 class GoalRetrieveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -80,127 +74,151 @@ class GoalRetrieveAPIView(APIView):
         try:
             goal = NutritionGoal.objects.get(user=user)
         except NutritionGoal.DoesNotExist:
-            return Response({"detail": "No goal found"}, status=404)
+            return Response({"detail": "Goal not found"}, status=404)
 
         return Response(NutritionGoalSerializer(goal).data)
 
 
-# ---------------------------------------------------------
-# 📌 3) 목표 수동 수정
-# ---------------------------------------------------------
+# -------------------------------
+# 3) 목표 수동 수정
+# -------------------------------
 class GoalUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request):
         user = request.user
+        goal, _ = NutritionGoal.objects.get_or_create(user=user)
 
-        goal, created = NutritionGoal.objects.get_or_create(user=user)
         serializer = GoalUpdateSerializer(goal, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Goal updated"}, status=200)
+            return Response({
+                "message": "Goal updated",
+                "goal": NutritionGoalSerializer(goal).data
+            })
 
         return Response(serializer.errors, status=400)
 
 
-# ---------------------------------------------------------
-# 📌 4) 주간 목표 통계 (Placeholder)
-# ---------------------------------------------------------
+# -------------------------------
+# 4) 주간 섭취 요약 (영양 섭취량)
+# -------------------------------
 class WeeklyGoalStatAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        user = request.user
         today = date.today()
-        start_week = today - timedelta(days=today.weekday())
-        end_week = start_week + timedelta(days=6)
+        start = today - timedelta(days=6)
+
+        nutrition = UserDailyNutrition.objects.filter(
+            user=user,
+            date__range=[start, today]
+        ).order_by("date")
+
+        result = [
+            {
+                "date": str(n.date),
+                "calorie": n.calorie,
+                "carbs": n.carbs,
+                "protein": n.protein,
+                "fat": n.fat,
+            }
+            for n in nutrition
+        ]
 
         return Response({
-            "start_date": str(start_week),
-            "end_date": str(end_week),
-            "message": "Weekly goal stats (placeholder)"
+            "start_date": str(start),
+            "end_date": str(today),
+            "data": result
         })
 
 
-# ---------------------------------------------------------
-# 📌 5) 월간 목표 통계 (Placeholder)
-# ---------------------------------------------------------
+# -------------------------------
+# 5) 월간 섭취 요약
+# -------------------------------
 class MonthlyGoalStatAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        user = request.user
         today = date.today()
-        start_month = today.replace(day=1)
-        next_month = start_month.replace(month=start_month.month % 12 + 1, day=1)
-        end_month = next_month - timedelta(days=1)
+        start = today.replace(day=1)
+        end = today
+
+        nutrition = UserDailyNutrition.objects.filter(
+            user=user,
+            date__range=[start, end]
+        ).order_by("date")
+
+        result = [
+            {
+                "date": str(n.date),
+                "calorie": n.calorie,
+                "carbs": n.carbs,
+                "protein": n.protein,
+                "fat": n.fat,
+            }
+            for n in nutrition
+        ]
 
         return Response({
-            "start_date": str(start_month),
-            "end_date": str(end_month),
-            "message": "Monthly goal stats (placeholder)"
+            "start_date": str(start),
+            "end_date": str(end),
+            "data": result
         })
 
 
-# ---------------------------------------------------------
-# 📌 6) 주간 체중 변화 조회
-# ---------------------------------------------------------
+# -------------------------------
+# 6) 주간 체중 변화 조회
+# -------------------------------
 class WeeklyWeightView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-
         today = timezone.now().date()
-        week_ago = today - timedelta(days=7)
+        start = today - timedelta(days=6)
 
-        weights = WeightRecord.objects.filter(
+        records = WeightRecord.objects.filter(
             user=user,
-            created_at__date__range=[week_ago, today]
+            created_at__date__range=[start, today]
         ).order_by("created_at")
 
-        data = [
+        result = [
             {
                 "date": w.created_at.date(),
                 "weight": w.weight
             }
-            for w in weights
+            for w in records
         ]
 
         return Response({
-            "period": f"{week_ago} ~ {today}",
-            "records": data
+            "start_date": str(start),
+            "end_date": str(today),
+            "records": result
         })
 
 
-# ---------------------------------------------------------
-# 📌 7) 체중 기록 생성 (디버깅 포함)
-# ---------------------------------------------------------
+# -------------------------------
+# 7) 체중 기록 추가
+# -------------------------------
 class WeightRecordCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # 🔍 디버깅 로그
-        print("📌 [DEBUG] WeightRecordCreateView POST 호출됨")
-        print("➡ request.data :", request.data)
-        print("➡ request.user :", request.user)
-        print("➡ request.auth :", request.auth)
-
         serializer = WeightRecordCreateSerializer(data=request.data)
 
         if serializer.is_valid():
-            print("✔ [DEBUG] Serializer 검증 성공")
-            weight_value = serializer.validated_data.get("weight")
-            print(f"➡ 저장될 weight 값: {weight_value}")
+            weight = serializer.validated_data["weight"]
 
-            new_record = WeightRecord.objects.create(
+            WeightRecord.objects.create(
                 user=request.user,
-                weight=weight_value
+                weight=weight,
+                created_at=timezone.now()
             )
-            print(f"✔ [DEBUG] WeightRecord 저장 완료 (id={new_record.id})")
 
-            return Response({"message": "Weight recorded successfully"}, status=201)
+            return Response({"message": "Weight record saved"}, status=201)
 
-        # 🔥 검증 실패 시 오류 출력
-        print("❌ [ERROR] Serializer 검증 실패:", serializer.errors)
         return Response(serializer.errors, status=400)
-

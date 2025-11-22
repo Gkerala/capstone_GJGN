@@ -3,9 +3,7 @@ from rest_framework import serializers
 from .models import NutritionGoal, WeightRecord
 
 
-# ---------------------------------------------------------
-# 📌 1) NutritionGoal 기본 Serializer
-# ---------------------------------------------------------
+# NutritionGoal 전체 조회용
 class NutritionGoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = NutritionGoal
@@ -13,18 +11,14 @@ class NutritionGoalSerializer(serializers.ModelSerializer):
         read_only_fields = ("user", "bmr", "activity_level", "updated_at")
 
 
-# ---------------------------------------------------------
-# 📌 2) NutritionGoal 수동 수정용 Serializer
-# ---------------------------------------------------------
+# NutritionGoal 수동 수정용
 class GoalUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = NutritionGoal
         fields = ("calorie", "protein", "carbs", "fat")
 
 
-# ---------------------------------------------------------
-# 📌 3) 체중 기록 생성용 Serializer
-# ---------------------------------------------------------
+# 체중 기록 생성
 class WeightRecordCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeightRecord
