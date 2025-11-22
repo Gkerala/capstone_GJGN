@@ -30,7 +30,7 @@ class AnalysisActivity : AppCompatActivity() {
     private lateinit var btnPrevWeek: ImageView
     private lateinit var btnNextWeek: ImageView
 
-    // API 24 호환 Calendar 기반 날짜
+    // 기준 날짜 (API 24 호환)
     private val calendar: Calendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,26 +50,28 @@ class AnalysisActivity : AppCompatActivity() {
         setupBottomNav()
     }
 
-    // ----------------------------------------------------------------
-    // 🔁 날짜 계산 (API 24 호환)
-    // ----------------------------------------------------------------
+    // ============================================================
+    // 🔁 날짜 계산 (ISO 주간 계산 - Monday 기준)
+    // ============================================================
 
     private fun getCurrentMonday(): Calendar {
         val cal = calendar.clone() as Calendar
         val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
 
-        // Calendar: 일=1, 월=2...
         val diff = if (dayOfWeek == Calendar.SUNDAY) -6 else (Calendar.MONDAY - dayOfWeek)
-
         cal.add(Calendar.DAY_OF_MONTH, diff)
         return cal
     }
 
-    private fun updateWeekRangeText() {
-        val monday = getCurrentMonday()
-        val sunday = (monday.clone() as Calendar).apply {
+    private fun getCurrentSunday(): Calendar {
+        return (getCurrentMonday().clone() as Calendar).apply {
             add(Calendar.DAY_OF_MONTH, 6)
         }
+    }
+
+    private fun updateWeekRangeText() {
+        val monday = getCurrentMonday()
+        val sunday = getCurrentSunday()
 
         val sdf = SimpleDateFormat("MM.dd", Locale.KOREA)
         tvWeekRange.text = "${sdf.format(monday.time)} ~ ${sdf.format(sunday.time)}"
@@ -91,16 +93,21 @@ class AnalysisActivity : AppCompatActivity() {
         }
     }
 
+    private fun getQueryDate(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
+        return sdf.format(calendar.time)
+    }
+
     private fun loadWeeklyData() {
         loadWeeklyCalories()
         loadWeeklyWeight()
     }
 
-    // ----------------------------------------------------------------
+    // ============================================================
     // 📊 주간 칼로리 그래프
-    // ----------------------------------------------------------------
+    // ============================================================
     private fun loadWeeklyCalories() {
-        RetrofitClient.api.getWeeklyAnalysis()
+        RetrofitClient.api.getWeeklyAnalysis(getQueryDate())
             .enqueue(object : Callback<WeeklyAnalysisResponse> {
                 override fun onResponse(
                     call: Call<WeeklyAnalysisResponse>,
@@ -114,6 +121,7 @@ class AnalysisActivity : AppCompatActivity() {
                         BarEntry(i.toFloat(), day.calories.toFloat())
                     }
 
+
                     val dataSet = BarDataSet(entries, "주간 칼로리")
                     val barData = BarData(dataSet)
 
@@ -123,16 +131,16 @@ class AnalysisActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<WeeklyAnalysisResponse>, t: Throwable) {
-                    Log.e("WEEKLY_CAL", "fail", t)
+                    Log.e("WEEKLY_CAL", "Error: ${t.message}")
                 }
             })
     }
 
-    // ----------------------------------------------------------------
-    // ⚖️ 주간 체중 변화 그래프
-    // ----------------------------------------------------------------
+    // ============================================================
+    // ⚖️ 주간 체중 그래프
+    // ============================================================
     private fun loadWeeklyWeight() {
-        RetrofitClient.api.getWeeklyWeight()
+        RetrofitClient.api.getWeeklyWeight(getQueryDate())
             .enqueue(object : Callback<WeeklyWeightResponse> {
                 override fun onResponse(
                     call: Call<WeeklyWeightResponse>,
@@ -147,10 +155,9 @@ class AnalysisActivity : AppCompatActivity() {
                     val weightList = res.body()?.records ?: emptyList()
 
                     val entries = weightList.mapIndexedNotNull { idx, item ->
-                        item.weight?.let { weightValue ->
-                            Entry(idx.toFloat(), weightValue)
-                        }
+                        item.weight?.let { Entry(idx.toFloat(), it) }
                     }
+
 
                     if (entries.isEmpty()) {
                         lineChartWeight.clear()
@@ -169,15 +176,16 @@ class AnalysisActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<WeeklyWeightResponse>, t: Throwable) {
+                    Log.e("WEEKLY_WEIGHT", "Error: ${t.message}")
                     lineChartWeight.clear()
                     lineChartWeight.invalidate()
                 }
             })
     }
 
-    // ----------------------------------------------------------------
+    // ============================================================
     // ⬇️ 하단 네비게이션
-    // ----------------------------------------------------------------
+    // ============================================================
     private fun setupBottomNav() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNav.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED

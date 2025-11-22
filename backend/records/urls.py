@@ -1,4 +1,3 @@
-# backend/records/urls.py
 from django.urls import path
 from .views import (
     MealRecordCreateAPIView,
@@ -10,12 +9,37 @@ from .views import (
     WeightRecordListAPIView
 )
 
+from .views_analysis import (
+    DailyStatAPIView,
+    WeeklyAnalysisAPIView,
+    WeeklyWeightAPIView,
+)
+
 urlpatterns = [
+    # ------------------------------------------------------
+    # 📌 식단 기록
+    # ------------------------------------------------------
     path("", MealRecordListAPIView.as_view()),
     path("create/", MealRecordCreateAPIView.as_view()),
     path("<int:pk>/", MealRecordDetailAPIView.as_view()),
+
+    # ------------------------------------------------------
+    # 📌 칼로리 통계 (Weekly, Monthly)
+    # ------------------------------------------------------
     path("stats/weekly/", WeeklyStatsAPIView.as_view()),
     path("stats/monthly/", MonthlyStatsAPIView.as_view()),
-    path('weights/create/', WeightRecordCreateAPIView.as_view()),
-    path('weights/', WeightRecordListAPIView.as_view()),
+
+    # ------------------------------------------------------
+    # 📌 체중 기록
+    # ------------------------------------------------------
+    path("weights/create/", WeightRecordCreateAPIView.as_view()),
+    path("weights/", WeightRecordListAPIView.as_view()),
+
+    # ------------------------------------------------------
+    # 📊 분석 페이지용 API
+    # ------------------------------------------------------
+    path("stats/daily/", DailyStatAPIView.as_view()),
+    path("analysis/weekly/", WeeklyAnalysisAPIView.as_view()),  # 주간 칼로리 분석
+    path("weights/weekly/", WeeklyWeightAPIView.as_view()),     # 주간 체중 변화
+    path("analysis/weights/weekly/", WeeklyWeightAPIView.as_view())
 ]

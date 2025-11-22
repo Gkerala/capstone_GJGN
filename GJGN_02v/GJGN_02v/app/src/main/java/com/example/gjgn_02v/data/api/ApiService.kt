@@ -18,30 +18,22 @@ interface ApiService {
     // 🔐 Auth
     // -------------------------------------------------------------
     @POST("api/auth/login/kakao/")
-    fun loginWithKakao(
-        @Body request: KakaoLoginRequest
-    ): Call<KakaoLoginResponse>
+    fun loginWithKakao(@Body request: KakaoLoginRequest): Call<KakaoLoginResponse>
 
     @GET("api/users/me/")
     fun getMyProfile(): Call<UserProfileResponse>
 
-    @PUT("/api/users/me/goal/update/")
-    fun updateFullProfile(
-        @Body request: FullProfileRequest
-    ): Call<UserProfileResponse>
+    @PUT("api/users/me/goal/update/")
+    fun updateFullProfile(@Body request: FullProfileRequest): Call<UserProfileResponse>
 
     @GET("api/goals/me/")
     fun getGoal(): Call<UserGoalResponse>
 
     @PATCH("api/users/me/")
-    fun updateMyProfile(
-        @Body request: UserProfileRequest
-    ): Call<UserProfileResponse>
+    fun updateMyProfile(@Body request: UserProfileRequest): Call<UserProfileResponse>
 
     @PATCH("api/goals/update/")
-    fun updateGoal(
-        @Body request: UpdateGoalRequest
-    ): Call<UpdateGoalResponse>
+    fun updateGoal(@Body request: UpdateGoalRequest): Call<UpdateGoalResponse>
 
     @DELETE("api/users/delete/")
     fun deleteUser(): Call<Void>
@@ -57,18 +49,14 @@ interface ApiService {
     fun saveMeal(@Body request: SaveMealRequest): Call<SaveMealResponse>
 
     @GET("api/foods/nutrition/")
-    suspend fun getNutrition(
-        @Query("name") name: String
-    ): Response<NutritionResponse>
+    suspend fun getNutrition(@Query("name") name: String): Response<NutritionResponse>
 
 
     // -------------------------------------------------------------
     // 🍽️ Records
     // -------------------------------------------------------------
-    @POST("/api/records/create/")
-    fun createRecord(
-        @Body body: MealRecordRequest
-    ): Call<MealRecordResponse>
+    @POST("api/records/create/")
+    fun createRecord(@Body body: MealRecordRequest): Call<MealRecordResponse>
 
     @GET("api/records/today/stat/")
     fun getTodayRecords(): Call<List<MealRecordResponse>>
@@ -91,30 +79,28 @@ interface ApiService {
     @GET("api/records/analysis/weekly/")
     fun getWeeklyAnalysis(): Call<WeeklyAnalysisResponse>
 
-    @GET("api/records/week/stat/")
-    fun getWeeklyAchievement(): Call<GoalStatResponse>
+    // ❌ 기존: api/records/week/stat (삭제됨)
+    // ❌ 기존: api/records/analysis/monthly (삭제됨)
 
-    @GET("api/records/analysis/monthly/")
-    fun getMonthlyAchievement(): Call<GoalStatResponse>
+    // 현재 분석페이지는 2개만 사용
+    // 1) 주간 칼로리 분석
+    // 2) 주간 체중 변화
+    @GET("api/records/analysis/weekly/")
+    fun getWeeklyAnalysis(
+        @Query("date") date: String
+    ): Call<WeeklyAnalysisResponse>
 
-
-    // -------------------------------------------------------------
-    // 🏠 홈 통계
-    // -------------------------------------------------------------
-    @GET("api/home/statistics/")
-    fun getHomeStatistics(): Call<HomeStatisticsResponse>
-
+    @GET("api/records/analysis/weights/weekly/")
+    fun getWeeklyWeight(
+        @Query("date") date: String
+    ): Call<WeeklyWeightResponse>
 
     // -------------------------------------------------------------
     // ⚖️ 체중
     // -------------------------------------------------------------
-    @GET("api/goals/weights/weekly/")
-    fun getWeeklyWeight(): Call<WeeklyWeightResponse>
 
     @POST("api/records/weights/create/")
-    fun createWeight(
-        @Body req: WeightRequest
-    ): Call<WeightResponse>
+    fun createWeight(@Body req: WeightRequest): Call<WeightResponse>
 
     @GET("api/records/weights/")
     fun getWeights(): Call<List<WeightResponse>>

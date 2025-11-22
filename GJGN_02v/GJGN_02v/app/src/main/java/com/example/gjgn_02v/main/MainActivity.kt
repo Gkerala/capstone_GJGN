@@ -29,8 +29,6 @@ class MainActivity : AppCompatActivity() {
 
         initViews()
         loadTodayRecords()
-        loadWeeklyStat()
-        loadMonthlyStat()
         setupBottomNav()
     }
 
@@ -70,50 +68,6 @@ class MainActivity : AppCompatActivity() {
                 override fun onFailure(call: Call<List<MealRecordResponse>>, t: Throwable) {
                     tvTodayKcal.text = "0 kcal"
                     tvTodayCount.text = "0 회"
-                }
-            })
-    }
-
-
-    // 🔥 주간 달성률
-    private fun loadWeeklyStat() {
-        RetrofitClient.api.getWeeklyAchievement()
-            .enqueue(object : Callback<GoalStatResponse> {
-                override fun onResponse(
-                    call: Call<GoalStatResponse>,
-                    res: Response<GoalStatResponse>
-                ) {
-                    if (!res.isSuccessful || res.body() == null) {
-                        tvWeekly.text = "0%"
-                        return
-                    }
-                    tvWeekly.text = "${res.body()!!.achievement}%"
-                }
-
-                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {
-                    tvWeekly.text = "0%"
-                }
-            })
-    }
-
-
-    // 🔥 월간 달성률
-    private fun loadMonthlyStat() {
-        RetrofitClient.api.getMonthlyAchievement()
-            .enqueue(object : Callback<GoalStatResponse> {
-                override fun onResponse(
-                    call: Call<GoalStatResponse>,
-                    res: Response<GoalStatResponse>
-                ) {
-                    if (!res.isSuccessful || res.body() == null) {
-                        tvMonthly.text = "0%"
-                        return
-                    }
-                    tvMonthly.text = "${res.body()!!.achievement}%"
-                }
-
-                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {
-                    tvMonthly.text = "0%"
                 }
             })
     }

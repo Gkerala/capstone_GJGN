@@ -111,3 +111,37 @@ class WeightRecordSerializer(serializers.ModelSerializer):
         model = WeightRecord
         fields = ["id", "weight", "date", "created_at"]
 
+# --------------------------------------------------------
+# 🔍 날짜별 통계
+# --------------------------------------------------------
+class DailyStatSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    total_calories = serializers.FloatField()
+
+
+# --------------------------------------------------------
+# 📊 주간 칼로리 분석
+# --------------------------------------------------------
+class WeeklyDayCaloriesSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    calories = serializers.FloatField()
+
+
+class WeeklyAnalysisSerializer(serializers.Serializer):
+    week_start = serializers.DateField()
+    week_end = serializers.DateField()
+    weekly_records = WeeklyDayCaloriesSerializer(many=True)
+
+
+# --------------------------------------------------------
+# ⚖️ 주간 체중 변화
+# --------------------------------------------------------
+class WeeklyWeightItemSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    weight = serializers.FloatField()
+
+
+class WeeklyWeightSerializer(serializers.Serializer):
+    week_start = serializers.DateField()
+    week_end = serializers.DateField()
+    records = WeeklyWeightItemSerializer(many=True)
