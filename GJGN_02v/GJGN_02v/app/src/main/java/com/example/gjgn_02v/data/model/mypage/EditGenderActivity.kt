@@ -1,8 +1,6 @@
 package com.example.gjgn_02v.data.model.mypage
 
 import android.os.Bundle
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.data.api.RetrofitClient
@@ -22,13 +20,35 @@ class EditGenderActivity : AppCompatActivity() {
         binding = ActivityEditGenderBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 저장
-        binding.btnSave.setOnClickListener { saveGender() }
+        loadCurrentGender()
 
-        // 뒤로가기
+        binding.btnSave.setOnClickListener { saveGender() }
         binding.btnBack.setOnClickListener { finish() }
     }
 
+    /** 현재 성별 불러오기 → 라디오 버튼 자동 선택 */
+    private fun loadCurrentGender() {
+        RetrofitClient.api.getMyProfile()
+            .enqueue(object : Callback<UserProfileResponse> {
+                override fun onResponse(
+                    call: Call<UserProfileResponse>,
+                    response: Response<UserProfileResponse>
+                ) {
+                    val user = response.body() ?: return
+
+                    when (user.gender.lowercase()) {
+                        "male" -> binding.radioMale.isChecked = true
+                        "female" -> binding.radioFemale.isChecked = true
+                    }
+                }
+
+                override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {
+                    // 실패해도 화면은 표시되므로 무시
+                }
+            })
+    }
+
+    /** 성별 저장 */
     private fun saveGender() {
 
         val gender = when (binding.radioGender.checkedRadioButtonId) {
@@ -43,11 +63,8 @@ class EditGenderActivity : AppCompatActivity() {
         }
 
         val request = UserProfileRequest(
-            name = null,
-            birth = null,
-            gender = gender,
-            height = null,
-            weight = null
+            gender = gender
+            // 나머지는 null (서버가 기존값 유지)
         )
 
         RetrofitClient.api.updateMyProfile(request)

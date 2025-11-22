@@ -32,6 +32,7 @@ class EditGoalWeightActivity : AppCompatActivity() {
 
         binding.npGoalWeight10.minValue = 0
         binding.npGoalWeight10.maxValue = 9
+        binding.npGoalWeight10.value = 7
 
         binding.npGoalWeight1.minValue = 0
         binding.npGoalWeight1.maxValue = 9

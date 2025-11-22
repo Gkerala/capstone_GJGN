@@ -1,21 +1,14 @@
 # goals/urls.py
 from django.urls import path
 from .views import (
+    UserGoalRetrieveAPIView,
+    UserGoalUpdateAPIView,
     AutoGoalGenerateAPIView,
-    GoalRetrieveAPIView,
-    GoalUpdateAPIView,
-    WeeklyGoalStatAPIView,
-    MonthlyGoalStatAPIView,
-    WeeklyWeightView,
-    WeightRecordCreateView,
 )
 
 urlpatterns = [
-    path("auto/", AutoGoalGenerateAPIView.as_view()),
-    path("get/", GoalRetrieveAPIView.as_view()),
-    path("update/", GoalUpdateAPIView.as_view()),
-    path("stats/weekly/", WeeklyGoalStatAPIView.as_view()),
-    path("stats/monthly/", MonthlyGoalStatAPIView.as_view()),
-    path("weights/weekly/", WeeklyWeightView.as_view()),
-    path("weights/", WeightRecordCreateView.as_view()),
+    path("me/", UserGoalRetrieveAPIView.as_view()),
+    path("update/", UserGoalUpdateAPIView.as_view()),
+    path("auto-generate/", AutoGoalGenerateAPIView.as_view()),
 ]
+

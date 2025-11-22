@@ -1,39 +1,44 @@
 from rest_framework import serializers
-from .models import CustomUser, UserGoal, UserProfile
+from .models import CustomUser, UserProfile
 from datetime import date
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ["id", "username", "email", "nickname", "height", "weight", "gender", "age", "profile_image"]
+        fields = ["id", "username", "email", "nickname", "height", "weight", "gender", "age"]
         read_only_fields = ["id"]
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=False)
+
     class Meta:
         model = CustomUser
-        fields = ["nickname", "height", "weight", "profile_image"]
+        fields = ["name", "nickname", "height", "weight", "gender"]
 
+    def update(self, instance, validated_data):
 
-class UserGoalUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserGoal
-        fields = [
-            "goal_type",
-            "goal_weight",
-            "activity_level",
-            "target_kcal",
-            "target_carb",
-            "target_protein",
-            "target_fat",
-        ]
+        # name → nickname 매핑
+        if "name" in validated_data:
+            instance.nickname = validated_data["name"]
 
-    def validate(self, data):
-        kcal = data.get("target_kcal")
-        if kcal is not None and kcal < 800:
-            raise serializers.ValidationError("하루 목표 칼로리는 최소 800 이상이어야 합니다.")
-        return data
+        # 기존 nickname 직접 업데이트도 가능
+        if "nickname" in validated_data:
+            instance.nickname = validated_data["nickname"]
+            
+        if "gender" in validated_data:
+            instance.gender = validated_data["gender"]
+
+        if "height" in validated_data:
+            instance.height = validated_data["height"]
+
+        if "weight" in validated_data:
+            instance.weight = validated_data["weight"]
+
+        instance.save()
+        return instance
+
 
 
 class FullProfileUpdateSerializer(serializers.Serializer):

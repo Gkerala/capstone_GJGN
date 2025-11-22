@@ -1,24 +1,38 @@
 # goals/serializers.py
 from rest_framework import serializers
-from .models import NutritionGoal, WeightRecord
+from .models import UserGoal, WeightRecord
 
+class UserGoalSerializer(serializers.ModelSerializer):
+    target_kcal = serializers.IntegerField(source='kcal')
+    target_carb = serializers.IntegerField(source='carbs')
+    target_protein = serializers.IntegerField(source='protein')
+    target_fat = serializers.IntegerField(source='fat')
 
-# NutritionGoal 전체 조회용
-class NutritionGoalSerializer(serializers.ModelSerializer):
     class Meta:
-        model = NutritionGoal
-        fields = "__all__"
-        read_only_fields = ("user", "bmr", "activity_level", "updated_at")
+        model = UserGoal
+        fields = [
+            "goal_type", "goal_weight", "activity_level",
+            "target_kcal", "target_carb",
+            "target_protein", "target_fat"
+        ]
 
 
-# NutritionGoal 수동 수정용
-class GoalUpdateSerializer(serializers.ModelSerializer):
+
+class UserGoalUpdateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = NutritionGoal
-        fields = ("calorie", "protein", "carbs", "fat")
+        model = UserGoal
+        fields = ["goal_type", "goal_weight", "activity_level"]
+
+    def update(self, instance, validated_data):
+
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+
+        instance.save()
+        return instance
 
 
-# 체중 기록 생성
+
 class WeightRecordCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeightRecord

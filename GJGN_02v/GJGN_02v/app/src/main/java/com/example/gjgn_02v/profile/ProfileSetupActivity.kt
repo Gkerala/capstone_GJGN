@@ -77,9 +77,6 @@ class ProfileSetupActivity : AppCompatActivity() {
             birth = viewModel.birth!!,
             height = viewModel.height!!,
             weight = viewModel.weight!!,
-            target_weight = viewModel.targetWeight!!,
-            activity_level = viewModel.activityLevel!!,
-            goal_type = viewModel.goalType!!
         )
 
         Log.d("PROFILE_DEBUG", "서버로 보낼 JSON = " + Gson().toJson(request))

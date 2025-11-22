@@ -7,6 +7,7 @@ import com.example.gjgn_02v.databinding.ActivityEditActivityLevelBinding
 import com.example.gjgn_02v.data.api.RetrofitClient
 import com.example.gjgn_02v.data.model.goals.UpdateGoalRequest
 import com.example.gjgn_02v.data.model.goals.UpdateGoalResponse
+import com.example.gjgn_02v.data.model.goals.UserGoalResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -20,10 +21,41 @@ class EditActivityLevelActivity : AppCompatActivity() {
         binding = ActivityEditActivityLevelBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        loadCurrentActivityLevel()
+
         binding.btnSave.setOnClickListener { saveActivityLevel() }
         binding.btnBack.setOnClickListener { finish() }
     }
 
+    /** 🔹 현재 활동량(activity_level)을 API에서 불러와 라디오 버튼 체크 */
+    private fun loadCurrentActivityLevel() {
+        RetrofitClient.api.getGoal()
+            .enqueue(object : Callback<UserGoalResponse> {
+                override fun onResponse(
+                    call: Call<UserGoalResponse>,
+                    response: Response<UserGoalResponse>
+                ) {
+                    val goal = response.body() ?: return
+                    setCheckedRadio(goal.activity_level)
+                }
+
+                override fun onFailure(call: Call<UserGoalResponse>, t: Throwable) {
+                }
+            })
+    }
+
+    /** 🔹 API에서 받아온 level값(1~5)을 라디오 버튼에 매핑 */
+    private fun setCheckedRadio(level: Int) {
+        when (level) {
+            1 -> binding.rbVeryLow.isChecked = true
+            2 -> binding.rbLow.isChecked = true
+            3 -> binding.rbMedium.isChecked = true
+            4 -> binding.rbHigh.isChecked = true
+            5 -> binding.rbVeryHigh.isChecked = true
+        }
+    }
+
+    /** 🔹 활동량 저장 */
     private fun saveActivityLevel() {
         val selectedId = binding.radioGroupActivity.checkedRadioButtonId
 
@@ -32,7 +64,7 @@ class EditActivityLevelActivity : AppCompatActivity() {
             return
         }
 
-        val activityLevel: Int = when (selectedId) {
+        val activityLevel = when (selectedId) {
             binding.rbVeryLow.id -> 1
             binding.rbLow.id -> 2
             binding.rbMedium.id -> 3
@@ -41,10 +73,7 @@ class EditActivityLevelActivity : AppCompatActivity() {
             else -> 3
         }
 
-        // Goal API 요청으로 활동량 수정
-        val request = UpdateGoalRequest(
-            activity_level = activityLevel
-        )
+        val request = UpdateGoalRequest(activity_level = activityLevel)
 
         RetrofitClient.api.updateGoal(request)
             .enqueue(object : Callback<UpdateGoalResponse> {
@@ -62,7 +91,7 @@ class EditActivityLevelActivity : AppCompatActivity() {
                     } else {
                         Toast.makeText(
                             this@EditActivityLevelActivity,
-                            "수정 실패",
+                            "수정 실패 (${response.code()})",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -71,7 +100,7 @@ class EditActivityLevelActivity : AppCompatActivity() {
                 override fun onFailure(call: Call<UpdateGoalResponse>, t: Throwable) {
                     Toast.makeText(
                         this@EditActivityLevelActivity,
-                        "서버 오류 발생",
+                        "서버 오류 발생: ${t.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

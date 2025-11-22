@@ -18,6 +18,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
+        <!-- 🔥 기존 이름 표시 (읽기 전용) -->
+        <TextView
+            android:id="@+id/tvCurrentName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="현재 이름: -"
+            android:textSize="16sp"
+            android:textColor="#555555"
+            android:padding="8dp"
+            android:background="#EEEEEE"
+            android:layout_marginBottom="16dp" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

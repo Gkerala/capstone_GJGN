@@ -26,23 +26,35 @@ class EditWeightActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
     }
 
+    /** NumberPicker 기본 설정 */
     private fun setupPickers() {
+        // 몸무게는 보통 0~299kg 범위
         binding.npWeight100.minValue = 0
         binding.npWeight100.maxValue = 2
+        binding.npWeight100.value = 0  // 기본값 0xx
 
         binding.npWeight10.minValue = 0
         binding.npWeight10.maxValue = 9
+        binding.npWeight10.value = 7   // 기본값 7x
 
         binding.npWeight1.minValue = 0
         binding.npWeight1.maxValue = 9
+        binding.npWeight1.value = 0    // 기본값 x0
 
         binding.npWeightDecimal.minValue = 0
         binding.npWeightDecimal.maxValue = 9
+        binding.npWeightDecimal.value = 0   // 기본값 0.x
     }
 
+    /** 서버로 몸무게 저장 */
     private fun saveWeight() {
+
+        // "070.0" 같은 경우도 Float 변환 가능함
         val weightStr =
-            "${binding.npWeight100.value}${binding.npWeight10.value}${binding.npWeight1.value}.${binding.npWeightDecimal.value}"
+            "${binding.npWeight100.value}" +
+                    "${binding.npWeight10.value}" +
+                    "${binding.npWeight1.value}." +
+                    "${binding.npWeightDecimal.value}"
 
         val weight = weightStr.toFloatOrNull()
 
@@ -51,7 +63,6 @@ class EditWeightActivity : AppCompatActivity() {
             return
         }
 
-        // ✅ UserProfileRequest 구조에 맞게 필요한 필드만 업데이트
         val request = UserProfileRequest(
             name = null,
             birth = null,
@@ -76,7 +87,7 @@ class EditWeightActivity : AppCompatActivity() {
                     } else {
                         Toast.makeText(
                             this@EditWeightActivity,
-                            "수정 실패",
+                            "수정 실패: ${response.code()}",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -85,7 +96,7 @@ class EditWeightActivity : AppCompatActivity() {
                 override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {
                     Toast.makeText(
                         this@EditWeightActivity,
-                        "서버 오류 발생",
+                        "서버 오류 발생: ${t.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

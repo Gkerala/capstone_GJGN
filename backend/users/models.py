@@ -38,23 +38,3 @@ class UserProfile(models.Model):
     # 목표 모드만 유지
     goal_mode = models.CharField(max_length=20, default="maintain")
 
-
-class UserGoal(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-    # 새로 추가된 필드
-    goal_type = models.IntegerField(null=True, blank=True)      # 1,2,3 (유지/감량/증량)
-    goal_weight = models.FloatField(null=True, blank=True)       # 목표 체중
-    activity_level = models.IntegerField(default=3)              # 1~5 값
-
-    # 기존 목표량
-    target_kcal = models.IntegerField(default=2000)
-    target_carb = models.IntegerField(default=250)
-    target_protein = models.IntegerField(default=70)
-    target_fat = models.IntegerField(default=60)
-
-    auto_mode = models.BooleanField(default=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.user.username} Goal"

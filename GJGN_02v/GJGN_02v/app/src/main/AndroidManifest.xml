@@ -97,5 +97,44 @@
             android:label="내 정보"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
+        <activity
+            android:name=".main.ProfileEditActivity"
+            android:exported="true"
+            android:label="프로필 수정"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <!-- 프로필 개별 수정 화면들 -->
+        <activity
+            android:name="com.example.gjgn_02v.data.model.mypage.EditNameActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.gjgn_02v.data.model.mypage.EditBirthActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.gjgn_02v.data.model.mypage.EditGenderActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.gjgn_02v.data.model.mypage.EditHeightActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.gjgn_02v.data.model.mypage.EditWeightActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.gjgn_02v.data.model.mypage.EditActivityLevelActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.gjgn_02v.data.model.mypage.EditGoalTypeActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.gjgn_02v.data.model.mypage.EditGoalWeightActivity"
+            android:exported="false" />
+
     </application>
 </manifest>

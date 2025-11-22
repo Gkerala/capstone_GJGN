@@ -9,3 +9,4 @@ data class UpdateGoalRequest(
     val protein: Int? = null,
     val fat: Int? = null
 )
+

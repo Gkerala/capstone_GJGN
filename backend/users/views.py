@@ -7,7 +7,6 @@ from users.serializers import (
     UserProfileUpdateSerializer,
     FullProfileUpdateSerializer,
 )
-from users.models import UserGoal
 
 
 class UserDetailView(APIView):

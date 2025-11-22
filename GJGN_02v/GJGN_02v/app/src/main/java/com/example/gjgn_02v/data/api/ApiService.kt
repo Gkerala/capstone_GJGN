@@ -27,39 +27,37 @@ interface ApiService {
     @GET("api/users/me/")
     fun getMyProfile(): Call<UserProfileResponse>
 
-
-    // ⭐ 프로필(온보딩) 전체 저장
-    @PUT("api/users/me/profile/")
+    // 전체 프로필 저장 (온보딩)
+    @PUT("/api/users/me/goal/update/")
     fun updateFullProfile(
         @Body request: FullProfileRequest
     ): Call<UserProfileResponse>
 
-    @PATCH("/user/update-profile/")
+    // ❌ 기존 : 잘못된 API
+    // @GET("api/users/me/goal/")
+    // fun getGoal(): Call<UserGoalResponse>
+
+    // ✅ NutritionGoal 조회 (신규 API)
+    @GET("api/goals/me/")
+    fun getGoal(): Call<UserGoalResponse>
+
+    @PATCH("api/users/me/")
     fun updateMyProfile(
         @Body request: UserProfileRequest
     ): Call<UserProfileResponse>
 
-    // ▶ 목표 정보 수정
-    @PATCH("/api/goals/update/")
+    // 목표 정보 수정
+    @PATCH("api/goals/update/")
     fun updateGoal(
         @Body request: UpdateGoalRequest
     ): Call<UpdateGoalResponse>
 
 
-
     // -------------------------------------------------------------
     // 🔐 Delete User
     // -------------------------------------------------------------
-
     @DELETE("api/users/delete/")
     fun deleteUser(): Call<Void>
-
-
-    // -------------------------------------------------------------
-    // 🎯 Goals
-    // -------------------------------------------------------------
-    @GET("api/goals/")
-    fun getGoal(): Call<GoalResponse>
 
 
     // -------------------------------------------------------------

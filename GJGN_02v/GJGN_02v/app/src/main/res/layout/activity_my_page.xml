@@ -28,6 +28,46 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
+            <LinearLayout
+                android:id="@+id/layoutNutrition"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tvKcal"
+                    android:text="목표 칼로리: -- kcal"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/tvCarb"
+                    android:text="탄수화물: -- g"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/tvProtein"
+                    android:text="단백질: -- g"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/tvFat"
+                    android:text="지방: -- g"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+
             <!-- ⭐ 신규 추가된 버튼 3개 -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEditProfile"
