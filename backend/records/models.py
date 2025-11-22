@@ -45,8 +45,8 @@ class WeightRecord(models.Model):
         related_name="weight_records"
     )
     weight = models.FloatField()
-    recorded_at = models.DateTimeField()
+    date = models.DateField()  # 🔥 recorded_at → date 로 변경
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user} - {self.weight} kg ({self.recorded_at.date()})"
+        return f"{self.user} - {self.weight} kg ({self.date})"

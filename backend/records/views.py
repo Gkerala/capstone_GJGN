@@ -124,7 +124,7 @@ class WeightRecordCreateAPIView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save()   # user는 serializer 내부에서 자동 처리됨
+        serializer.save()  # user는 serializer에서 자동 처리됨
 
 
 class WeightRecordListAPIView(generics.ListAPIView):
@@ -132,4 +132,4 @@ class WeightRecordListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return WeightRecord.objects.filter(user=self.request.user).order_by("-recorded_at")
+        return WeightRecord.objects.filter(user=self.request.user).order_by("-date")
