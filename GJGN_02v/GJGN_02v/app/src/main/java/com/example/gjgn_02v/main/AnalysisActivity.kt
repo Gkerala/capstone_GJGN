@@ -30,7 +30,6 @@ class AnalysisActivity : AppCompatActivity() {
     private lateinit var btnPrevWeek: ImageView
     private lateinit var btnNextWeek: ImageView
 
-    // 기준 날짜 (API 24 호환)
     private val calendar: Calendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +50,7 @@ class AnalysisActivity : AppCompatActivity() {
     }
 
     // ============================================================
-    // 🔁 날짜 계산 (ISO 주간 계산 - Monday 기준)
+    // 🗓 ISO week (Monday ~ Sunday)
     // ============================================================
 
     private fun getCurrentMonday(): Calendar {
@@ -113,7 +112,11 @@ class AnalysisActivity : AppCompatActivity() {
                     call: Call<WeeklyAnalysisResponse>,
                     res: Response<WeeklyAnalysisResponse>
                 ) {
-                    if (!res.isSuccessful || res.body() == null) return
+                    if (!res.isSuccessful || res.body() == null) {
+                        barChartWeekly.clear()
+                        barChartWeekly.invalidate()
+                        return
+                    }
 
                     val list = res.body()?.weekly_records ?: emptyList()
 
@@ -123,7 +126,9 @@ class AnalysisActivity : AppCompatActivity() {
 
 
                     val dataSet = BarDataSet(entries, "주간 칼로리")
-                    val barData = BarData(dataSet)
+                    val barData = BarData(dataSet).apply {
+                        barWidth = 0.4f
+                    }
 
                     barChartWeekly.data = barData
                     barChartWeekly.description.isEnabled = false
@@ -132,12 +137,14 @@ class AnalysisActivity : AppCompatActivity() {
 
                 override fun onFailure(call: Call<WeeklyAnalysisResponse>, t: Throwable) {
                     Log.e("WEEKLY_CAL", "Error: ${t.message}")
+                    barChartWeekly.clear()
+                    barChartWeekly.invalidate()
                 }
             })
     }
 
     // ============================================================
-    // ⚖️ 주간 체중 그래프
+    // ⚖ 주간 체중 그래프
     // ============================================================
     private fun loadWeeklyWeight() {
         RetrofitClient.api.getWeeklyWeight(getQueryDate())
@@ -184,7 +191,7 @@ class AnalysisActivity : AppCompatActivity() {
     }
 
     // ============================================================
-    // ⬇️ 하단 네비게이션
+    // ⬇️ 하단 네비
     // ============================================================
     private fun setupBottomNav() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)

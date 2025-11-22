@@ -77,28 +77,19 @@ interface ApiService {
     // 📊 분석
     // -------------------------------------------------------------
     @GET("api/records/analysis/weekly/")
-    fun getWeeklyAnalysis(): Call<WeeklyAnalysisResponse>
-
-    // ❌ 기존: api/records/week/stat (삭제됨)
-    // ❌ 기존: api/records/analysis/monthly (삭제됨)
-
-    // 현재 분석페이지는 2개만 사용
-    // 1) 주간 칼로리 분석
-    // 2) 주간 체중 변화
-    @GET("api/records/analysis/weekly/")
     fun getWeeklyAnalysis(
         @Query("date") date: String
     ): Call<WeeklyAnalysisResponse>
 
-    @GET("api/records/analysis/weights/weekly/")
+    @GET("api/records/weights/weekly/")
     fun getWeeklyWeight(
         @Query("date") date: String
     ): Call<WeeklyWeightResponse>
 
-    // -------------------------------------------------------------
-    // ⚖️ 체중
-    // -------------------------------------------------------------
 
+    // -------------------------------------------------------------
+    // ⚖️ 체중 (단독 조회/생성)
+    // -------------------------------------------------------------
     @POST("api/records/weights/create/")
     fun createWeight(@Body req: WeightRequest): Call<WeightResponse>
 
