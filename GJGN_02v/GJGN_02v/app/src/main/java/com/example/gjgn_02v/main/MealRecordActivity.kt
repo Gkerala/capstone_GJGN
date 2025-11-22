@@ -31,6 +31,7 @@ import retrofit2.Response
 import okhttp3.RequestBody.Companion.toRequestBody
 import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
+import com.example.gjgn_02v.data.model.records.FoodData
 
 class MealRecordActivity : AppCompatActivity() {
 
@@ -365,12 +366,17 @@ class MealRecordActivity : AppCompatActivity() {
                     val newGram = input.text.toString().toIntOrNull()
 
                     if (newGram != null && newGram > 0) {
+
+                        // 🔥 새 값 계산
                         val updated = scaleNutrition(item, newGram)
+
+                        // 🔥 리스트 내부 데이터 갱신
                         nutritionList[idx] = updated
 
-                        txtGrams.text = "${item.grams ?: 100f} g"
-                        txtKcal.text = "${item.calories ?: 0f} kcal"
-                        txtCarbs.text = "탄수화물: ${item.carbs ?: 0f}"
+                        // 🔥 UI 값도 updated 값으로 갱신해야 함 (기존 item 사용하면 안 됨)
+                        txtGrams.text = "${updated.grams} g"
+                        txtKcal.text = "${updated.calories} kcal"
+                        txtCarbs.text = "탄수화물: ${updated.carbs}"
                         txtProtein.text = "단백질: ${updated.protein}"
                         txtFat.text = "지방: ${updated.fat}"
                         txtSugar.text = "당: ${updated.sugar}"
@@ -380,6 +386,7 @@ class MealRecordActivity : AppCompatActivity() {
                 dialog.setNegativeButton("취소", null)
                 dialog.show()
             }
+
 
             chk.setOnCheckedChangeListener { _, isChecked ->
                 nutritionList[idx] = nutritionList[idx].copy(
@@ -436,27 +443,31 @@ class MealRecordActivity : AppCompatActivity() {
     // ------------------------------------------------------------
     private fun saveRecord() {
 
-        // 📌 단일 음식 선택 저장
+        // ✔ 단일 음식 저장
         if (selectedFood != null && singleNutritionResult != null) {
 
             val n = singleNutritionResult!!
 
             val req = MealRecordRequest(
-                food_id = selectedFood!!.id,
                 meal_type = selectedMealType,
-                amount = n.grams ?: 1f,
-                name = n.name,
-                calories = n.calories,
-                carbs = n.carbs,
-                protein = n.protein,
-                fat = n.fat,
-                sugar = n.sugar
+                foods = listOf(
+                    FoodData(
+                        food_name = n.name ?: "-",
+                        amount = n.grams ?: 1f,
+                        kcal = n.calories ?: 0f,
+                        carb = n.carbs ?: 0f,
+                        protein = n.protein ?: 0f,
+                        fat = n.fat ?: 0f,
+                        sugar = n.sugar ?: 0f
+                    )
+                )
             )
-            sendRecordToServer(req)
+
+            sendMealRecord(req)
             return
         }
 
-        // 📌 YOLO 여러 개 저장
+        // ✔ YOLO 여러 개 저장
         val selectedItems = nutritionList.filter { it.selected }
 
         if (selectedItems.isEmpty()) {
@@ -468,7 +479,25 @@ class MealRecordActivity : AppCompatActivity() {
     }
 
 
-    private fun sendRecordToServer(req: MealRecordRequest) {
+
+
+    private fun sendRecordToServer(n: NutritionResponse) {
+
+        val req = MealRecordRequest(
+            meal_type = selectedMealType,
+            foods = listOf(
+                FoodData(
+                    food_name = n.name ?: "-",
+                    amount = n.grams ?: 1f,
+                    kcal = n.calories ?: 0f,
+                    carb = n.carbs ?: 0f,
+                    protein = n.protein ?: 0f,
+                    fat = n.fat ?: 0f,
+                    sugar = n.sugar ?: 0f
+                )
+            )
+        )
+
         RetrofitClient.api.createRecord(req)
             .enqueue(object : Callback<MealRecordResponse> {
                 override fun onResponse(
@@ -490,26 +519,26 @@ class MealRecordActivity : AppCompatActivity() {
     }
 
     private fun saveMultipleFoods(items: List<NutritionResponse>) {
-        lifecycleScope.launch {
-            for (n in items) {
 
-                val req = MealRecordRequest(
-                    food_id = null,
-                    meal_type = selectedMealType,
-                    amount = n.grams ?: 1f,
-                    name = n.name,
-                    calories = n.calories,
-                    carbs = n.carbs,
-                    protein = n.protein,
-                    fat = n.fat,
-                    sugar = n.sugar
-                )
-
-                sendRecordToServer(req)
-            }
+        val foodList = items.map { n ->
+            FoodData(
+                food_name = n.name ?: "-",
+                amount = n.grams ?: 1f,
+                kcal = n.calories ?: 0f,
+                carb = n.carbs ?: 0f,
+                protein = n.protein ?: 0f,
+                fat = n.fat ?: 0f,
+                sugar = n.sugar ?: 0f
+            )
         }
-    }
 
+        val req = MealRecordRequest(
+            meal_type = selectedMealType,
+            foods = foodList
+        )
+
+        sendMealRecord(req)
+    }
 
     // ------------------------------------------------------------
     // 9. g 변경에 따른 자동 비율 계산 (NutritionResponse 최신 필드 기준)
@@ -559,5 +588,42 @@ class MealRecordActivity : AppCompatActivity() {
         cursor?.close()
         return result ?: ""
     }
+
+    private fun sendMealRecord(req: MealRecordRequest) {
+
+        RetrofitClient.api.createRecord(req)
+            .enqueue(object : Callback<MealRecordResponse> {
+
+                override fun onResponse(
+                    call: Call<MealRecordResponse>,
+                    response: Response<MealRecordResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(
+                            this@MealRecordActivity,
+                            "저장 완료!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    } else {
+                        Toast.makeText(
+                            this@MealRecordActivity,
+                            "저장 실패(서버 오류)",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<MealRecordResponse>, t: Throwable) {
+                    Toast.makeText(
+                        this@MealRecordActivity,
+                        "서버 연결 실패",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    Log.e("RECORD", "save error: ${t.message}")
+                }
+            })
+    }
+
 }
 

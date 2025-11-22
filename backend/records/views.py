@@ -3,14 +3,15 @@ from datetime import timedelta
 from django.db.models import Sum
 from django.utils.timezone import now
 
-from rest_framework import generics, status
+from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import MealRecord
+from .models import MealRecord, WeightRecord
 from .serializers import (
     MealRecordCreateSerializer,
-    MealRecordSerializer,
+    WeightRecordSerializer,
+    WeightRecordCreateSerializer,
     MealRecordListSerializer,
     MealRecordDetailSerializer,
 )
@@ -21,10 +22,9 @@ from .serializers import (
 # ------------------------------------------
 class MealRecordCreateAPIView(generics.CreateAPIView):
     serializer_class = MealRecordCreateSerializer
-    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save()
 
 
 # ------------------------------------------
@@ -118,3 +118,18 @@ class MonthlyStatsAPIView(generics.GenericAPIView):
             "month": today.strftime("%Y-%m"),
             "totals": data,
         })
+
+class WeightRecordCreateAPIView(generics.CreateAPIView):
+    serializer_class = WeightRecordCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save()   # user는 serializer 내부에서 자동 처리됨
+
+
+class WeightRecordListAPIView(generics.ListAPIView):
+    serializer_class = WeightRecordSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return WeightRecord.objects.filter(user=self.request.user).order_by("-recorded_at")

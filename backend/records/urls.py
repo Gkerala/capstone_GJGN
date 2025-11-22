@@ -6,6 +6,8 @@ from .views import (
     MealRecordDetailAPIView,
     WeeklyStatsAPIView,
     MonthlyStatsAPIView,
+    WeightRecordCreateAPIView, 
+    WeightRecordListAPIView
 )
 
 urlpatterns = [
@@ -14,4 +16,6 @@ urlpatterns = [
     path("<int:pk>/", MealRecordDetailAPIView.as_view()),
     path("stats/weekly/", WeeklyStatsAPIView.as_view()),
     path("stats/monthly/", MonthlyStatsAPIView.as_view()),
+    path("weights/create/", WeightRecordCreateAPIView.as_view(), name="weight_create"),
+    path("weights/", WeightRecordListAPIView.as_view(), name="weight_list"),
 ]

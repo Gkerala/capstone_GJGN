@@ -9,7 +9,8 @@ class MealRecord(models.Model):
         on_delete=models.CASCADE,
         related_name="meal_records"
     )
-    meal_time = models.DateTimeField()
+    meal_time = models.DateTimeField(auto_now_add=True)
+    meal_type = models.CharField(max_length=50)   # 새로 추가됨
     memo = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="records/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -17,17 +18,17 @@ class MealRecord(models.Model):
     def __str__(self):
         return f"{self.user.email} - {self.meal_time}"
 
-
 class MealFood(models.Model):
     record = models.ForeignKey(
         MealRecord,
         on_delete=models.CASCADE,
         related_name="foods"
     )
-    name = models.CharField(max_length=255)
+
+    food_name = models.CharField(max_length=255)  # name → food_name 로 변경
     amount = models.FloatField(default=1.0)
 
-    # 영양정보
+    # 영양정보 (프론트와 동일 이름)
     kcal = models.FloatField(default=0)
     carb = models.FloatField(default=0)
     protein = models.FloatField(default=0)
@@ -35,5 +36,18 @@ class MealFood(models.Model):
     sugar = models.FloatField(default=0)
 
     def __str__(self):
-        return f"{self.record.id} - {self.name}"
+        return f"{self.record.id} - {self.food_name}"
 
+class WeightRecord(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="weight_records"
+    )
+    weight = models.FloatField()
+    memo = models.TextField(blank=True, null=True)
+    recorded_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.weight} kg ({self.recorded_at.date()})"

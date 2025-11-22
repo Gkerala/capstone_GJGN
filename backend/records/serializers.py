@@ -1,48 +1,69 @@
 from rest_framework import serializers
-from .models import MealRecord, MealFood
+from .models import MealRecord, MealFood, WeightRecord
 
 
-# ----------------------------------------
-# MealFood (기본 serializer)
-# ----------------------------------------
+# --------------------------------------------------------
+# 1) MealFoodSerializer (Android 구조 그대로 받는 버전)
+# --------------------------------------------------------
 class MealFoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = MealFood
-        fields = ["id", "food_name", "amount", "kcal", "carb", "protein", "fat", "sugar"]
+        fields = [
+            "food_name",
+            "amount",
+            "kcal",
+            "carb",
+            "protein",
+            "fat",
+            "sugar",
+        ]
 
 
-# ----------------------------------------
-# MealRecord 생성용 (앱에서 영양정보 포함해서 보냄)
-# ----------------------------------------
+# --------------------------------------------------------
+# 2) MealRecord 생성용 serializer
+# --------------------------------------------------------
 class MealRecordCreateSerializer(serializers.ModelSerializer):
     foods = MealFoodSerializer(many=True)
 
     class Meta:
         model = MealRecord
-        fields = ["meal_time", "memo", "image", "foods"]
+        fields = ["meal_type", "memo", "image", "foods"]
 
     def create(self, validated_data):
         foods_data = validated_data.pop("foods")
-        record = MealRecord.objects.create(**validated_data)
+        user = self.context["request"].user
 
+        # MealRecord 생성
+        record = MealRecord.objects.create(user=user, **validated_data)
+
+        # 관련된 Foods 생성
         for item in foods_data:
-            MealFood.objects.create(record=record, **item)
+            MealFood.objects.create(
+                record=record,
+                food_name=item["food_name"],
+                amount=item["amount"],
+                kcal=item["kcal"],
+                carb=item["carb"],
+                protein=item["protein"],
+                fat=item["fat"],
+                sugar=item["sugar"],
+            )
 
         return record
 
 
-# ----------------------------------------
-# MealRecord 리스트용
-# ----------------------------------------
+# --------------------------------------------------------
+# 3) MealRecord 리스트용
+# --------------------------------------------------------
 class MealRecordListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MealRecord
         fields = ["id", "meal_time", "image", "created_at"]
 
 
-# ----------------------------------------
-# MealRecord 상세보기용
-# ----------------------------------------
+# --------------------------------------------------------
+# 4) MealRecord 상세 조회용
+# --------------------------------------------------------
 class MealRecordDetailSerializer(serializers.ModelSerializer):
     foods = MealFoodSerializer(many=True)
 
@@ -58,9 +79,9 @@ class MealRecordDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-# ----------------------------------------
-# 전체용 기본 serializer
-# ----------------------------------------
+# --------------------------------------------------------
+# 5) 공통 serializer
+# --------------------------------------------------------
 class MealRecordSerializer(serializers.ModelSerializer):
     foods = MealFoodSerializer(many=True)
 
@@ -74,3 +95,17 @@ class MealRecordSerializer(serializers.ModelSerializer):
             "foods",
             "created_at",
         ]
+
+class WeightRecordCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeightRecord
+        fields = ["weight", "memo", "recorded_at"]
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        return WeightRecord.objects.create(user=user, **validated_data)
+    
+class WeightRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeightRecord
+        fields = ["id", "weight", "memo", "recorded_at", "created_at"]

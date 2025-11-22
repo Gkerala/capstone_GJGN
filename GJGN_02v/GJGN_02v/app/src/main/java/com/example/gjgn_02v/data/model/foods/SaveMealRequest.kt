@@ -6,6 +6,5 @@ data class SaveMealRequest(
 )
 
 data class MealItem(
-    val food_id: Int,
     val amount: Float
 )

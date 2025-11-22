@@ -6,9 +6,7 @@ import com.example.gjgn_02v.data.model.common.BaseResponse
 import com.example.gjgn_02v.data.model.foods.*
 import com.example.gjgn_02v.data.model.goals.*
 import com.example.gjgn_02v.data.model.home.HomeStatisticsResponse
-import com.example.gjgn_02v.data.model.records.MealRecordRequest
-import com.example.gjgn_02v.data.model.records.MealRecordResponse
-import com.example.gjgn_02v.data.model.auth.FullProfileRequest
+import com.example.gjgn_02v.data.model.records.*
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Response
@@ -27,17 +25,11 @@ interface ApiService {
     @GET("api/users/me/")
     fun getMyProfile(): Call<UserProfileResponse>
 
-    // 전체 프로필 저장 (온보딩)
     @PUT("/api/users/me/goal/update/")
     fun updateFullProfile(
         @Body request: FullProfileRequest
     ): Call<UserProfileResponse>
 
-    // ❌ 기존 : 잘못된 API
-    // @GET("api/users/me/goal/")
-    // fun getGoal(): Call<UserGoalResponse>
-
-    // ✅ NutritionGoal 조회 (신규 API)
     @GET("api/goals/me/")
     fun getGoal(): Call<UserGoalResponse>
 
@@ -46,16 +38,11 @@ interface ApiService {
         @Body request: UserProfileRequest
     ): Call<UserProfileResponse>
 
-    // 목표 정보 수정
     @PATCH("api/goals/update/")
     fun updateGoal(
         @Body request: UpdateGoalRequest
     ): Call<UpdateGoalResponse>
 
-
-    // -------------------------------------------------------------
-    // 🔐 Delete User
-    // -------------------------------------------------------------
     @DELETE("api/users/delete/")
     fun deleteUser(): Call<Void>
 
@@ -74,14 +61,14 @@ interface ApiService {
         @Query("name") name: String
     ): Response<NutritionResponse>
 
+
     // -------------------------------------------------------------
     // 🍽️ Records
     // -------------------------------------------------------------
-    @POST("api/records/")
-    fun createRecord(@Body request: MealRecordRequest): Call<MealRecordResponse>
-
-    @POST("api/records/")
-    suspend fun createRecordRaw(@Body req: Map<String, String>): Response<Any>
+    @POST("/api/records/create/")
+    fun createRecord(
+        @Body body: MealRecordRequest
+    ): Call<MealRecordResponse>
 
     @GET("api/records/today/stat/")
     fun getTodayRecords(): Call<List<MealRecordResponse>>

@@ -65,8 +65,6 @@ class MainActivity : AppCompatActivity() {
                     tvTodayKcal.text = "$totalKcal kcal"
                     tvTodayCount.text = "$count 회"
 
-                    if (list.isNotEmpty()) tvRecent1.text = "음식 #${list[0].food_id}"
-                    if (list.size >= 2) tvRecent2.text = "음식 #${list[1].food_id}"
                 }
 
                 override fun onFailure(call: Call<List<MealRecordResponse>>, t: Throwable) {
