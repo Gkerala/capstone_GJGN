@@ -8,6 +8,7 @@ import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
 import com.example.gjgn_02v.data.model.goals.GoalStatResponse
 import com.example.gjgn_02v.data.model.records.MealRecordResponse
+import com.example.gjgn_02v.data.model.records.TodayStatResponse
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import retrofit2.Call
@@ -45,10 +46,10 @@ class MainActivity : AppCompatActivity() {
     // 🔥 오늘 기록 불러오기
     private fun loadTodayRecords() {
         RetrofitClient.api.getTodayRecords()
-            .enqueue(object : Callback<List<MealRecordResponse>> {
+            .enqueue(object : Callback<TodayStatResponse> {
                 override fun onResponse(
-                    call: Call<List<MealRecordResponse>>,
-                    response: Response<List<MealRecordResponse>>
+                    call: Call<TodayStatResponse>,
+                    response: Response<TodayStatResponse>
                 ) {
                     if (!response.isSuccessful || response.body() == null) {
                         tvTodayKcal.text = "0 kcal"
@@ -56,21 +57,23 @@ class MainActivity : AppCompatActivity() {
                         return
                     }
 
-                    val list = response.body()!!
-                    val totalKcal = list.sumOf { it.calories }
-                    val count = list.size
+                    val data = response.body()!!
+                    tvTodayKcal.text = "${data.total_kcal} kcal"
+                    tvTodayCount.text = "${data.count} 회"
 
-                    tvTodayKcal.text = "$totalKcal kcal"
-                    tvTodayCount.text = "$count 회"
-
+                    if (data.recent.isNotEmpty()) {
+                        tvRecent1.text = data.recent.getOrNull(0) ?: "-"
+                        tvRecent2.text = data.recent.getOrNull(1) ?: "-"
+                    }
                 }
 
-                override fun onFailure(call: Call<List<MealRecordResponse>>, t: Throwable) {
+                override fun onFailure(call: Call<TodayStatResponse>, t: Throwable) {
                     tvTodayKcal.text = "0 kcal"
                     tvTodayCount.text = "0 회"
                 }
             })
     }
+
 
 
     // 하단 네비게이션

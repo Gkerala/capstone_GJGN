@@ -58,8 +58,6 @@ interface ApiService {
     @POST("api/records/create/")
     fun createRecord(@Body body: MealRecordRequest): Call<MealRecordResponse>
 
-    @GET("api/records/today/stat/")
-    fun getTodayRecords(): Call<List<MealRecordResponse>>
 
     @GET("api/records/date/")
     fun getRecordsByDate(@Query("date") date: String): Call<List<MealRecordResponse>>
@@ -81,10 +79,13 @@ interface ApiService {
         @Query("date") date: String
     ): Call<WeeklyAnalysisResponse>
 
-    @GET("api/records/weights/weekly/")
+    @GET("api/records/analysis/weights/weekly/")
     fun getWeeklyWeight(
         @Query("date") date: String
     ): Call<WeeklyWeightResponse>
+
+    @GET("api/records/today/stat/")
+    fun getTodayRecords(): Call<TodayStatResponse>
 
 
     // -------------------------------------------------------------
@@ -95,4 +96,5 @@ interface ApiService {
 
     @GET("api/records/weights/")
     fun getWeights(): Call<List<WeightResponse>>
+
 }

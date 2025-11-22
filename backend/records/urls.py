@@ -13,6 +13,7 @@ from .views_analysis import (
     DailyStatAPIView,
     WeeklyAnalysisAPIView,
     WeeklyWeightAPIView,
+    TodayStatAPIView,
 )
 
 urlpatterns = [
@@ -24,7 +25,7 @@ urlpatterns = [
     path("<int:pk>/", MealRecordDetailAPIView.as_view()),
 
     # ------------------------------------------------------
-    # 📌 칼로리 통계 (Weekly, Monthly)
+    # 📌 칼로리 통계 (Weekly, Monthly) — 기존 기능
     # ------------------------------------------------------
     path("stats/weekly/", WeeklyStatsAPIView.as_view()),
     path("stats/monthly/", MonthlyStatsAPIView.as_view()),
@@ -36,10 +37,15 @@ urlpatterns = [
     path("weights/", WeightRecordListAPIView.as_view()),
 
     # ------------------------------------------------------
-    # 📊 분석 페이지용 API
+    # 📊 분석 페이지용 (AnalysisActivity)
     # ------------------------------------------------------
     path("stats/daily/", DailyStatAPIView.as_view()),
-    path("analysis/weekly/", WeeklyAnalysisAPIView.as_view()),  # 주간 칼로리 분석
-    path("weights/weekly/", WeeklyWeightAPIView.as_view()),     # 주간 체중 변화
-    path("analysis/weights/weekly/", WeeklyWeightAPIView.as_view())
+
+    # 🔥 주간 칼로리 분석
+    path("analysis/weekly/", WeeklyAnalysisAPIView.as_view()),
+
+    # 🔥 주간 체중 분석 (AnalysisActivity)
+    path("analysis/weights/weekly/", WeeklyWeightAPIView.as_view()),
+    path("today/stat/", TodayStatAPIView.as_view()),
+
 ]

@@ -1,10 +1,8 @@
-# records/views_analysis.py
-
 from datetime import datetime, timedelta
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from django.utils.timezone import now
-
+from datetime import date
 from .models import MealRecord, WeightRecord
 from .serializers import (
     DailyStatSerializer,
@@ -12,8 +10,7 @@ from .serializers import (
     WeeklyWeightSerializer
 )
 
-
-# 🔧 공통: 주간 시작/끝 계산
+# 🔧 주간 시작/끝 계산
 def get_week_range(date):
     weekday = date.weekday()   # Monday=0
     start = date - timedelta(days=weekday)
@@ -43,10 +40,14 @@ class DailyStatAPIView(generics.GenericAPIView):
         total = sum(r.total_calories for r in records)
 
         return Response({
-            "date": date,
+            "date": str(date),
             "total_calories": total,
         })
-        
+
+
+# -----------------------------------------
+# 2) 주간 칼로리 분석
+# -----------------------------------------
 class WeeklyAnalysisAPIView(generics.GenericAPIView):
     serializer_class = WeeklyAnalysisSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -60,8 +61,10 @@ class WeeklyAnalysisAPIView(generics.GenericAPIView):
 
         week_start, week_end = get_week_range(base_date)
 
+        # 날짜 → 칼로리 총합
         daily_map = {
-            (week_start + timedelta(days=i)): 0 for i in range(7)
+            (week_start + timedelta(days=i)): 0
+            for i in range(7)
         }
 
         records = MealRecord.objects.filter(
@@ -69,10 +72,13 @@ class WeeklyAnalysisAPIView(generics.GenericAPIView):
             meal_time__date__range=(week_start, week_end)
         )
 
+        # 날짜별 칼로리 합산
         for r in records:
             d = r.meal_time.date()
-            daily_map[d] += r.total_calories
+            if d in daily_map:
+                daily_map[d] += r.total_calories
 
+        # 날짜를 문자열로 변환 후 전달
         return Response({
             "week_start": str(week_start),
             "week_end": str(week_end),
@@ -82,6 +88,10 @@ class WeeklyAnalysisAPIView(generics.GenericAPIView):
             ]
         })
 
+
+# -----------------------------------------
+# 3) 주간 체중 분석
+# -----------------------------------------
 class WeeklyWeightAPIView(generics.GenericAPIView):
     serializer_class = WeeklyWeightSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -107,4 +117,33 @@ class WeeklyWeightAPIView(generics.GenericAPIView):
                 {"date": str(w.date), "weight": w.weight}
                 for w in weights
             ]
+        })
+
+class TodayStatAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        today = date.today()
+
+        records = MealRecord.objects.filter(
+            user=request.user,
+            meal_time__date=today
+        ).order_by("-meal_time")
+
+        total_kcal = sum(r.total_calories for r in records)
+        count = records.count()
+
+        # 최근 2개 음식명
+        recent_foods = []
+        for r in records[:2]:
+            if r.memo:
+                recent_foods.append(r.memo)
+            else:
+                recent_foods.append("식사 기록")
+
+        return Response({
+            "date": str(today),
+            "total_kcal": total_kcal,
+            "count": count,
+            "recent": recent_foods
         })
