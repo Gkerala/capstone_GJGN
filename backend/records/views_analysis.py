@@ -103,21 +103,37 @@ class WeeklyWeightAPIView(generics.GenericAPIView):
         else:
             base_date = now().date()
 
+        # 주 시작(월요일) ~ 주 종료(일요일)
         week_start, week_end = get_week_range(base_date)
 
+        # 7일 기본 틀 생성 (월~일)
+        daily_weights = {
+            (week_start + timedelta(days=i)): None for i in range(7)
+        }
+
+        # DB에서 실제 몸무게 데이터 가져오기
         weights = WeightRecord.objects.filter(
             user=request.user,
             date__range=(week_start, week_end)
-        ).order_by("date")
+        )
 
+        # 실제 기록이 있는 날짜는 대체하기
+        for w in weights:
+            daily_weights[w.date] = w.weight
+
+        # 응답 구조 통일 (항상 7개)
         return Response({
             "week_start": str(week_start),
             "week_end": str(week_end),
             "records": [
-                {"date": str(w.date), "weight": w.weight}
-                for w in weights
+                {
+                    "date": str(d),
+                    "weight": daily_weights[d]
+                }
+                for d in sorted(daily_weights.keys())
             ]
         })
+
 
 class TodayStatAPIView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]

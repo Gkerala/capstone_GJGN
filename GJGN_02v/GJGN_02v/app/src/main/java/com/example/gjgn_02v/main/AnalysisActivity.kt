@@ -45,7 +45,6 @@ class AnalysisActivity : AppCompatActivity() {
 
         setupWeekSelector()
         loadWeeklyData()
-
         setupBottomNav()
     }
 
@@ -56,7 +55,6 @@ class AnalysisActivity : AppCompatActivity() {
     private fun getCurrentMonday(): Calendar {
         val cal = calendar.clone() as Calendar
         val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
-
         val diff = if (dayOfWeek == Calendar.SUNDAY) -6 else (Calendar.MONDAY - dayOfWeek)
         cal.add(Calendar.DAY_OF_MONTH, diff)
         return cal
@@ -71,20 +69,17 @@ class AnalysisActivity : AppCompatActivity() {
     private fun updateWeekRangeText() {
         val monday = getCurrentMonday()
         val sunday = getCurrentSunday()
-
         val sdf = SimpleDateFormat("MM.dd", Locale.KOREA)
         tvWeekRange.text = "${sdf.format(monday.time)} ~ ${sdf.format(sunday.time)}"
     }
 
     private fun setupWeekSelector() {
         updateWeekRangeText()
-
         btnPrevWeek.setOnClickListener {
             calendar.add(Calendar.WEEK_OF_YEAR, -1)
             updateWeekRangeText()
             loadWeeklyData()
         }
-
         btnNextWeek.setOnClickListener {
             calendar.add(Calendar.WEEK_OF_YEAR, 1)
             updateWeekRangeText()
@@ -113,22 +108,20 @@ class AnalysisActivity : AppCompatActivity() {
                     res: Response<WeeklyAnalysisResponse>
                 ) {
                     if (!res.isSuccessful || res.body() == null) {
-                        barChartWeekly.clear()
+                        barChartWeekly.data = BarData()
                         barChartWeekly.invalidate()
                         return
                     }
 
                     val list = res.body()?.weekly_records ?: emptyList()
 
+                    // 7일 유지, null → 0으로 처리
                     val entries = list.mapIndexed { i, day ->
-                        BarEntry(i.toFloat(), day.calories.toFloat())
+                        BarEntry(i.toFloat(), day.calories?.toFloat() ?: 0f)
                     }
-
 
                     val dataSet = BarDataSet(entries, "주간 칼로리")
-                    val barData = BarData(dataSet).apply {
-                        barWidth = 0.4f
-                    }
+                    val barData = BarData(dataSet).apply { barWidth = 0.4f }
 
                     barChartWeekly.data = barData
                     barChartWeekly.description.isEnabled = false
@@ -136,8 +129,7 @@ class AnalysisActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<WeeklyAnalysisResponse>, t: Throwable) {
-                    Log.e("WEEKLY_CAL", "Error: ${t.message}")
-                    barChartWeekly.clear()
+                    barChartWeekly.data = BarData()
                     barChartWeekly.invalidate()
                 }
             })
@@ -154,22 +146,16 @@ class AnalysisActivity : AppCompatActivity() {
                     res: Response<WeeklyWeightResponse>
                 ) {
                     if (!res.isSuccessful || res.body() == null) {
-                        lineChartWeight.clear()
+                        lineChartWeight.data = LineData(LineDataSet(listOf(), "체중 변화"))
                         lineChartWeight.invalidate()
                         return
                     }
 
                     val weightList = res.body()?.records ?: emptyList()
 
+                    // 🔥 null → 점 없이 그래프가 끊어지게
                     val entries = weightList.mapIndexedNotNull { idx, item ->
                         item.weight?.let { Entry(idx.toFloat(), it) }
-                    }
-
-
-                    if (entries.isEmpty()) {
-                        lineChartWeight.clear()
-                        lineChartWeight.invalidate()
-                        return
                     }
 
                     val dataSet = LineDataSet(entries, "체중 변화 (kg)").apply {
@@ -183,8 +169,7 @@ class AnalysisActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<WeeklyWeightResponse>, t: Throwable) {
-                    Log.e("WEEKLY_WEIGHT", "Error: ${t.message}")
-                    lineChartWeight.clear()
+                    lineChartWeight.data = LineData(LineDataSet(listOf(), "체중 변화"))
                     lineChartWeight.invalidate()
                 }
             })
@@ -200,17 +185,10 @@ class AnalysisActivity : AppCompatActivity() {
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.menu_main ->
-                    startActivity(Intent(this, MainActivity::class.java))
-
-                R.id.menu_record ->
-                    startActivity(Intent(this, RecordSelectActivity::class.java))
-
-                R.id.menu_analysis ->
-                    return@setOnItemSelectedListener true
-
-                R.id.menu_mypage ->
-                    startActivity(Intent(this, MyPageActivity::class.java))
+                R.id.menu_main -> startActivity(Intent(this, MainActivity::class.java))
+                R.id.menu_record -> startActivity(Intent(this, RecordSelectActivity::class.java))
+                R.id.menu_analysis -> return@setOnItemSelectedListener true
+                R.id.menu_mypage -> startActivity(Intent(this, MyPageActivity::class.java))
             }
             true
         }
