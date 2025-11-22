@@ -40,7 +40,12 @@ class WeightRecordActivity : AppCompatActivity() {
     /** ▼ 서버에 체중 저장 (saveWeight 그대로 적용) */
     private fun saveWeight(weight: Float) {
 
-        val request = WeightRequest(weight)
+        val today = java.time.LocalDate.now().toString()   // "2025-11-23" 형식
+
+        val request = WeightRequest(
+            weight = weight,
+            date = today
+        )
 
         RetrofitClient.api.createWeight(request)
             .enqueue(object : Callback<WeightResponse> {
@@ -51,10 +56,9 @@ class WeightRecordActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         Toast.makeText(
                             this@WeightRecordActivity,
-                            "체중이 서버에 저장되었습니다!",
+                            "체량 기록 저장 완료!",
                             Toast.LENGTH_SHORT
                         ).show()
-
                         finish()
                     } else {
                         Toast.makeText(
@@ -74,5 +78,6 @@ class WeightRecordActivity : AppCompatActivity() {
                 }
             })
     }
+
 
 }

@@ -45,7 +45,6 @@ class WeightRecord(models.Model):
         related_name="weight_records"
     )
     weight = models.FloatField()
-    memo = models.TextField(blank=True, null=True)
     recorded_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 

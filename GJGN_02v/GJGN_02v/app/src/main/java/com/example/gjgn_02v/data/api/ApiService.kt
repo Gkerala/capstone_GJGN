@@ -111,6 +111,11 @@ interface ApiService {
     @GET("api/goals/weights/weekly/")
     fun getWeeklyWeight(): Call<WeeklyWeightResponse>
 
-    @POST("api/goals/weights/")
-    fun createWeight(@Body weightRequest: WeightRequest): Call<WeightResponse>
+    @POST("api/records/weights/create/")
+    fun createWeight(
+        @Body req: WeightRequest
+    ): Call<WeightResponse>
+
+    @GET("api/records/weights/")
+    fun getWeights(): Call<List<WeightResponse>>
 }

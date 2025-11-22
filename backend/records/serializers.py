@@ -99,13 +99,15 @@ class MealRecordSerializer(serializers.ModelSerializer):
 class WeightRecordCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeightRecord
-        fields = ["weight", "memo", "recorded_at"]
+        fields = ["weight", "date"]   # 🔥 memo 제거, recorded_at → date로 변경
 
     def create(self, validated_data):
         user = self.context["request"].user
         return WeightRecord.objects.create(user=user, **validated_data)
-    
+
+
 class WeightRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeightRecord
-        fields = ["id", "weight", "memo", "recorded_at", "created_at"]
+        fields = ["id", "weight", "date", "created_at"]  # 🔥 memo 삭제
+
