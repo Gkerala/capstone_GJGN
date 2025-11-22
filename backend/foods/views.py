@@ -69,78 +69,36 @@ class FoodAnalyzeView(APIView):
             status=status.HTTP_201_CREATED
         )
 
-#DB에서 음식명을 부분 검색하는 API
-# class FoodSearchView(APIView):
-#     """
-#     GET /api/foods/search/?q=검색어
-#     음식명 부분 검색
-#     """
-#     permission_classes = [AllowAny]
-
-#     def get(self, request):
-#         query = request.query_params.get("q", "").strip()
-
-#         if query == "":
-#             return Response({"results": []}, status=200)
-
-#         # 부분 일치 검색
-#         foods = Food.objects.filter(
-#             Q(name__icontains=query)
-#         )[:30]  # 최대 30개 제한
-
-#         # ⭐ 항상 리스트로 반환
-#         results = [
-#             {
-#                 "id": food.id,
-#                 "name": food.name,
-#                 "calories": food.calories,
-#                 "carbs": food.carbs,
-#                 "protein": food.protein,
-#                 "fat": food.fat,
-#                 "sugar": food.sugar,
-#             }
-#             for food in foods
-#         ]
-
-#         return Response({
-#             "count": len(results),
-#             "results": results
-#         }, status=200)
-
-from .views_nutrition import DUMMY_NUTRITION   # 파일 위치에 따라 수정
-
 class FoodSearchView(APIView):
     """
     GET /api/foods/search/?q=검색어
-    음식명 부분 검색 (DUMMY_NUTRITION 기반)
+    DB 기반 음식명 검색
     """
     permission_classes = [AllowAny]
 
     def get(self, request):
-        query = request.query_params.get("q", "").strip().lower()
+        query = request.query_params.get("q", "").strip()
 
-        if query == "":
+        if not query:
             return Response({"count": 0, "results": []}, status=200)
 
-        results = []
+        foods = Food.objects.filter(name__icontains=query)
 
-        # DUMMY_NUTRITION에서 부분일치 검색
-        for name, data in DUMMY_NUTRITION.items():
-            if query in name.lower():  # 부분 검색
-                results.append({
-                    "name": name,
-                    "grams": data["grams"],
-                    "calories": data["calories"],
-                    "carbs": data["carbs"],
-                    "protein": data["protein"],
-                    "fat": data["fat"],
-                    "sugar": data["sugar"],
-                })
+        results = [{
+            "id": f.id,
+            "name": f.name,
+            "grams": 100,
+            "calories": f.calories,
+            "carbs": f.carbs,
+            "protein": f.protein,
+            "fat": f.fat
+        } for f in foods]
 
         return Response({
             "count": len(results),
             "results": results
         }, status=200)
+
 
 
 class FoodDetailView(APIView):

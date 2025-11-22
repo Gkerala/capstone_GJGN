@@ -36,3 +36,4 @@ class MealFood(models.Model):
 
     def __str__(self):
         return f"{self.record.id} - {self.name}"
+

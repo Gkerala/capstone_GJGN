@@ -1,23 +1,19 @@
-# backend/records/serializers.py
 from rest_framework import serializers
 from .models import MealRecord, MealFood
 
 
+# ----------------------------------------
+# MealFood (기본 serializer)
+# ----------------------------------------
 class MealFoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = MealFood
-        fields = [
-            "id",
-            "name",
-            "amount",
-            "kcal",
-            "carb",
-            "protein",
-            "fat",
-            "sugar",
-        ]
+        fields = ["id", "food_name", "amount", "kcal", "carb", "protein", "fat", "sugar"]
 
 
+# ----------------------------------------
+# MealRecord 생성용 (앱에서 영양정보 포함해서 보냄)
+# ----------------------------------------
 class MealRecordCreateSerializer(serializers.ModelSerializer):
     foods = MealFoodSerializer(many=True)
 
@@ -29,25 +25,26 @@ class MealRecordCreateSerializer(serializers.ModelSerializer):
         foods_data = validated_data.pop("foods")
         record = MealRecord.objects.create(**validated_data)
 
-        for food in foods_data:
-            MealFood.objects.create(record=record, **food)
+        for item in foods_data:
+            MealFood.objects.create(record=record, **item)
 
         return record
 
 
+# ----------------------------------------
+# MealRecord 리스트용
+# ----------------------------------------
 class MealRecordListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MealRecord
         fields = ["id", "meal_time", "image", "created_at"]
 
 
+# ----------------------------------------
+# MealRecord 상세보기용
+# ----------------------------------------
 class MealRecordDetailSerializer(serializers.ModelSerializer):
     foods = MealFoodSerializer(many=True)
-
-    total_kcal = serializers.SerializerMethodField()
-    total_carb = serializers.SerializerMethodField()
-    total_protein = serializers.SerializerMethodField()
-    total_fat = serializers.SerializerMethodField()
 
     class Meta:
         model = MealRecord
@@ -57,21 +54,23 @@ class MealRecordDetailSerializer(serializers.ModelSerializer):
             "memo",
             "image",
             "foods",
-            "total_kcal",
-            "total_carb",
-            "total_protein",
-            "total_fat",
             "created_at",
         ]
 
-    def get_total_kcal(self, obj):
-        return sum(f.kcal for f in obj.foods.all())
 
-    def get_total_carb(self, obj):
-        return sum(f.carb for f in obj.foods.all())
+# ----------------------------------------
+# 전체용 기본 serializer
+# ----------------------------------------
+class MealRecordSerializer(serializers.ModelSerializer):
+    foods = MealFoodSerializer(many=True)
 
-    def get_total_protein(self, obj):
-        return sum(f.protein for f in obj.foods.all())
-
-    def get_total_fat(self, obj):
-        return sum(f.fat for f in obj.foods.all())
+    class Meta:
+        model = MealRecord
+        fields = [
+            "id",
+            "meal_time",
+            "memo",
+            "image",
+            "foods",
+            "created_at",
+        ]
