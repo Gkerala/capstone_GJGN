@@ -5,6 +5,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- 🔥 최상단: 주간 이동 바 -->
+    <LinearLayout
+        android:id="@+id/layoutWeekSelector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/btnPrevWeek"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_arrow_left"
+            android:padding="5dp" />
+
+        <TextView
+            android:id="@+id/tvWeekRange"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="11.17 ~ 11.23"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:padding="20dp" />
+
+        <ImageView
+            android:id="@+id/btnNextWeek"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:rotation="180"
+            android:src="@drawable/ic_arrow_left"
+            android:padding="5dp" />
+
+    </LinearLayout>
+
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -31,24 +67,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="300dp"/>
 
-            <!-- 주간 칼로리 달성률 -->
-            <TextView
-                android:id="@+id/tvWeeklyPercent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0%"
-                android:textSize="18sp"
-                android:layout_marginTop="10dp"/>
-
-            <!-- 월간 칼로리 달성률 -->
-            <TextView
-                android:id="@+id/tvMonthlyPercent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0%"
-                android:textSize="18sp"
-                android:layout_marginTop="10dp"/>
-
             <!-- 체중 변화 -->
             <TextView
                 android:layout_width="wrap_content"
@@ -66,6 +84,7 @@
 
         </LinearLayout>
     </ScrollView>
+
 
     <!-- 🔥 하단 네비 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

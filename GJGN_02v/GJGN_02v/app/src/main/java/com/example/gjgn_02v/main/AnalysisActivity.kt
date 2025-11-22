@@ -3,12 +3,12 @@ package com.example.gjgn_02v.main
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
 import com.example.gjgn_02v.data.model.analysis.WeeklyAnalysisResponse
-import com.example.gjgn_02v.data.model.goals.GoalStatResponse
 import com.example.gjgn_02v.data.model.goals.WeeklyWeightResponse
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
@@ -18,13 +18,20 @@ import com.google.android.material.navigation.NavigationBarView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.*
 
 class AnalysisActivity : AppCompatActivity() {
 
     private lateinit var barChartWeekly: BarChart
     private lateinit var lineChartWeight: LineChart
-    private lateinit var tvWeeklyPercent: TextView
-    private lateinit var tvMonthlyPercent: TextView
+    private lateinit var tvWeekRange: TextView
+
+    private lateinit var btnPrevWeek: ImageView
+    private lateinit var btnNextWeek: ImageView
+
+    // API 24 호환 Calendar 기반 날짜
+    private val calendar: Calendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,15 +39,61 @@ class AnalysisActivity : AppCompatActivity() {
 
         barChartWeekly = findViewById(R.id.barChartWeekly)
         lineChartWeight = findViewById(R.id.lineChartWeight)
-        tvWeeklyPercent = findViewById(R.id.tvWeeklyPercent)
-        tvMonthlyPercent = findViewById(R.id.tvMonthlyPercent)
+        tvWeekRange = findViewById(R.id.tvWeekRange)
 
-        loadWeeklyCalories()
-        loadWeeklyWeight()
-        loadWeeklyStat()
-        loadMonthlyStat()
+        btnPrevWeek = findViewById(R.id.btnPrevWeek)
+        btnNextWeek = findViewById(R.id.btnNextWeek)
+
+        setupWeekSelector()
+        loadWeeklyData()
 
         setupBottomNav()
+    }
+
+    // ----------------------------------------------------------------
+    // 🔁 날짜 계산 (API 24 호환)
+    // ----------------------------------------------------------------
+
+    private fun getCurrentMonday(): Calendar {
+        val cal = calendar.clone() as Calendar
+        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+
+        // Calendar: 일=1, 월=2...
+        val diff = if (dayOfWeek == Calendar.SUNDAY) -6 else (Calendar.MONDAY - dayOfWeek)
+
+        cal.add(Calendar.DAY_OF_MONTH, diff)
+        return cal
+    }
+
+    private fun updateWeekRangeText() {
+        val monday = getCurrentMonday()
+        val sunday = (monday.clone() as Calendar).apply {
+            add(Calendar.DAY_OF_MONTH, 6)
+        }
+
+        val sdf = SimpleDateFormat("MM.dd", Locale.KOREA)
+        tvWeekRange.text = "${sdf.format(monday.time)} ~ ${sdf.format(sunday.time)}"
+    }
+
+    private fun setupWeekSelector() {
+        updateWeekRangeText()
+
+        btnPrevWeek.setOnClickListener {
+            calendar.add(Calendar.WEEK_OF_YEAR, -1)
+            updateWeekRangeText()
+            loadWeeklyData()
+        }
+
+        btnNextWeek.setOnClickListener {
+            calendar.add(Calendar.WEEK_OF_YEAR, 1)
+            updateWeekRangeText()
+            loadWeeklyData()
+        }
+    }
+
+    private fun loadWeeklyData() {
+        loadWeeklyCalories()
+        loadWeeklyWeight()
     }
 
     // ----------------------------------------------------------------
@@ -85,48 +138,21 @@ class AnalysisActivity : AppCompatActivity() {
                     call: Call<WeeklyWeightResponse>,
                     res: Response<WeeklyWeightResponse>
                 ) {
-                    Log.d("WEEKLY_WEIGHT", "========== API RESPONSE ==========")
-                    Log.d("WEEKLY_WEIGHT", "HTTP CODE = ${res.code()}")
-                    Log.d("WEEKLY_WEIGHT", "RAW BODY = ${res.raw()}")
-
-                    if (!res.isSuccessful) {
-                        Log.e("WEEKLY_WEIGHT", "Response not successful")
+                    if (!res.isSuccessful || res.body() == null) {
                         lineChartWeight.clear()
                         lineChartWeight.invalidate()
                         return
                     }
 
-                    val body = res.body()
-                    Log.d("WEEKLY_WEIGHT", "Parsed Body = $body")
+                    val weightList = res.body()?.records ?: emptyList()
 
-                    if (body == null) {
-                        Log.e("WEEKLY_WEIGHT", "Body is null")
-                        lineChartWeight.clear()
-                        lineChartWeight.invalidate()
-                        return
-                    }
-
-                    val weightList = body.records ?: emptyList()
-                    Log.d("WEEKLY_WEIGHT", "Weight List = $weightList")
-                    Log.d("WEEKLY_WEIGHT", "List Size = ${weightList.size}")
-
-                    if (weightList.isEmpty()) {
-                        Log.w("WEEKLY_WEIGHT", "Weight list is EMPTY")
-                        lineChartWeight.clear()
-                        lineChartWeight.invalidate()
-                        return
-                    }
-
-                    val entries = weightList.mapIndexedNotNull { index, item ->
+                    val entries = weightList.mapIndexedNotNull { idx, item ->
                         item.weight?.let { weightValue ->
-                            Entry(index.toFloat(), weightValue)
+                            Entry(idx.toFloat(), weightValue)
                         }
                     }
 
-                    Log.d("WEEKLY_WEIGHT", "Entries = $entries")
-
                     if (entries.isEmpty()) {
-                        Log.w("WEEKLY_WEIGHT", "Entries list is EMPTY")
                         lineChartWeight.clear()
                         lineChartWeight.invalidate()
                         return
@@ -140,62 +166,11 @@ class AnalysisActivity : AppCompatActivity() {
                     lineChartWeight.data = LineData(dataSet)
                     lineChartWeight.description.isEnabled = false
                     lineChartWeight.invalidate()
-
-                    Log.d("WEEKLY_WEIGHT", "Chart updated successfully!")
                 }
 
                 override fun onFailure(call: Call<WeeklyWeightResponse>, t: Throwable) {
-                    Log.e("WEEKLY_WEIGHT", "API FAILED: ${t.message}")
                     lineChartWeight.clear()
                     lineChartWeight.invalidate()
-                }
-            })
-    }
-
-
-
-
-
-    // ----------------------------------------------------------------
-    // 🎯 주간 달성률
-    // ----------------------------------------------------------------
-    private fun loadWeeklyStat() {
-        RetrofitClient.api.getWeeklyAchievement()
-            .enqueue(object : Callback<GoalStatResponse> {
-                override fun onResponse(
-                    call: Call<GoalStatResponse>,
-                    res: Response<GoalStatResponse>
-                ) {
-                    tvWeeklyPercent.text =
-                        if (res.isSuccessful && res.body() != null)
-                            "${res.body()!!.achievement}%"
-                        else "0%"
-                }
-
-                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {
-                    tvWeeklyPercent.text = "0%"
-                }
-            })
-    }
-
-    // ----------------------------------------------------------------
-    // 🎯 월간 달성률
-    // ----------------------------------------------------------------
-    private fun loadMonthlyStat() {
-        RetrofitClient.api.getMonthlyAchievement()
-            .enqueue(object : Callback<GoalStatResponse> {
-                override fun onResponse(
-                    call: Call<GoalStatResponse>,
-                    res: Response<GoalStatResponse>
-                ) {
-                    tvMonthlyPercent.text =
-                        if (res.isSuccessful && res.body() != null)
-                            "${res.body()!!.achievement}%"
-                        else "0%"
-                }
-
-                override fun onFailure(call: Call<GoalStatResponse>, t: Throwable) {
-                    tvMonthlyPercent.text = "0%"
                 }
             })
     }
@@ -210,10 +185,17 @@ class AnalysisActivity : AppCompatActivity() {
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.menu_main -> startActivity(Intent(this, MainActivity::class.java))
-                R.id.menu_record -> startActivity(Intent(this, RecordSelectActivity::class.java))
-                R.id.menu_analysis -> return@setOnItemSelectedListener true
-                R.id.menu_mypage -> startActivity(Intent(this, MyPageActivity::class.java))
+                R.id.menu_main ->
+                    startActivity(Intent(this, MainActivity::class.java))
+
+                R.id.menu_record ->
+                    startActivity(Intent(this, RecordSelectActivity::class.java))
+
+                R.id.menu_analysis ->
+                    return@setOnItemSelectedListener true
+
+                R.id.menu_mypage ->
+                    startActivity(Intent(this, MyPageActivity::class.java))
             }
             true
         }
