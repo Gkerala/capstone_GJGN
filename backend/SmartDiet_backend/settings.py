@@ -2,8 +2,6 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
-from decouple import config
-
 
 # .env 로드
 load_dotenv()
@@ -44,7 +42,6 @@ INSTALLED_APPS = [
     "records",
     "goals",
 ]
-
 
 AUTH_USER_MODEL = "users.CustomUser"
 
@@ -105,7 +102,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # -----------------------------
-# Locale
+# Locale / Timezone
 # -----------------------------
 LANGUAGE_CODE = "ko-kr"
 TIME_ZONE = "Asia/Seoul"
@@ -115,21 +112,33 @@ USE_TZ = True
 WSGI_APPLICATION = "SmartDiet_backend.wsgi.application"
 ASGI_APPLICATION = "SmartDiet_backend.asgi.application"
 
-AI_INFERENCE_URL = config("AI_INFERENCE_URL", default="http://localhost:8001/predict")
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# -----------------------------
+# AI Model Inference
+# -----------------------------
+AI_INFERENCE_URL = os.getenv("AI_INFERENCE_URL", "http://localhost:8001/predict")
+
+# -----------------------------
+# Edamam Nutrition API (NEW)
+# -----------------------------
+EDAMAM_APP_ID = os.getenv("EDAMAM_APP_ID")
+EDAMAM_APP_KEY = os.getenv("EDAMAM_APP_KEY")
+
+# -----------------------------
+# Templates
+# -----------------------------
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
