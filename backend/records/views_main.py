@@ -1,8 +1,9 @@
-# backend/records/views_main.py
 from datetime import datetime
 from django.utils.timezone import now
 from rest_framework.response import Response
 from rest_framework import generics, permissions
+from django.db.models.functions import Cast
+from django.db.models import DateField
 from records.models import MealRecord, MealFood, WeightRecord
 from goals.models import UserGoal
 
@@ -40,18 +41,21 @@ class MainSummaryAPIView(generics.GenericAPIView):
         goal_sugar = 50
 
         # ---------------------------
-        # 2) Today Meal Records
+        # 2) Today Meal Records  (수정 핵심)
         # ---------------------------
-        meal_records = MealRecord.objects.filter(
-            user=user,
-            meal_time__date=today          # ⬅ 날짜 파싱 후 조회
+        meal_records = (
+            MealRecord.objects.annotate(
+                meal_date=Cast("meal_time", DateField())
+            )
+            .filter(user=user, meal_date=today)
+            .order_by("meal_time")
         )
 
         total = {"kcal": 0, "carb": 0, "protein": 0, "fat": 0, "sugar": 0}
         meal_summary = {"breakfast": None, "lunch": None, "dinner": None}
 
         for rec in meal_records:
-            foods = MealFood.objects.filter(record=rec)
+            foods = MealFood.objects.filter(record_id=rec.id)
 
             sum_info = {
                 "kcal": sum(f.kcal for f in foods),
@@ -64,7 +68,13 @@ class MainSummaryAPIView(generics.GenericAPIView):
             for k in total:
                 total[k] += sum_info[k]
 
-            meal_summary[rec.meal_type] = {
+            meal_type = (rec.meal_type or "").lower()
+
+            if meal_type not in meal_summary:
+                # 알 수 없는 meal_type → safe fallback
+                meal_type = "breakfast"
+
+            meal_summary[meal_type] = {
                 "foods": [
                     {
                         "name": f.food_name,
