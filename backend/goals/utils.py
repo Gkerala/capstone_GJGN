@@ -9,33 +9,36 @@ def get_activity_factor(activity):
     return factors.get(activity, 1.2)  # 기본값 1.2
 
 
-def calculate_daily_targets(gender, weight, height, age, activity):
-    # --- 1. BMR 계산 ---
+def calculate_daily_targets(gender, weight, height, age, activity, goal_type):
+    # --- 1. BMR ---
     if gender == "male":
         bmr = 10 * weight + 6.25 * height - 5 * age + 5
     else:
         bmr = 10 * weight + 6.25 * height - 5 * age - 161
 
-    # --- 2. 활동계수 적용 ---
+    # --- 2. TDEE ---
     tdee = bmr * get_activity_factor(activity)
 
-    # --- 3. 탄단지 비율 ---
-    carbs_kcal = tdee * 0.5
-    protein_kcal = tdee * 0.2
-    fat_kcal = tdee * 0.3
+    # 3) goal_type 적용 (감량/유지/증가)
+    if goal_type == 1:
+        tdee *= 0.85   # 감량
+    elif goal_type == 3:
+        tdee *= 1.15   # 벌크업
 
-    carbs_g = carbs_kcal / 4
-    protein_g = protein_kcal / 4
-    fat_g = fat_kcal / 9
+    tdee = max(tdee, 1200)    # 안전 장치
 
-    # --- 4. 설탕 목표(WHO 기준 10%) ---
-    sugar_kcal = tdee * 0.10
-    sugar_g = sugar_kcal / 4
+    # --- 4. 탄단지(50/20/30) ---
+    carbs = (tdee * 0.50) / 4
+    protein = (tdee * 0.20) / 4
+    fat = (tdee * 0.30) / 9
+
+    # --- 5. 당 (WHO 10%) ---
+    sugar = (tdee * 0.10) / 4
 
     return {
         "tdee": round(tdee),
-        "carbs": round(carbs_g),
-        "protein": round(protein_g),
-        "fat": round(fat_g),
-        "sugar": round(sugar_g),
+        "carbs": round(carbs),
+        "protein": round(protein),
+        "fat": round(fat),
+        "sugar": round(sugar),
     }

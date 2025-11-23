@@ -27,6 +27,7 @@ class MyPageActivity : AppCompatActivity() {
     private lateinit var tvCarb: TextView
     private lateinit var tvProtein: TextView
     private lateinit var tvFat: TextView
+    private lateinit var tvSugar: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +43,7 @@ class MyPageActivity : AppCompatActivity() {
         tvCarb = findViewById(R.id.tvCarb)
         tvProtein = findViewById(R.id.tvProtein)
         tvFat = findViewById(R.id.tvFat)
+        tvSugar = findViewById(R.id.tvSugar)
 
         btnEditProfile.setOnClickListener {
             startActivity(Intent(this, ProfileEditActivity::class.java))
@@ -65,10 +67,11 @@ class MyPageActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val goal = response.body()!!
 
-                    tvKcal.text = "${goal.target_kcal} kcal"
-                    tvCarb.text = "${goal.target_carb} g"
-                    tvProtein.text = "${goal.target_protein} g"
-                    tvFat.text = "${goal.target_fat} g"
+                    tvKcal.text = "칼로리 ${goal.target_kcal} kcal"
+                    tvCarb.text = "탄수화물 ${goal.target_carb} g"
+                    tvProtein.text = "단백질 ${goal.target_protein} g"
+                    tvFat.text = "지발 ${goal.target_fat} g"
+                    tvSugar.text = "당  ${goal.target_sugar} g"
                 } else {
                     Toast.makeText(this@MyPageActivity, "영양 정보 불러오기 실패", Toast.LENGTH_SHORT).show()
                 }

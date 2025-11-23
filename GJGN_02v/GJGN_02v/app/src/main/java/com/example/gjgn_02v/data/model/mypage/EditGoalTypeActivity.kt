@@ -7,6 +7,7 @@ import com.example.gjgn_02v.data.api.RetrofitClient
 import com.example.gjgn_02v.data.model.auth.UserProfileResponse
 import com.example.gjgn_02v.data.model.goals.UpdateGoalRequest
 import com.example.gjgn_02v.data.model.goals.UpdateGoalResponse
+import com.example.gjgn_02v.data.model.goals.UserGoalResponse
 import com.example.gjgn_02v.databinding.ActivityEditGoalTypeBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -29,22 +30,22 @@ class EditGoalTypeActivity : AppCompatActivity() {
 
     /** ⭐ 현재 목표 유형 서버에서 가져와 라디오 버튼 선택 */
     private fun loadCurrentGoalType() {
-        RetrofitClient.api.getMyProfile()
-            .enqueue(object : Callback<UserProfileResponse> {
+        RetrofitClient.api.getGoal()
+            .enqueue(object : Callback<UserGoalResponse> {
                 override fun onResponse(
-                    call: Call<UserProfileResponse>,
-                    response: Response<UserProfileResponse>
+                    call: Call<UserGoalResponse>,
+                    response: Response<UserGoalResponse>
                 ) {
-                    val user = response.body() ?: return
+                    val goal = response.body() ?: return
 
-                    when (user.goal_type) {
+                    when (goal.goal_type) {
                         1 -> binding.rbLoseWeight.isChecked = true
                         2 -> binding.rbKeepWeight.isChecked = true
                         3 -> binding.rbGainWeight.isChecked = true
                     }
                 }
 
-                override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {
+                override fun onFailure(call: Call<UserGoalResponse>, t: Throwable) {
                     Toast.makeText(
                         this@EditGoalTypeActivity,
                         "현재 목표 유형을 불러오지 못했습니다.",
@@ -53,6 +54,7 @@ class EditGoalTypeActivity : AppCompatActivity() {
                 }
             })
     }
+
 
     /** ⭐ 목표 유형 저장 */
     private fun saveGoalType() {

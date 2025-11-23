@@ -21,19 +21,25 @@ class UserGoal(models.Model):
     goal_type = models.IntegerField(default=2)  # 1 감량 / 2 유지 / 3 증가
     goal_weight = models.FloatField(null=True, blank=True)
 
-    # 활동량: 1~5
-    activity_level = models.IntegerField(default=3)
+    activity_level = models.IntegerField(default=3)  # 1~5
 
-    # 자동 계산된 목표 값
     kcal = models.IntegerField(default=2000)
     carbs = models.IntegerField(default=250)
     protein = models.IntegerField(default=120)
     fat = models.IntegerField(default=60)
-    sugar = models.FloatField(default=50)
+    sugar = models.IntegerField(default=50)  # WHO 기준 10%
 
+    # 자동 생성 모드
     auto_mode = models.BooleanField(default=True)
+
+    # 자동 생성된 목표 저장용
+    target_kcal = models.IntegerField(default=2000)
+    target_carb = models.IntegerField(default=250)
+    target_protein = models.IntegerField(default=120)
+    target_fat = models.IntegerField(default=60)
+    target_sugar = models.IntegerField(default=50)
+
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user.username} Goal"
-

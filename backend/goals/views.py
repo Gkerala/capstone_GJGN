@@ -1,5 +1,4 @@
-# backend/goals/views.py
-
+# goals/views.py
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -8,15 +7,14 @@ from .models import UserGoal, WeightRecord
 from .serializers import (
     UserGoalSerializer,
     UserGoalUpdateSerializer,
-    WeightRecordCreateSerializer,
+    WeightRecordCreateSerializer
 )
+from .utils import calculate_daily_targets   # ← 핵심
+from foods.models import UserDailyNutrition
 
-from goals.utils import calculate_daily_targets  # ✅ 여기 추가됨
 
 
-# ----------------------------------------------------
 # 0) UserGoal 조회
-# ----------------------------------------------------
 class UserGoalRetrieveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -25,8 +23,9 @@ class UserGoalRetrieveAPIView(APIView):
         return Response(UserGoalSerializer(goal).data)
 
 
+
 # ----------------------------------------------------
-# 1) UserGoal 수정 + 자동 칼로리/탄단지/설탕 계산
+# 1) UserGoal 수정 + 자동 영양목표 계산
 # ----------------------------------------------------
 class UserGoalUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -37,48 +36,49 @@ class UserGoalUpdateAPIView(APIView):
 
         serializer = UserGoalUpdateSerializer(goal, data=request.data, partial=True)
 
-        if serializer.is_valid():
-            serializer.save()  # goal_type, goal_weight, activity_level 저장
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
 
-            # 사용자 기본 정보
-            height = user.height or 170
-            weight = user.weight or 60
-            age = user.age or 25
-            gender = user.gender or "male"
-            activity = goal.activity_level or 3
+        serializer.save()  # goal_type, goal_weight, activity_level 저장
 
-            # -----------------------------------------------------
-            # 🔥 utils.py 기반 자동 계산
-            # -----------------------------------------------------
-            targets = calculate_daily_targets(
-                gender=gender,
-                weight=weight,
-                height=height,
-                age=age,
-                activity=activity
-            )
+        # -----------------------------------------
+        # 🔥 사용자 정보 기반 자동 목표 계산
+        # -----------------------------------------
+        height = user.height or 170
+        weight = user.weight or 60
+        age = user.age or 25
+        gender = user.gender or "male"
+        activity = goal.activity_level or 3
 
-            # -----------------------------------------------------
-            # 🔥 UserGoal 업데이트
-            # -----------------------------------------------------
-            goal.kcal = targets["tdee"]
-            goal.carbs = targets["carbs"]
-            goal.protein = targets["protein"]
-            goal.fat = targets["fat"]
-            goal.sugar = targets["sugar"]     # ← 신규 필드 사용 시 자동 저장
-            goal.auto_mode = False
-            goal.save()
+        daily = calculate_daily_targets(
+            gender=gender,
+            weight=weight,
+            height=height,
+            age=age,
+            activity=activity,
+            goal_type=goal.goal_type, 
+        )
 
-            return Response({
-                "message": "User goal updated with auto-calculated nutrition.",
-                "goal": UserGoalSerializer(goal).data
-            })
+        # -----------------------------------------
+        # 🔥 계산된 목표 UserGoal에 저장
+        # -----------------------------------------
+        goal.kcal = daily["tdee"]
+        goal.carbs = daily["carbs"]
+        goal.protein = daily["protein"]
+        goal.fat = daily["fat"]
+        goal.sugar = daily["sugar"]     # ← 추가됨
 
-        return Response(serializer.errors, status=400)
+        goal.save()
+
+        return Response({
+            "message": "User goal updated with auto-calculated nutrition.",
+            "goal": UserGoalSerializer(goal).data
+        }, status=200)
+
 
 
 # ----------------------------------------------------
-# 2) UserGoal 기반 자동 목표 생성 (auto mode)
+# 2) 자동 목표 생성 (앱에서 최초 설정 시 사용)
 # ----------------------------------------------------
 class AutoGoalGenerateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -87,32 +87,27 @@ class AutoGoalGenerateAPIView(APIView):
         user = request.user
         goal, _ = UserGoal.objects.get_or_create(user=user)
 
-        # 사용자 값
         height = user.height or 170
         weight = user.weight or 60
         age = user.age or 25
         gender = user.gender or "male"
         activity = goal.activity_level or 3
 
-        # -----------------------------------------------------
-        # 🔥 utils.py 자동 계산 호출
-        # -----------------------------------------------------
-        targets = calculate_daily_targets(
+        daily = calculate_daily_targets(
             gender=gender,
             weight=weight,
             height=height,
             age=age,
-            activity=activity
+            activity=activity,
         )
 
-        # -----------------------------------------------------
-        # 🔥 UserGoal 저장 (auto mode)
-        # -----------------------------------------------------
-        goal.target_kcal = targets["tdee"]
-        goal.target_carb = targets["carbs"]
-        goal.target_protein = targets["protein"]
-        goal.target_fat = targets["fat"]
-        goal.target_sugar = targets["sugar"]
+        # target_* 필드 저장
+        goal.target_kcal = daily["tdee"]
+        goal.target_carb = daily["carbs"]
+        goal.target_protein = daily["protein"]
+        goal.target_fat = daily["fat"]
+        goal.target_sugar = daily["sugar"]   # ← sugar 저장 추가
+
         goal.save()
 
         return Response({

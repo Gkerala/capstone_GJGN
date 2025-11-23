@@ -34,14 +34,14 @@ class MainSummaryAPIView(generics.GenericAPIView):
         # ---------------------------
         goal = UserGoal.objects.filter(user=user).first()
 
-        goal_kcal = goal.kcal if goal else 2000
-        goal_carb = goal.carbs if goal else 250
-        goal_protein = goal.protein if goal else 120
-        goal_fat = goal.fat if goal else 60
-        goal_sugar = 50
+        goal_kcal = goal.target_kcal if goal else 2000
+        goal_carb = goal.target_carb if goal else 250
+        goal_protein = goal.target_protein if goal else 120
+        goal_fat = goal.target_fat if goal else 60
+        goal_sugar = goal.target_sugar if goal else 50
 
         # ---------------------------
-        # 2) Today Meal Records  (수정 핵심)
+        # 2) Today Meal Records
         # ---------------------------
         meal_records = (
             MealRecord.objects.annotate(
@@ -71,7 +71,6 @@ class MainSummaryAPIView(generics.GenericAPIView):
             meal_type = (rec.meal_type or "").lower()
 
             if meal_type not in meal_summary:
-                # 알 수 없는 meal_type → safe fallback
                 meal_type = "breakfast"
 
             meal_summary[meal_type] = {
@@ -113,15 +112,19 @@ class MainSummaryAPIView(generics.GenericAPIView):
             "total_kcal": total["kcal"],
             "goal_kcal": goal_kcal,
             "kcal_percent": percent(total["kcal"], goal_kcal),
+
             "carb": total["carb"],
             "goal_carb": goal_carb,
             "carb_percent": percent(total["carb"], goal_carb),
+
             "protein": total["protein"],
             "goal_protein": goal_protein,
             "protein_percent": percent(total["protein"], goal_protein),
+
             "fat": total["fat"],
             "goal_fat": goal_fat,
             "fat_percent": percent(total["fat"], goal_fat),
+
             "sugar": total["sugar"],
             "goal_sugar": goal_sugar,
             "sugar_percent": percent(total["sugar"], goal_sugar),

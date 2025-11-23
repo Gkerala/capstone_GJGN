@@ -86,10 +86,10 @@ class MainActivity : AppCompatActivity() {
                 tvTodayCalorie.text =
                     "${t.total_kcal} / ${t.goal_kcal} kcal (${t.kcal_percent}%)"
 
-                tvCarb.text = "탄수화물 ${t.carb} / ${t.goal_carb} (${t.carb_percent}%)"
-                tvProtein.text = "단백질 ${t.protein} / ${t.goal_protein} (${t.protein_percent}%)"
-                tvFat.text = "지방 ${t.fat} / ${t.goal_fat} (${t.fat_percent}%)"
-                tvSugar.text = "당 ${t.sugar} / ${t.goal_sugar} (${t.sugar_percent}%)"
+                tvCarb.text = "탄수화물 ${t.carb} / ${t.goal_carb} g (${t.carb_percent}%)"
+                tvProtein.text = "단백질 ${t.protein} / ${t.goal_protein} g (${t.protein_percent}%)"
+                tvFat.text = "지방 ${t.fat} / ${t.goal_fat} g (${t.fat_percent}%)"
+                tvSugar.text = "당 ${t.sugar} / ${t.goal_sugar} g (${t.sugar_percent}%)"
 
 
                 // ----------------------------------------
