@@ -32,13 +32,6 @@ class UserGoal(models.Model):
     # 자동 생성 모드
     auto_mode = models.BooleanField(default=True)
 
-    # 자동 생성된 목표 저장용
-    target_kcal = models.IntegerField(default=2000)
-    target_carb = models.IntegerField(default=250)
-    target_protein = models.IntegerField(default=120)
-    target_fat = models.IntegerField(default=60)
-    target_sugar = models.IntegerField(default=50)
-
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

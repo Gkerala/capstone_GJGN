@@ -10,8 +10,9 @@ data class UpdateGoalResponse(
     val activity_level: Int,
 
     // 계산된 칼로리 정보
-    val kcal: Int,
-    val carb: Int,
-    val protein: Int,
-    val fat: Int
+    val kcal: Float,
+    val carbs: Float,
+    val protein: Float,
+    val fat: Float,
+    val sugar: Float
 )

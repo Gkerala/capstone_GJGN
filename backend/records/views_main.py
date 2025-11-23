@@ -34,11 +34,12 @@ class MainSummaryAPIView(generics.GenericAPIView):
         # ---------------------------
         goal = UserGoal.objects.filter(user=user).first()
 
-        goal_kcal = goal.target_kcal if goal else 2000
-        goal_carb = goal.target_carb if goal else 250
-        goal_protein = goal.target_protein if goal else 120
-        goal_fat = goal.target_fat if goal else 60
-        goal_sugar = goal.target_sugar if goal else 50
+        # 🔥 target_* 제거 후 실제 저장 필드 사용
+        goal_kcal = goal.kcal if goal else 2000
+        goal_carb = goal.carbs if goal else 250
+        goal_protein = goal.protein if goal else 120
+        goal_fat = goal.fat if goal else 60
+        goal_sugar = goal.sugar if goal else 50
 
         # ---------------------------
         # 2) Today Meal Records
@@ -69,7 +70,6 @@ class MainSummaryAPIView(generics.GenericAPIView):
                 total[k] += sum_info[k]
 
             meal_type = (rec.meal_type or "").lower()
-
             if meal_type not in meal_summary:
                 meal_type = "breakfast"
 
@@ -104,7 +104,7 @@ class MainSummaryAPIView(generics.GenericAPIView):
         }
 
         # ---------------------------
-        # 4) Percent
+        # 4) Percent 계산
         # ---------------------------
         percent = lambda val, goal: round((val / goal) * 100, 1) if goal > 0 else 0
 

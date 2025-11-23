@@ -67,11 +67,11 @@ class MyPageActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val goal = response.body()!!
 
-                    tvKcal.text = "칼로리 ${goal.target_kcal} kcal"
-                    tvCarb.text = "탄수화물 ${goal.target_carb} g"
-                    tvProtein.text = "단백질 ${goal.target_protein} g"
-                    tvFat.text = "지발 ${goal.target_fat} g"
-                    tvSugar.text = "당  ${goal.target_sugar} g"
+                    tvKcal.text = "칼로리 ${goal.kcal} kcal"
+                    tvCarb.text = "탄수화물 ${goal.carbs} g"
+                    tvProtein.text = "단백질 ${goal.protein} g"
+                    tvFat.text = "지방 ${goal.fat} g"
+                    tvSugar.text = "당 ${goal.sugar} g"
                 } else {
                     Toast.makeText(this@MyPageActivity, "영양 정보 불러오기 실패", Toast.LENGTH_SHORT).show()
                 }
@@ -82,6 +82,7 @@ class MyPageActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun logoutUser() {
         TokenManager.clearTokens(this)

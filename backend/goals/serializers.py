@@ -10,12 +10,12 @@ class UserGoalSerializer(serializers.ModelSerializer):
             "goal_weight",
             "activity_level",
 
-            # 실제 자동 계산 목표값 사용
-            "target_kcal",
-            "target_carb",
-            "target_protein",
-            "target_fat",
-            "target_sugar",
+            # 실제 계산된 목표값
+            "kcal",
+            "carbs",
+            "protein",
+            "fat",
+            "sugar",
         ]
 
 
