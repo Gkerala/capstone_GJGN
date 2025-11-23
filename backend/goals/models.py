@@ -29,6 +29,7 @@ class UserGoal(models.Model):
     carbs = models.IntegerField(default=250)
     protein = models.IntegerField(default=120)
     fat = models.IntegerField(default=60)
+    sugar = models.FloatField(default=50)
 
     auto_mode = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)

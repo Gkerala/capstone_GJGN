@@ -1,30 +1,32 @@
+# backend/goals/views.py
+
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.utils import timezone
-from datetime import timedelta, date
 
 from .models import UserGoal, WeightRecord
 from .serializers import (
     UserGoalSerializer,
     UserGoalUpdateSerializer,
-    WeightRecordCreateSerializer
+    WeightRecordCreateSerializer,
 )
-from foods.models import UserDailyNutrition
+
+from goals.utils import calculate_daily_targets  # ✅ 여기 추가됨
 
 
+# ----------------------------------------------------
 # 0) UserGoal 조회
+# ----------------------------------------------------
 class UserGoalRetrieveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         goal, _ = UserGoal.objects.get_or_create(user=request.user)
-        print("DEBUG GOAL RESPONSE:", UserGoalSerializer(goal).data)
         return Response(UserGoalSerializer(goal).data)
 
 
 # ----------------------------------------------------
-# 1) UserGoal 수정 (목표 유형 / 목표 체중 / 활동량) + 자동 칼로리 계산
+# 1) UserGoal 수정 + 자동 칼로리/탄단지/설탕 계산
 # ----------------------------------------------------
 class UserGoalUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -36,61 +38,48 @@ class UserGoalUpdateAPIView(APIView):
         serializer = UserGoalUpdateSerializer(goal, data=request.data, partial=True)
 
         if serializer.is_valid():
-            serializer.save()   # 1차 저장 (goal_type / goal_weight / activity_level 저장)
+            serializer.save()  # goal_type, goal_weight, activity_level 저장
 
-            # -----------------------------------------------------
-            # 🔥 자동 칼로리 계산 (TDEE 기반)
-            # -----------------------------------------------------
+            # 사용자 기본 정보
             height = user.height or 170
             weight = user.weight or 60
             age = user.age or 25
             gender = user.gender or "male"
-
             activity = goal.activity_level or 3
 
-            activity_factor_map = {
-                1: 1.2,
-                2: 1.375,
-                3: 1.55,
-                4: 1.725,
-                5: 1.9,
-            }
-
-            activity_factor = activity_factor_map.get(activity, 1.55)
-
-            # BMR 계산
-            if gender == "female":
-                bmr = 10 * weight + 6.25 * height - 5 * age - 161
-            else:
-                bmr = 10 * weight + 6.25 * height - 5 * age + 5
-
-            tdee = bmr * activity_factor
-
-            # 탄단지 계산
-            protein = weight * 1.6
-            fat = weight * 0.8
-            carbs = (tdee - (protein * 4 + fat * 9)) / 4
+            # -----------------------------------------------------
+            # 🔥 utils.py 기반 자동 계산
+            # -----------------------------------------------------
+            targets = calculate_daily_targets(
+                gender=gender,
+                weight=weight,
+                height=height,
+                age=age,
+                activity=activity
+            )
 
             # -----------------------------------------------------
-            # 🔥 자동 계산된 목표를 UserGoal에 저장
+            # 🔥 UserGoal 업데이트
             # -----------------------------------------------------
-            goal.kcal = int(tdee)
-            goal.protein = round(protein, 1)
-            goal.fat = round(fat, 1)
-            goal.carbs = round(carbs, 1)
+            goal.kcal = targets["tdee"]
+            goal.carbs = targets["carbs"]
+            goal.protein = targets["protein"]
+            goal.fat = targets["fat"]
+            goal.sugar = targets["sugar"]     # ← 신규 필드 사용 시 자동 저장
             goal.auto_mode = False
             goal.save()
 
             return Response({
                 "message": "User goal updated with auto-calculated nutrition.",
                 "goal": UserGoalSerializer(goal).data
-            }, status=200)
+            })
 
         return Response(serializer.errors, status=400)
 
 
-
-# 2) UserGoal 기반 자동 목표 생성
+# ----------------------------------------------------
+# 2) UserGoal 기반 자동 목표 생성 (auto mode)
+# ----------------------------------------------------
 class AutoGoalGenerateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -98,37 +87,32 @@ class AutoGoalGenerateAPIView(APIView):
         user = request.user
         goal, _ = UserGoal.objects.get_or_create(user=user)
 
+        # 사용자 값
         height = user.height or 170
         weight = user.weight or 60
         age = user.age or 25
         gender = user.gender or "male"
+        activity = goal.activity_level or 3
 
-        activity_factor_map = {
-            1: 1.2,
-            2: 1.375,
-            3: 1.55,
-            4: 1.725,
-            5: 1.9,
-        }
-        activity_factor = activity_factor_map.get(goal.activity_level, 1.55)
+        # -----------------------------------------------------
+        # 🔥 utils.py 자동 계산 호출
+        # -----------------------------------------------------
+        targets = calculate_daily_targets(
+            gender=gender,
+            weight=weight,
+            height=height,
+            age=age,
+            activity=activity
+        )
 
-        # BMR
-        if gender == "female":
-            bmr = 10 * weight + 6.25 * height - 5 * age - 161
-        else:
-            bmr = 10 * weight + 6.25 * height - 5 * age + 5
-
-        tdee = bmr * activity_factor
-
-        # 탄단지 계산
-        protein = weight * 1.6
-        fat = weight * 0.8
-        carbs = (tdee - (protein * 4 + fat * 9)) / 4
-
-        goal.target_kcal = int(tdee)
-        goal.target_protein = int(protein)
-        goal.target_fat = int(fat)
-        goal.target_carb = int(carbs)
+        # -----------------------------------------------------
+        # 🔥 UserGoal 저장 (auto mode)
+        # -----------------------------------------------------
+        goal.target_kcal = targets["tdee"]
+        goal.target_carb = targets["carbs"]
+        goal.target_protein = targets["protein"]
+        goal.target_fat = targets["fat"]
+        goal.target_sugar = targets["sugar"]
         goal.save()
 
         return Response({
