@@ -9,6 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="red_600">#D32F2F</color>
     <color name="gray_light">#EEEEEE</color>
+    <color name="graph_cyan">#4DD0E1</color>    <!-- 밝은 시안 -->
 
 
 

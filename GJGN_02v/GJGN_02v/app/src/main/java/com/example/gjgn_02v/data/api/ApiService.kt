@@ -5,7 +5,7 @@ import com.example.gjgn_02v.data.model.auth.*
 import com.example.gjgn_02v.data.model.common.BaseResponse
 import com.example.gjgn_02v.data.model.foods.*
 import com.example.gjgn_02v.data.model.goals.*
-import com.example.gjgn_02v.data.model.home.HomeStatisticsResponse
+import com.example.gjgn_02v.data.model.analysis.MainSummaryResponse
 import com.example.gjgn_02v.data.model.records.*
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -96,5 +96,8 @@ interface ApiService {
 
     @GET("api/records/weights/")
     fun getWeights(): Call<List<WeightResponse>>
+
+    @GET("/api/records/main/summary/")
+    fun getMainSummary(): Call<MainSummaryResponse>
 
 }

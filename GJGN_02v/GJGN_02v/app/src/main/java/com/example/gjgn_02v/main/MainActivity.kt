@@ -6,9 +6,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
-import com.example.gjgn_02v.data.model.goals.GoalStatResponse
-import com.example.gjgn_02v.data.model.records.MealRecordResponse
-import com.example.gjgn_02v.data.model.records.TodayStatResponse
+import com.example.gjgn_02v.data.model.analysis.MainSummaryResponse
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import retrofit2.Call
@@ -17,66 +15,144 @@ import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var tvTodayKcal: TextView
-    private lateinit var tvTodayCount: TextView
-    private lateinit var tvWeekly: TextView
-    private lateinit var tvMonthly: TextView
-    private lateinit var tvRecent1: TextView
-    private lateinit var tvRecent2: TextView
+    // 오늘의 요약
+    private lateinit var tvTodayCalorie: TextView
+    private lateinit var tvCarb: TextView
+    private lateinit var tvProtein: TextView
+    private lateinit var tvFat: TextView
+    private lateinit var tvSugar: TextView
+
+    // 체중
+    private lateinit var tvStartWeight: TextView
+    private lateinit var tvTodayWeight: TextView
+
+    // 식단
+    private lateinit var tvFoodBreakfast: TextView
+    private lateinit var tvFoodLunch: TextView
+    private lateinit var tvFoodDinner: TextView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         initViews()
-        loadTodayRecords()
+        loadMainSummary()
         setupBottomNav()
     }
 
+    // ---------------------------------------------------------
+    // 뷰 초기화
+    // ---------------------------------------------------------
     private fun initViews() {
-        tvTodayKcal = findViewById(R.id.tvTodayKcal)
-        tvTodayCount = findViewById(R.id.tvTodayCount)
-        tvWeekly = findViewById(R.id.tvWeekly)
-        tvMonthly = findViewById(R.id.tvMonthly)
-        tvRecent1 = findViewById(R.id.tvRecentFood1)
-        tvRecent2 = findViewById(R.id.tvRecentFood2)
+
+        // 오늘의 요약
+        tvTodayCalorie = findViewById(R.id.tvTodayCalorie)
+        tvCarb = findViewById(R.id.tvCarb)
+        tvProtein = findViewById(R.id.tvProtein)
+        tvFat = findViewById(R.id.tvFat)
+        tvSugar = findViewById(R.id.tvSugar)
+
+        // 체중
+        tvStartWeight = findViewById(R.id.tvStartWeight)
+        tvTodayWeight = findViewById(R.id.tvTodayWeight)
+
+        // 식단
+        tvFoodBreakfast = findViewById(R.id.tvFoodBreakfast)
+        tvFoodLunch = findViewById(R.id.tvFoodLunch)
+        tvFoodDinner = findViewById(R.id.tvFoodDinner)
+    }
+
+    // ---------------------------------------------------------
+    // 🔥 서버에서 메인요약 데이터 가져오기
+    // ---------------------------------------------------------
+    private fun loadMainSummary() {
+
+        RetrofitClient.api.getMainSummary().enqueue(object : Callback<MainSummaryResponse> {
+            override fun onResponse(
+                call: Call<MainSummaryResponse>,
+                response: Response<MainSummaryResponse>
+            ) {
+
+                val body = response.body() ?: return
+
+                val t = body.today  // 오늘의 요약
+                val w = body.weight // 체중
+                val m = body.meals  // 식단
+
+                // ----------------------------------------
+                // 🔥 오늘의 영양소/칼로리
+                // ----------------------------------------
+                tvTodayCalorie.text =
+                    "${t.total_kcal} / ${t.goal_kcal} kcal (${t.kcal_percent}%)"
+
+                tvCarb.text = "탄수화물 ${t.carb} / ${t.goal_carb} (${t.carb_percent}%)"
+                tvProtein.text = "단백질 ${t.protein} / ${t.goal_protein} (${t.protein_percent}%)"
+                tvFat.text = "지방 ${t.fat} / ${t.goal_fat} (${t.fat_percent}%)"
+                tvSugar.text = "당 ${t.sugar} / ${t.goal_sugar} (${t.sugar_percent}%)"
+
+
+                // ----------------------------------------
+                // 🔥 체중
+                // ----------------------------------------
+                tvStartWeight.text =
+                    if (w.start_weight != null) "최초 체중: ${w.start_weight} kg"
+                    else "최초 체중: -"
+
+                tvTodayWeight.text =
+                    if (w.today_weight != null) "오늘 체중: ${w.today_weight} kg"
+                    else "오늘 체중: -"
+
+
+                // ----------------------------------------
+                // 🔥 오늘의 식단
+                // ----------------------------------------
+                // breakfast
+                tvFoodBreakfast.text = if (m.breakfast != null) {
+                    val list = m.breakfast.foods.joinToString { it.name }
+                    "아침: $list"
+                } else {
+                    "아침: 없음"
+                }
+
+                // lunch
+                tvFoodLunch.text = if (m.lunch != null) {
+                    val list = m.lunch.foods.joinToString { it.name }
+                    "점심: $list"
+                } else {
+                    "점심: 없음"
+                }
+
+                // dinner
+                tvFoodDinner.text = if (m.dinner != null) {
+                    val list = m.dinner.foods.joinToString { it.name }
+                    "저녁: $list"
+                } else {
+                    "저녁: 없음"
+                }
+            }
+
+            override fun onFailure(call: Call<MainSummaryResponse>, t: Throwable) {
+                // 실패해도 앱이 죽지 않도록 기본값 표시
+                tvTodayCalorie.text = "0 / 0 kcal"
+                tvCarb.text = "탄수화물 0"
+                tvProtein.text = "단백질 0"
+                tvFat.text = "지방 0"
+                tvSugar.text = "당 0"
+
+                tvStartWeight.text = "최초 체중: -"
+                tvTodayWeight.text = "오늘 체중: -"
+                tvFoodBreakfast.text = "아침: 없음"
+                tvFoodLunch.text = "점심: 없음"
+                tvFoodDinner.text = "저녁: 없음"
+            }
+        })
     }
 
 
-    // 🔥 오늘 기록 불러오기
-    private fun loadTodayRecords() {
-        RetrofitClient.api.getTodayRecords()
-            .enqueue(object : Callback<TodayStatResponse> {
-                override fun onResponse(
-                    call: Call<TodayStatResponse>,
-                    response: Response<TodayStatResponse>
-                ) {
-                    if (!response.isSuccessful || response.body() == null) {
-                        tvTodayKcal.text = "0 kcal"
-                        tvTodayCount.text = "0 회"
-                        return
-                    }
-
-                    val data = response.body()!!
-                    tvTodayKcal.text = "${data.total_kcal} kcal"
-                    tvTodayCount.text = "${data.count} 회"
-
-                    if (data.recent.isNotEmpty()) {
-                        tvRecent1.text = data.recent.getOrNull(0) ?: "-"
-                        tvRecent2.text = data.recent.getOrNull(1) ?: "-"
-                    }
-                }
-
-                override fun onFailure(call: Call<TodayStatResponse>, t: Throwable) {
-                    tvTodayKcal.text = "0 kcal"
-                    tvTodayCount.text = "0 회"
-                }
-            })
-    }
-
-
-
+    // ---------------------------------------------------------
     // 하단 네비게이션
+    // ---------------------------------------------------------
     private fun setupBottomNav() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNav.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED

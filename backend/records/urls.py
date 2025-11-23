@@ -9,6 +9,8 @@ from .views import (
     WeightRecordListAPIView
 )
 
+from .views_main import MainSummaryAPIView
+
 from .views_analysis import (
     DailyStatAPIView,
     WeeklyAnalysisAPIView,
@@ -47,5 +49,7 @@ urlpatterns = [
     # 🔥 주간 체중 분석 (AnalysisActivity)
     path("analysis/weights/weekly/", WeeklyWeightAPIView.as_view()),
     path("today/stat/", TodayStatAPIView.as_view()),
+    
+    path("main/summary/", MainSummaryAPIView.as_view()),
 
 ]

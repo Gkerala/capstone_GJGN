@@ -2,8 +2,10 @@ from datetime import datetime, timedelta
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from django.utils.timezone import now
+from django.db.models.functions import Cast
+from django.db.models import DateField
 from datetime import date
-from .models import MealRecord, WeightRecord
+from .models import MealRecord, MealFood,WeightRecord
 from .serializers import (
     DailyStatSerializer,
     WeeklyAnalysisSerializer,
@@ -19,7 +21,7 @@ def get_week_range(date):
 
 
 # -----------------------------------------
-# 1) 날짜별 칼로리 통계
+# 1) 날짜별 칼로리 통계 (MealFood 기반)
 # -----------------------------------------
 class DailyStatAPIView(generics.GenericAPIView):
     serializer_class = DailyStatSerializer
@@ -27,26 +29,37 @@ class DailyStatAPIView(generics.GenericAPIView):
 
     def get(self, request):
         date_str = request.GET.get("date")
+
         if not date_str:
             return Response({"error": "date 파라미터 필요"}, status=400)
 
-        date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        try:
+            date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({"error": "잘못된 날짜 형식 (YYYY-MM-DD)"}, status=400)
 
-        records = MealRecord.objects.filter(
+        # 1) 해당 날짜의 MealRecord 조회
+        meal_records = MealRecord.objects.filter(
             user=request.user,
             meal_time__date=date
         )
 
-        total = sum(r.total_calories for r in records)
+        record_ids = meal_records.values_list("id", flat=True)
 
+        # 2) MealFood 조회 후 kcal 합산
+        meal_foods = MealFood.objects.filter(record_id__in=record_ids)
+
+        total_kcal = sum(mf.kcal for mf in meal_foods)
+
+        # 3) 응답
         return Response({
             "date": str(date),
-            "total_calories": total,
+            "total_calories": total_kcal,
         })
 
 
 # -----------------------------------------
-# 2) 주간 칼로리 분석
+# 2) 주간 칼로리 분석 (MealFood 기반)
 # -----------------------------------------
 class WeeklyAnalysisAPIView(generics.GenericAPIView):
     serializer_class = WeeklyAnalysisSerializer
@@ -61,24 +74,37 @@ class WeeklyAnalysisAPIView(generics.GenericAPIView):
 
         week_start, week_end = get_week_range(base_date)
 
-        # 날짜 → 칼로리 총합
+        # 날짜 + 유저 필터 정확하게 하려면 meal_time을 Date로 변환해서 필터링해야함
+        records = (
+            MealRecord.objects.annotate(
+                meal_date=Cast('meal_time', DateField())
+            )
+            .filter(
+                user=request.user,
+                meal_date__range=(week_start, week_end)
+            )
+        )
+
+        # 일자별 칼로리 합산용 딕셔너리 생성
         daily_map = {
             (week_start + timedelta(days=i)): 0
             for i in range(7)
         }
 
-        records = MealRecord.objects.filter(
-            user=request.user,
-            meal_time__date__range=(week_start, week_end)
-        )
-
-        # 날짜별 칼로리 합산
-        for r in records:
-            d = r.meal_time.date()
+        # MealFood에서 kcal 합산
+        for rec in records:
+            total_kcal = sum(f.kcal for f in rec.foods.all())
+            d = rec.meal_time.date()
             if d in daily_map:
-                daily_map[d] += r.total_calories
+                daily_map[d] += total_kcal
 
-        # 날짜를 문자열로 변환 후 전달
+        print("\n================ [WeeklyAnalysis] ================")
+        print(f"📅 요청 날짜: {base_date}")
+        print(f"🔍 주 시작/끝: {week_start} ~ {week_end}")
+        print(f"📦 조회된 MealRecord 개수: {records.count()}")
+        print(f"📊 day별 칼로리 합계: {daily_map}")
+        print("==================================================\n")
+
         return Response({
             "week_start": str(week_start),
             "week_end": str(week_end),
@@ -87,6 +113,7 @@ class WeeklyAnalysisAPIView(generics.GenericAPIView):
                 for d, cal in daily_map.items()
             ]
         })
+
 
 
 # -----------------------------------------
@@ -98,41 +125,35 @@ class WeeklyWeightAPIView(generics.GenericAPIView):
 
     def get(self, request):
         date_str = request.GET.get("date")
-        if date_str:
-            base_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        else:
-            base_date = now().date()
+        base_date = (
+            datetime.strptime(date_str, "%Y-%m-%d").date()
+            if date_str else now().date()
+        )
 
-        # 주 시작(월요일) ~ 주 종료(일요일)
         week_start, week_end = get_week_range(base_date)
 
-        # 7일 기본 틀 생성 (월~일)
-        daily_weights = {
-            (week_start + timedelta(days=i)): None for i in range(7)
-        }
+        # 모든 날짜에 대해 기본 null 값 생성
+        dates = [week_start + timedelta(days=i) for i in range(7)]
+        daily_map = {d: None for d in dates}
 
-        # DB에서 실제 몸무게 데이터 가져오기
+        # 실제 데이터 가져오기
         weights = WeightRecord.objects.filter(
             user=request.user,
             date__range=(week_start, week_end)
         )
 
-        # 실제 기록이 있는 날짜는 대체하기
         for w in weights:
-            daily_weights[w.date] = w.weight
+            daily_map[w.date] = w.weight
 
-        # 응답 구조 통일 (항상 7개)
         return Response({
             "week_start": str(week_start),
             "week_end": str(week_end),
             "records": [
-                {
-                    "date": str(d),
-                    "weight": daily_weights[d]
-                }
-                for d in sorted(daily_weights.keys())
+                {"date": str(d), "weight": daily_map[d]}
+                for d in dates
             ]
         })
+
 
 
 class TodayStatAPIView(generics.GenericAPIView):
