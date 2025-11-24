@@ -94,14 +94,13 @@ class MainSummaryAPIView(generics.GenericAPIView):
         first_weight = WeightRecord.objects.filter(user=user).order_by("date").first()
         today_weight = WeightRecord.objects.filter(user=user, date=today).first()
 
+        today_weight_obj = WeightRecord.objects.filter(user=user, date=today).first()
+
         weight_data = {
             "start_weight": first_weight.weight if first_weight else None,
-            "today_weight": today_weight.weight if today_weight else (
-                WeightRecord.objects.filter(user=user).order_by("-date").first().weight
-                if WeightRecord.objects.filter(user=user).exists()
-                else None
-            ),
+            "today_weight": today_weight_obj.weight if today_weight_obj else None,
         }
+
 
         # ---------------------------
         # 4) Percent 계산

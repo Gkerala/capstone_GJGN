@@ -100,8 +100,12 @@ class MainActivity : AppCompatActivity() {
                     else "최초 체중: -"
 
                 tvTodayWeight.text =
-                    if (w.today_weight != null) "오늘 체중: ${w.today_weight} kg"
-                    else "오늘 체중: -"
+                    if (w.today_weight != null) {
+                        "오늘 체중: ${w.today_weight} kg"
+                    } else {
+                        "오늘 체중: 기록 없음"
+                    }
+
 
 
                 // ----------------------------------------
