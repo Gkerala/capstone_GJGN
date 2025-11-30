@@ -1,3 +1,4 @@
+# backend/foods/views.py
 from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -123,3 +124,19 @@ class FoodDetailView(APIView):
             "fat": food.fat,
         }
         return Response(data, 200)
+    
+    
+class FoodAllListView(APIView):
+    """
+    GET /api/foods/all/
+    모든 음식 이름 리스트 반환 → 자동완성 기능용
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        foods = Food.objects.all().order_by("name").values("name")
+
+        return Response({
+            "count": len(foods),
+            "results": list(foods)
+        }, status=200)

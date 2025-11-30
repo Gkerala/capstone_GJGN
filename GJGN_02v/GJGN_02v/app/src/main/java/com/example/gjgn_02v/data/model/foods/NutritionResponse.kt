@@ -5,7 +5,7 @@ data class NutritionResponse(
     val name: String? = null,
 
     val calories: Float? = null,
-    val grams: Float? = null,
+    var grams: Float? = null,
 
     val carbs: Float? = null,
     val protein: Float? = null,

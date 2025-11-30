@@ -51,6 +51,9 @@ interface ApiService {
     @GET("api/foods/nutrition/")
     suspend fun getNutrition(@Query("name") name: String): Response<NutritionResponse>
 
+    @GET("foods/all/")
+    fun getAllFoods(): Call<FoodSearchResponse>
+
 
     // -------------------------------------------------------------
     // 🍽️ Records

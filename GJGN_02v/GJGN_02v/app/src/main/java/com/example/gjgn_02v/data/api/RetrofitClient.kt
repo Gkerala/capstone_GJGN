@@ -51,7 +51,7 @@ object RetrofitClient {
     // -------------------------------
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8000/")   // Android Emulator → PC 로컬 서버
+            .baseUrl("http://172.30.1.22:8000/")   // Android Emulator → PC 로컬 서버
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

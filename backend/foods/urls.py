@@ -5,7 +5,9 @@ from .views import (
     FoodCreateView,
     FoodAnalyzeView,
     FoodSearchView,
+    FoodAllListView,
 )
+from .views_foodnames import FoodNameListAPIView
 from .views_nutrition import NutritionAPIView
 
 urlpatterns = [
@@ -14,4 +16,7 @@ urlpatterns = [
     path("analyze/", FoodAnalyzeView.as_view(), name="food-analyze"),
     path("nutrition/", NutritionAPIView.as_view(), name="nutrition"),
     path("search/", FoodSearchView.as_view(), name="food-search"),
+    path("all/", FoodAllListView.as_view(), name="food-all"),
+    path("api/foods/yolo-names/", FoodNameListAPIView.as_view()),
+
 ]
