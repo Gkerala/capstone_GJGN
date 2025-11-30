@@ -132,28 +132,34 @@ class WeeklyWeightAPIView(generics.GenericAPIView):
         )
 
         week_start, week_end = get_week_range(base_date)
-
-        # 모든 날짜에 대해 기본 null 값 생성
         dates = [week_start + timedelta(days=i) for i in range(7)]
-        daily_map = {d: None for d in dates}
 
-        # 실제 데이터 가져오기
-        weights = WeightRecord.objects.filter(
-            user=request.user,
-            date__range=(week_start, week_end)
+        # 🔥 날짜별 최신 체중만 가져오기
+        weights = (
+            WeightRecord.objects
+            .filter(user=request.user, date__range=(week_start, week_end))
+            .order_by("date", "-created_at")
         )
 
+        latest = {}
         for w in weights:
-            daily_map[w.date] = w.weight
+            # 같은 날짜면 created_at이 가장 늦은 값이 먼저 들어오므로 override되지 않음
+            if w.date not in latest:
+                latest[w.date] = w.weight
+
+        # 날짜 순서대로 채움
+        records = [
+            {"date": str(d), "weight": latest.get(d)}
+            for d in dates
+        ]
 
         return Response({
             "week_start": str(week_start),
             "week_end": str(week_end),
-            "records": [
-                {"date": str(d), "weight": daily_map[d]}
-                for d in dates
-            ]
+            "records": records
         })
+
+
 
 
 

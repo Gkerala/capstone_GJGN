@@ -41,7 +41,7 @@
                     android:id="@+id/tvTodayCalorie"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1000 / 2000 kcal (50%)"
+                    android:text="100000 / 2000 kcal (5000%)"
                     android:textSize="16sp"
                     android:layout_marginBottom="12dp" />
 
@@ -54,7 +54,7 @@
                         android:id="@+id/tvCarb"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="탄수화물 100 / 200 (50%)"
+                        android:text="탄수화물 10000 / 200 (5000%)"
                         android:textSize="15sp"
                         android:layout_marginBottom="6dp"/>
 
@@ -62,7 +62,7 @@
                         android:id="@+id/tvProtein"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="단백질 100 / 200 (50%)"
+                        android:text="단백질 10000 / 200 (5000%)"
                         android:textSize="15sp"
                         android:layout_marginBottom="6dp"/>
 
@@ -70,7 +70,7 @@
                         android:id="@+id/tvFat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="지방 100 / 200 (50%)"
+                        android:text="지방 10000 / 200 (5000%)"
                         android:textSize="15sp"
                         android:layout_marginBottom="6dp"/>
 
@@ -78,13 +78,13 @@
                         android:id="@+id/tvSugar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="당 100 / 200 (50%)"
+                        android:text="당 10000 / 200 (5000%)"
                         android:textSize="15sp"/>
                 </LinearLayout>
 
             </LinearLayout>
 
-            <!-- 🔥 체중 정보 카드 -->
+            <!-- 🔥 체중 정보 카드 (완전히 새로 수정됨) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,33 +101,31 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <!-- 오늘 체중 -->
+                <TextView
+                    android:id="@+id/tvTodayWeight"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:text="오늘의 체중: - kg"
+                    android:textSize="17sp"
+                    android:layout_marginBottom="8dp"/>
 
-                    <TextView
-                        android:id="@+id/tvStartWeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="최초 체중: 11.1 kg"
-                        android:textSize="16sp"/>
+                <!-- 목표 체중 -->
+                <TextView
+                    android:id="@+id/tvGoalWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="목표 체중: - kg"
+                    android:textSize="17sp"
+                    android:layout_marginBottom="8dp"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="→"
-                        android:textSize="18sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:id="@+id/tvTodayWeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="오늘 체중: 11.1 kg"
-                        android:textSize="16sp"/>
-                </LinearLayout>
-
+                <!-- 남은 체중 -->
+                <TextView
+                    android:id="@+id/tvWeightDiff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="남은 체중: - kg"
+                    android:textSize="17sp"/>
             </LinearLayout>
 
             <!-- 🔥 오늘의 식단 -->
@@ -169,7 +167,6 @@
                     android:layout_height="wrap_content"
                     android:text="저녁: 없음"
                     android:textSize="16sp"/>
-
             </LinearLayout>
 
         </LinearLayout>

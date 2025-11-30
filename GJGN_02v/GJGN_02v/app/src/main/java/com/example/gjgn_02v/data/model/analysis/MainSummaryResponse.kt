@@ -30,7 +30,8 @@ data class TodayStat(
 
 data class WeightInfo(
     val start_weight: Float?,
-    val today_weight: Float?
+    val today_weight: Float?,
+    val goal_weight: Float?
 )
 
 data class MealTypes(

@@ -12,12 +12,18 @@ import com.example.gjgn_02v.utils.TokenManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import android.widget.Button
 
 class WeightRecordActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_weight_record)
+
+        val btnBack = findViewById<Button>(R.id.btnBack)
+        btnBack.setOnClickListener {
+            finish()
+        }
 
         val np100 = findViewById<NumberPicker>(R.id.np100)
         val np10 = findViewById<NumberPicker>(R.id.np10)
@@ -40,7 +46,8 @@ class WeightRecordActivity : AppCompatActivity() {
     /** ▼ 서버에 체중 저장 (saveWeight 그대로 적용) */
     private fun saveWeight(weight: Float) {
 
-        val today = java.time.LocalDate.now().toString()   // "2025-11-23" 형식
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            .format(java.util.Date())
 
         val request = WeightRequest(
             weight = weight,

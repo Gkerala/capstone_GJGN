@@ -52,10 +52,13 @@ class MyPageActivity : AppCompatActivity() {
         btnLogout.setOnClickListener { logoutUser() }
         btnDelete.setOnClickListener { deleteUser() }
 
-        // 🔥 여기서 목표(영양) 정보 가져오기
         loadUserGoal()
-
         setBottomNav()
+
+    }
+    override fun onResume() {
+        super.onResume()
+        loadUserGoal()
     }
 
     private fun loadUserGoal() {

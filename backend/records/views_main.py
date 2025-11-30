@@ -34,12 +34,14 @@ class MainSummaryAPIView(generics.GenericAPIView):
         # ---------------------------
         goal = UserGoal.objects.filter(user=user).first()
 
-        # 🔥 target_* 제거 후 실제 저장 필드 사용
         goal_kcal = goal.kcal if goal else 2000
         goal_carb = goal.carbs if goal else 250
         goal_protein = goal.protein if goal else 120
         goal_fat = goal.fat if goal else 60
         goal_sugar = goal.sugar if goal else 50
+
+        # 🔥 목표 체중 추가
+        goal_weight = goal.goal_weight if goal and goal.goal_weight else None
 
         # ---------------------------
         # 2) Today Meal Records
@@ -92,15 +94,19 @@ class MainSummaryAPIView(generics.GenericAPIView):
         # 3) Weight Info
         # ---------------------------
         first_weight = WeightRecord.objects.filter(user=user).order_by("date").first()
-        today_weight = WeightRecord.objects.filter(user=user, date=today).first()
 
-        today_weight_obj = WeightRecord.objects.filter(user=user, date=today).first()
+        today_weight_obj = (
+            WeightRecord.objects
+            .filter(user=user, date=today)
+            .order_by("-created_at")
+            .first()
+        )
 
         weight_data = {
             "start_weight": first_weight.weight if first_weight else None,
             "today_weight": today_weight_obj.weight if today_weight_obj else None,
+            "goal_weight": goal_weight,
         }
-
 
         # ---------------------------
         # 4) Percent 계산

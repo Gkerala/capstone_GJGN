@@ -1,5 +1,6 @@
-from datetime import timedelta, datetime
-from django.utils.timezone import make_aware
+# backend/records/services/weekly_service.py
+from datetime import timedelta
+from django.utils import timezone
 
 from records.models import MealRecord
 from users.models import UserGoal
@@ -9,7 +10,8 @@ class WeeklyStatService:
 
     @staticmethod
     def get_weekly_stats(user):
-        today = make_aware(datetime.now()).date()
+        # ✔ timezone.now() 사용 → 자동 KST 적용
+        today = timezone.now().date()
         start_date = today - timedelta(days=6)
 
         records = MealRecord.objects.filter(

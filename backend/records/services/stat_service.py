@@ -1,5 +1,5 @@
-from datetime import datetime
-from django.utils.timezone import make_aware
+# backend/records/services/stat_service.py
+from django.utils import timezone
 from records.models import MealRecord
 from users.models import UserGoal
 
@@ -8,7 +8,8 @@ class DailyStatService:
 
     @staticmethod
     def get_today_stats(user):
-        today = make_aware(datetime.now()).date()
+        # ✔ timezone.now()로 KST 날짜 가져오기
+        today = timezone.now().date()
 
         records = MealRecord.objects.filter(user=user, eaten_at__date=today)
 

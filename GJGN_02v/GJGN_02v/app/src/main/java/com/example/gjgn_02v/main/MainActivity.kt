@@ -23,8 +23,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvSugar: TextView
 
     // 체중
-    private lateinit var tvStartWeight: TextView
     private lateinit var tvTodayWeight: TextView
+    private lateinit var tvGoalWeight: TextView
+    private lateinit var tvWeightDiff: TextView
 
     // 식단
     private lateinit var tvFoodBreakfast: TextView
@@ -54,8 +55,9 @@ class MainActivity : AppCompatActivity() {
         tvSugar = findViewById(R.id.tvSugar)
 
         // 체중
-        tvStartWeight = findViewById(R.id.tvStartWeight)
         tvTodayWeight = findViewById(R.id.tvTodayWeight)
+        tvGoalWeight = findViewById(R.id.tvGoalWeight)
+        tvWeightDiff = findViewById(R.id.tvWeightDiff)
 
         // 식단
         tvFoodBreakfast = findViewById(R.id.tvFoodBreakfast)
@@ -93,25 +95,31 @@ class MainActivity : AppCompatActivity() {
 
 
                 // ----------------------------------------
-                // 🔥 체중
+                // 🔥 체중 정보
                 // ----------------------------------------
-                tvStartWeight.text =
-                    if (w.start_weight != null) "최초 체중: ${w.start_weight} kg"
-                    else "최초 체중: -"
 
+                // 오늘 체중
                 tvTodayWeight.text =
-                    if (w.today_weight != null) {
-                        "오늘 체중: ${w.today_weight} kg"
-                    } else {
-                        "오늘 체중: 기록 없음"
-                    }
+                    if (w.today_weight != null) "오늘 체중: ${w.today_weight} kg"
+                    else "오늘 체중: 기록 없음"
 
+                // 목표 체중
+                tvGoalWeight.text =
+                    if (w.goal_weight != null) "목표 체중: ${w.goal_weight} kg"
+                    else "목표 체중: 설정 안됨"
+
+                // 남은 체중 계산
+                if (w.goal_weight != null && w.today_weight != null) {
+                    val diff = w.today_weight - w.goal_weight
+                    tvWeightDiff.text = "앞으로 ${"%.1f".format(diff)} kg"
+                } else {
+                    tvWeightDiff.text = "남은 체중: -"
+                }
 
 
                 // ----------------------------------------
                 // 🔥 오늘의 식단
                 // ----------------------------------------
-                // breakfast
                 tvFoodBreakfast.text = if (m.breakfast != null) {
                     val list = m.breakfast.foods.joinToString { it.name }
                     "아침: $list"
@@ -119,7 +127,6 @@ class MainActivity : AppCompatActivity() {
                     "아침: 없음"
                 }
 
-                // lunch
                 tvFoodLunch.text = if (m.lunch != null) {
                     val list = m.lunch.foods.joinToString { it.name }
                     "점심: $list"
@@ -127,7 +134,6 @@ class MainActivity : AppCompatActivity() {
                     "점심: 없음"
                 }
 
-                // dinner
                 tvFoodDinner.text = if (m.dinner != null) {
                     val list = m.dinner.foods.joinToString { it.name }
                     "저녁: $list"
@@ -144,8 +150,10 @@ class MainActivity : AppCompatActivity() {
                 tvFat.text = "지방 0"
                 tvSugar.text = "당 0"
 
-                tvStartWeight.text = "최초 체중: -"
                 tvTodayWeight.text = "오늘 체중: -"
+                tvGoalWeight.text = "목표 체중: -"
+                tvWeightDiff.text = "남은 체중: -"
+
                 tvFoodBreakfast.text = "아침: 없음"
                 tvFoodLunch.text = "점심: 없음"
                 tvFoodDinner.text = "저녁: 없음"
