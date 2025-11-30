@@ -1,5 +1,9 @@
 package com.example.gjgn_02v.main
 
+import androidx.core.content.FileProvider
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
@@ -59,6 +63,9 @@ class MealRecordActivity : AppCompatActivity() {
     private var foods = listOf<FoodItemResponse>()
     private var selectedUri: Uri? = null
 
+    private var cameraImageUri: Uri? = null
+    private var currentPhotoPath: String = ""
+
     companion object {
         private const val PICK_IMAGE = 2001
     }
@@ -74,7 +81,7 @@ class MealRecordActivity : AppCompatActivity() {
         setupBottomNav()
 
         btnTakePhoto.setOnClickListener {
-            Toast.makeText(this, "카메라 기능은 추후 추가됩니다.", Toast.LENGTH_SHORT).show()
+            openCamera()
         }
 
         btnSelectImage.setOnClickListener { pickImageFromGallery() }
@@ -241,6 +248,26 @@ class MealRecordActivity : AppCompatActivity() {
 
             uploadImage(selectedUri!!)
         }
+
+        if (requestCode == 3001 && resultCode == Activity.RESULT_OK) {
+
+            cameraImageUri?.let { uri ->
+
+                selectedUri = uri
+                imgPreview.setImageURI(uri)
+                imgPreview.visibility = View.VISIBLE
+
+                // 기존 데이터 초기화
+                selectedFood = null
+                singleNutritionResult = null
+                nutritionList.clear()
+                analysisContainer.removeAllViews()
+
+                // YOLO 업로드 실행
+                uploadImage(uri)
+            }
+        }
+
     }
 
     // ------------------------------------------------------------
@@ -624,6 +651,32 @@ class MealRecordActivity : AppCompatActivity() {
                 }
             })
     }
+
+    private fun openCamera() {
+        val photoFile = createImageFile()
+        cameraImageUri = FileProvider.getUriForFile(
+            this,
+            "${applicationContext.packageName}.fileprovider",
+            photoFile
+        )
+
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri)
+        startActivityForResult(intent, 3001)
+    }
+    private fun createImageFile(): File {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.KOREA).format(Date())
+        val storageDir = externalCacheDir
+
+        val file = File.createTempFile(
+            "CAMERA_${timeStamp}_",
+            ".jpg",
+            storageDir
+        )
+        currentPhotoPath = file.absolutePath
+        return file
+    }
+
 
 }
 

@@ -2,8 +2,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.gjgn_02v">
 
-    <!-- 인터넷 권한 (API 호출 및 카카오 SDK) -->
+    <!-- 카메라 하드웨어가 없어도 설치 가능하도록 -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <!-- 기본 권한 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Android 13+ 갤러리 접근 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Android 10 이하 기기 용 -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <application
         android:name=".App"
@@ -15,12 +29,24 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.GJGN">
 
-        <!-- 카카오 SDK 앱 키 등록 -->
+        <!-- 카메오 SDK -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="15717b2f42caeea1ee8e0d45226b3236" />
 
-        <!-- ⚡ 앱 최초 실행: 스플래시에서 자동 로그인 체크 후 이동 -->
+        <!-- FileProvider (카메라로 저장한 파일 접근용) -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- 스플래시 -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -31,7 +57,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Kakao Login Redirect URI 설정 -->
+        <!-- 카카오 리다이렉트 -->
         <activity
             android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
             android:exported="true">
@@ -39,102 +65,54 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data
                     android:scheme="kakao15717b2f42caeea1ee8e0d45226b3236"
                     android:host="oauth" />
             </intent-filter>
         </activity>
 
-        <!-- 로그인 화면 -->
+        <!-- 로그인 -->
         <activity
             android:name=".login.LoginActivity"
             android:exported="true"
-            android:label="로그인"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
-        <!-- 프로필 설정 화면 -->
+        <!-- 프로필 설정 -->
         <activity
             android:name=".profile.ProfileSetupActivity"
             android:exported="true"
-            android:label="프로필 설정"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
-        <!-- 메인 페이지 -->
+        <!-- 메인 -->
         <activity
             android:name=".main.MainActivity"
             android:exported="true"
-            android:label="메인화면"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
-        <!-- 기록 페이지 -->
-        <activity
-            android:name=".main.RecordSelectActivity"
-            android:exported="true"
-            android:label="기록"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+        <!-- 식사/체중 기록 -->
+        <activity android:name=".main.RecordSelectActivity" android:exported="true" />
+        <activity android:name=".main.MealRecordActivity" android:exported="false" />
+        <activity android:name=".main.WeightRecordActivity" android:exported="false" />
 
-        <activity
-            android:name=".main.MealRecordActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".main.WeightRecordActivity"
-            android:exported="false" />
-
-
-        <!-- 분석 페이지 -->
+        <!-- 분석 -->
         <activity
             android:name=".main.AnalysisActivity"
             android:exported="true"
-            android:label="분석"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
-        <!-- 내 정보 페이지 -->
-        <activity
-            android:name=".main.MyPageActivity"
-            android:exported="true"
-            android:label="내 정보"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+        <!-- My Page -->
+        <activity android:name=".main.MyPageActivity" android:exported="true" />
+        <activity android:name=".main.ProfileEditActivity" android:exported="true" />
 
-        <activity
-            android:name=".main.ProfileEditActivity"
-            android:exported="true"
-            android:label="프로필 수정"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
-
-        <!-- 프로필 개별 수정 화면들 -->
-        <activity
-            android:name="com.example.gjgn_02v.data.model.mypage.EditNameActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.example.gjgn_02v.data.model.mypage.EditBirthActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.example.gjgn_02v.data.model.mypage.EditGenderActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.example.gjgn_02v.data.model.mypage.EditHeightActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.example.gjgn_02v.data.model.mypage.EditWeightActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.example.gjgn_02v.data.model.mypage.EditActivityLevelActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.example.gjgn_02v.data.model.mypage.EditGoalTypeActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.example.gjgn_02v.data.model.mypage.EditGoalWeightActivity"
-            android:exported="false" />
+        <!-- 프로필 항목 수정 -->
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditNameActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditBirthActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditGenderActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditHeightActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditWeightActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditActivityLevelActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditGoalTypeActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditGoalWeightActivity" android:exported="false" />
 
     </application>
 </manifest>
