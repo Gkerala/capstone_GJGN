@@ -61,6 +61,8 @@ class MealRecordActivity : AppCompatActivity() {
     private var cameraImageUri: Uri? = null
     private var currentPhotoPath: String = ""
 
+    private var yoloFoods: List<String> = emptyList()
+
     companion object {
         private const val PICK_IMAGE = 2001
         private const val CAMERA_REQUEST = 3001
@@ -69,6 +71,7 @@ class MealRecordActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_meal_record)
+        yoloFoods = loadYoloNames()
 
         initViews()
         setupMealButtons()
@@ -78,6 +81,17 @@ class MealRecordActivity : AppCompatActivity() {
         btnTakePhoto.setOnClickListener { openCamera() }
         btnSelectImage.setOnClickListener { pickImageFromGallery() }
         btnSave.setOnClickListener { saveRecord() }
+
+        val btnSearch = findViewById<Button>(R.id.btnSearchFood)
+
+        btnSearch.setOnClickListener {
+            val query = searchInput.text.toString().trim()
+            if (query.isNotEmpty()) {
+                manualSearch(query)
+            } else {
+                Toast.makeText(this, "검색어를 입력하세요.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun initViews() {
@@ -93,6 +107,31 @@ class MealRecordActivity : AppCompatActivity() {
 
         analysisContainer.visibility = View.VISIBLE
     }
+
+    private fun loadYoloNames(): List<String> {
+        return try {
+            val input = assets.open("data.yaml")
+            val yamlContent = input.bufferedReader().use { it.readText() }
+            input.close()
+
+            // names: ['Apple', 'Chapathi', ...]
+            val regex = Regex(
+                pattern = """names:\s*\[(.*?)]""",
+                options = setOf(RegexOption.DOT_MATCHES_ALL)
+            )
+
+            val match = regex.find(yamlContent)
+            val raw = match?.groupValues?.get(1) ?: return emptyList()
+
+            raw.split(",")
+                .map { it.trim().replace("'", "").replace("\"", "") }
+                .filter { it.isNotEmpty() }
+
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
 
     // ------------------------------------------------------------
     // 1. Meal type buttons
@@ -120,16 +159,52 @@ class MealRecordActivity : AppCompatActivity() {
     // 2. 음식 검색 기능
     // ------------------------------------------------------------
     private fun setupSearchInput() {
+
+        // 키보드 Enter → 직접 검색 실행
+        searchInput.setOnEditorActionListener { _, _, _ ->
+            val q = searchInput.text.toString().trim()
+            if (q.isNotEmpty()) manualSearch(q)
+            true
+        }
+
         searchInput.addTextChangedListener(object : TextWatcher {
 
             override fun afterTextChanged(s: Editable?) {
                 val q = s.toString().trim()
                 val searchContainer = findViewById<LinearLayout>(R.id.searchResultContainer)
 
-                if (q.length >= 2) searchFoods(q)
-                else {
+                if (q.isEmpty()) {
                     searchContainer.visibility = View.GONE
                     searchContainer.removeAllViews()
+                    return
+                }
+
+                // YOLO names 자동완성 필터링
+                val filtered = yoloFoods.filter { it.contains(q, ignoreCase = true) }
+
+                if (filtered.isEmpty()) {
+                    searchContainer.visibility = View.GONE
+                    searchContainer.removeAllViews()
+                    return
+                }
+
+                searchContainer.visibility = View.VISIBLE
+                searchContainer.removeAllViews()
+
+                for (name in filtered) {
+                    val tv = TextView(this@MealRecordActivity).apply {
+                        text = name
+                        textSize = 16f
+                        setPadding(30, 25, 30, 25)
+                        setBackgroundResource(android.R.color.white)
+
+                        setOnClickListener {
+                            searchInput.setText(name)
+                            searchContainer.visibility = View.GONE
+                            manualSearch(name)
+                        }
+                    }
+                    searchContainer.addView(tv)
                 }
             }
 
@@ -137,6 +212,25 @@ class MealRecordActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
     }
+
+
+
+    private fun manualSearch(foodName: String) {
+        lifecycleScope.launch {
+            try {
+                val res = RetrofitClient.api.getNutrition(foodName)
+                if (!res.isSuccessful || res.body() == null) {
+                    Toast.makeText(this@MealRecordActivity, "검색된 영양정보가 없습니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+                loadSingleNutrition(foodName)
+            } catch (e: Exception) {
+                Toast.makeText(this@MealRecordActivity, "검색 오류", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
 
     private fun searchFoods(query: String) {
         RetrofitClient.api.searchFoods(query)
@@ -389,9 +483,8 @@ class MealRecordActivity : AppCompatActivity() {
     // ------------------------------------------------------------
     private fun saveRecord() {
 
-        // 단일 음식 (검색)
-        if (selectedFood != null && singleNutritionResult != null) {
-
+        // 검색으로 단일 음식 선택한 경우
+        if (singleNutritionResult != null) {
             val n = singleNutritionResult!!
 
             val req = MealRecordRequest(
@@ -399,7 +492,7 @@ class MealRecordActivity : AppCompatActivity() {
                 foods = listOf(
                     FoodData(
                         food_name = n.name ?: "-",
-                        amount = n.grams ?: 1f,
+                        amount = n.grams ?: 100f,
                         kcal = n.calories ?: 0f,
                         carb = n.carbs ?: 0f,
                         protein = n.protein ?: 0f,
@@ -408,19 +501,39 @@ class MealRecordActivity : AppCompatActivity() {
                     )
                 )
             )
+
             sendMealRecord(req)
             return
         }
 
-        // 다중 객체
+        // YOLO 다중 객체 → 체크된 음식만 저장
         val selectedItems = nutritionList.filter { it.selected }
+
         if (selectedItems.isEmpty()) {
-            Toast.makeText(this, "음식을 선택해주세요.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "저장할 음식을 선택해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        saveMultipleFoods(selectedItems)
+        val foodsToSave = selectedItems.map { n ->
+            FoodData(
+                food_name = n.name ?: "-",
+                amount = n.grams ?: 100f,
+                kcal = n.calories ?: 0f,
+                carb = n.carbs ?: 0f,
+                protein = n.protein ?: 0f,
+                fat = n.fat ?: 0f,
+                sugar = n.sugar ?: 0f
+            )
+        }
+
+        val req = MealRecordRequest(
+            meal_type = selectedMealType,
+            foods = foodsToSave
+        )
+
+        sendMealRecord(req)
     }
+
 
     private fun saveMultipleFoods(items: List<NutritionResponse>) {
         val foodList = items.map { n ->
