@@ -1,15 +1,25 @@
-path: "D:/download/Food-Detection-master/Food-Detection-master/dataset"
-
-train: images/train
-val: images/valid
-test: images/test
-
-nc: 12
-names: ['Apple', 'Chapathi', 'Chicken Gravy', 'Fries', 'Idli', 'Pizza', 'Rice', 'Soda', 'Tomato', 'Vada', 'banana', 'burger']
-
-roboflow:
-  workspace: intel-n2yjd
-  project: food-detector-acbog
-  version: 4
-  license: CC BY 4.0
-  url: https://universe.roboflow.com/intel-n2yjd/food-detector-acbog/dataset/4
+names:
+- rice
+- sushi
+- tempura bowl
+- udon noodle
+- tempura udon
+- soba noodle
+- ramen noodle
+- Japanese-style pancake
+- takoyaki
+- vegetable tempura
+- miso soup
+- grilled salmon
+- rice ball
+- dry curry
+- spicy chili-flavored tofu
+- fried chicken
+- fried fish
+- pork cutlet on rice
+- beef curry
+- broiled eel bowl
+nc: 20
+train: D:/capstone/diet_app/capstone_GJGN/dataset256/yolo_japanese_20/images/train
+val: D:/capstone/diet_app/capstone_GJGN/dataset256/yolo_japanese_20/images/val
+test: D:/capstone/diet_app/capstone_GJGN/dataset256/yolo_japanese_20/images/test

@@ -6,7 +6,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-# YOLO 라벨 → Edamam용 이름 매핑
+from foods.models import NutritionCache
+
+
+# ------------------------------------------------------
+# YOLO 라벨 → Edamam 검색용 이름 매핑
+# ------------------------------------------------------
 LABEL_MAPPING = {
     "rice": "cooked white rice",
     "sushi": "salmon sushi roll",
@@ -31,7 +36,61 @@ LABEL_MAPPING = {
 }
 
 
+# ------------------------------------------------------
+# 통합 파싱 함수 (기존 + 새로운 구조 모두 지원)
+# ------------------------------------------------------
+def parse_edamam_response(data):
+    """
+    Edamam 응답을 기존 totalNutrients 구조 + 새로운 parsed 구조 모두 처리
+    """
+
+    # ------------------------------
+    # 1) 기존 구조: calories + totalNutrients
+    # ------------------------------
+    if "calories" in data and "totalNutrients" in data:
+        nutrients = data.get("totalNutrients", {})
+        return {
+            "calories": data.get("calories", 0),
+            "carbs": nutrients.get("CHOCDF", {}).get("quantity", 0),
+            "protein": nutrients.get("PROCNT", {}).get("quantity", 0),
+            "fat": nutrients.get("FAT", {}).get("quantity", 0),
+            "sugar": nutrients.get("SUGAR", {}).get("quantity", 0),
+            "weight": data.get("totalWeight", 100),
+        }
+
+    # ------------------------------
+    # 2) 새로운 구조: ingredients → parsed → nutrients
+    # ------------------------------
+    try:
+        ingredients = data.get("ingredients", [])
+        if ingredients:
+            parsed_list = ingredients[0].get("parsed", [])
+            if parsed_list:
+                p = parsed_list[0]
+                nutrients = p.get("nutrients", {})
+                weight = p.get("weight", 100)
+                return {
+                    "calories": nutrients.get("ENERC_KCAL", {}).get("quantity", 0),
+                    "carbs": nutrients.get("CHOCDF", {}).get("quantity", 0),
+                    "protein": nutrients.get("PROCNT", {}).get("quantity", 0),
+                    "fat": nutrients.get("FAT", {}).get("quantity", 0),
+                    "sugar": nutrients.get("SUGAR", {}).get("quantity", 0),
+                    "weight": weight,
+                }
+    except Exception as e:
+        print(f"[NUTRITION API] New parser exception: {e}")
+
+    # ------------------------------
+    # 3) 모든 구조 매칭 실패 → None
+    # ------------------------------
+    return None
+
+
+# ------------------------------------------------------
+# Nutrition API View
+# ------------------------------------------------------
 class NutritionAPIView(APIView):
+
     def get(self, request):
         raw_name = request.GET.get("name")
 
@@ -44,13 +103,34 @@ class NutritionAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 매핑된 이름 사용
         mapped = LABEL_MAPPING.get(raw_name.lower(), raw_name.lower())
         print(f"[NUTRITION API] Edamam 요청용 이름(mapped) = {mapped}")
 
-        # 무료 Nutrition Data API 엔드포인트
-        url = "https://api.edamam.com/api/nutrition-data"
+        # ------------------------------------------------------
+        # 1) DB 캐싱 조회
+        # ------------------------------------------------------
+        try:
+            cached = NutritionCache.objects.get(name=raw_name.lower())
+            print("[NUTRITION API] 🔵 DB 캐싱된 결과 사용!")
 
+            return Response({
+                "success": True,
+                "name": raw_name,
+                "calories": cached.calories,
+                "carbs": cached.carbs,
+                "protein": cached.protein,
+                "fat": cached.fat,
+                "sugar": cached.sugar,
+                "weight": 100,
+            }, 200)
+
+        except NutritionCache.DoesNotExist:
+            print("[NUTRITION API] 🟡 DB에 없음 → Edamam API 호출")
+
+        # ------------------------------------------------------
+        # 2) Edamam API 호출
+        # ------------------------------------------------------
+        url = "https://api.edamam.com/api/nutrition-data"
         params = {
             "app_id": settings.EDAMAM_APP_ID,
             "app_key": settings.EDAMAM_APP_KEY,
@@ -59,70 +139,46 @@ class NutritionAPIView(APIView):
 
         try:
             res = requests.get(url, params=params)
-        except Exception as e:
-            print("[NUTRITION API] ❌ 요청 실패:", e)
-            return self._fail_response(raw_name)
-
-        # JSON 파싱
-        try:
             data = res.json()
-        except Exception:
-            print("[NUTRITION API] ❌ JSON 파싱 오류 → fallback")
-            return self._fail_response(raw_name)
+        except Exception as e:
+            print("[NUTRITION API] ❌ 요청/파싱 실패:", e)
+            return self._zero_response(raw_name)
 
-        print(f"[NUTRITION API] EDAMAM raw response = {data}")
+        print("[NUTRITION API] Edamam raw response:", data)
 
-        # --- 1) 먼저 nutrition-data(기존) 값 확인 ---
-        calories = data.get("calories", 0)
-        if calories > 0:
-            print("[NUTRITION API] 기존 nutrition-data 구조 사용 성공")
-            nutrients = data.get("totalNutrients", {})
+        # ------------------------------------------------------
+        # 3) 통합 파서 적용
+        # ------------------------------------------------------
+        parsed = parse_edamam_response(data)
 
-            result = {
+        if parsed:
+            # DB 저장
+            NutritionCache.objects.create(
+                name=raw_name.lower(),
+                calories=parsed["calories"],
+                carbs=parsed["carbs"],
+                protein=parsed["protein"],
+                fat=parsed["fat"],
+                sugar=parsed["sugar"],
+            )
+
+            print("[NUTRITION API] 🟢 파싱 성공 → DB 저장 후 반환")
+            return Response({
                 "success": True,
                 "name": raw_name,
-                "calories": data.get("calories", 0),
-                "carbs": nutrients.get("CHOCDF", {}).get("quantity", 0),
-                "protein": nutrients.get("PROCNT", {}).get("quantity", 0),
-                "fat": nutrients.get("FAT", {}).get("quantity", 0),
-                "sugar": nutrients.get("SUGAR", {}).get("quantity", 0),
-                "weight": data.get("totalWeight", 100),
-            }
+                **parsed
+            }, 200)
 
+        # ------------------------------------------------------
+        # 4) 파싱 실패 → 기존 zero 응답 유지
+        # ------------------------------------------------------
+        print("[NUTRITION API] ⚠ 파싱 실패 → zero fallback")
+        return self._zero_response(raw_name)
 
-            print(f"[NUTRITION API] 최종 응답 = {result}")
-            return Response(result, 200)
-
-        # --- 2) 실패 시 parsed nutrients 구조 사용 ---
-        try:
-            parsed_item = data["ingredients"][0]["parsed"][0]
-            nut = parsed_item["nutrients"]
-
-            result = {
-                "success": True,
-                "name": raw_name,
-                "calories": nut.get("ENERC_KCAL", {}).get("quantity", 0),
-                "carbs": nut.get("CHOCDF", {}).get("quantity", 0),
-                "protein": nut.get("PROCNT", {}).get("quantity", 0),
-                "fat": nut.get("FAT", {}).get("quantity", 0),
-                "sugar": nut.get("SUGAR", {}).get("quantity", 0),
-                "weight": parsed_item.get("weight", 100),
-            }
-
-
-            print("[NUTRITION API] parsed 구조 사용 성공")
-            print(f"[NUTRITION API] 최종 응답 = {result}")
-            return Response(result, 200)
-
-        except Exception:
-            print("[NUTRITION API] ⚠ parsed 구조 또한 실패 → fallback")
-            return self._fail_response(raw_name)
-
-    def _fail_response(self, raw_name):
-        """
-        분석 실패 시 기존과 동일한 zero-response 반환
-        """
-        print("[NUTRITION API] ⚠ 영양 분석 실패 → zero 반환")
+    # ------------------------------------------------------
+    # 실패 시 기존 앱 응답 유지 (zero)
+    # ------------------------------------------------------
+    def _zero_response(self, raw_name):
         return Response({
             "success": True,
             "name": raw_name,

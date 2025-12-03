@@ -44,3 +44,17 @@ class UserDailyNutrition(models.Model):
 
     def __str__(self):
         return f"{self.user.email} nutrition target"
+
+class NutritionCache(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+
+    calories = models.FloatField(default=0)
+    carbs = models.FloatField(default=0)
+    protein = models.FloatField(default=0)
+    fat = models.FloatField(default=0)
+    sugar = models.FloatField(default=0)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
