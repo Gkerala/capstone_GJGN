@@ -1,10 +1,10 @@
 import requests
 
-EDAMAM_APP_ID = "3c45cd94"
-EDAMAM_APP_KEY = "31d9dca674bf02e4151b8c954d88448d"
+EDAMAM_APP_ID = "81eaaf9d"
+EDAMAM_APP_KEY = "59e4c0340075a5295da857753fceb859"
 
 # 요청할 음식
-food_name = "cheese pizza"
+food_name = "Japanese fried chicken (karaage)"
 
 def check_nutrition(food):
     url = "https://api.edamam.com/api/nutrition-data"

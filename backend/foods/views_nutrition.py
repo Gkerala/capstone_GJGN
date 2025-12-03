@@ -8,18 +8,26 @@ from rest_framework import status
 
 # YOLO 라벨 → Edamam용 이름 매핑
 LABEL_MAPPING = {
-    "pizza": "cheese pizza",
-    "burger": "hamburger",
-    "fries": "french fries",
-    "rice": "cooked rice",
-    "soda": "cola",
-    "apple": "apple",
-    "banana": "banana",
-    "tomato": "tomato",
-    "idli": "idli",
-    "vada": "vada",
-    "chapathi": "chapati",
-    "chicken gravy": "chicken curry",
+    "rice": "cooked white rice",
+    "sushi": "salmon sushi roll",
+    "tempura bowl": "tempura rice bowl (tendon)",
+    "udon noodle": "cooked udon noodles",
+    "tempura udon": "udon with tempura",
+    "soba noodle": "cooked soba noodles",
+    "ramen noodle": "Japanese ramen (noodles with broth)",
+    "Japanese-style pancake": "okonomiyaki (Japanese savory pancake)",
+    "takoyaki": "takoyaki (octopus balls)",
+    "vegetable tempura": "vegetable tempura (fried vegetables)",
+    "miso soup": "miso soup",
+    "grilled salmon": "grilled salmon",
+    "rice ball": "onigiri rice ball",
+    "dry curry": "Japanese dry curry with rice",
+    "spicy chili-flavored tofu": "mapo tofu (spicy tofu dish)",
+    "fried chicken": "Japanese fried chicken (karaage)",
+    "fried fish": "fried white fish (battered)",
+    "pork cutlet on rice": "katsudon (pork cutlet rice bowl)",
+    "beef curry": "Japanese beef curry with rice",
+    "broiled eel bowl": "unagi don (broiled eel rice bowl)"
 }
 
 
