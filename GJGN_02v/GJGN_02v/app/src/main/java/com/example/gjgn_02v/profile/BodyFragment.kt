@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.NumberPicker
+import android.widget.ImageView   // ⭐ 추가
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.gjgn_02v.R
@@ -31,6 +32,11 @@ class BodyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         viewModel = ViewModelProvider(requireActivity())[ProfileSetupViewModel::class.java]
+
+        // ⭐ btnBack 기능만 추가 (오류 안 나게 최소 추가)
+        view.findViewById<ImageView?>(R.id.btnBack)?.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
 
         // ─────────────────────────────
         // NumberPicker 연결 (키)
@@ -85,37 +91,26 @@ class BodyFragment : Fragment() {
         }
     }
 
-    // ─────────────────────────────────────────
-    // NumberPicker 설정 함수
-    // ─────────────────────────────────────────
     private fun setPickerRange(picker: NumberPicker, min: Int, max: Int) {
         picker.minValue = min
         picker.maxValue = max
         picker.wrapSelectorWheel = true
     }
 
-    // ─────────────────────────────────────────
-    // NumberPicker 값 → Float 계산
-    // ex) 1 7 5 . 3 → 175.3
-    // ─────────────────────────────────────────
     private fun toDecimalFloat(v100: Int, v10: Int, v1: Int, decimal: Int): Float {
         val num = (v100 * 100) + (v10 * 10) + v1 + (decimal / 10f)
         return "%.1f".format(num).toFloat()
     }
 
-    // ─────────────────────────────────────────
-    // 기존 ViewModel 값 → NumberPicker 복원
-    // ─────────────────────────────────────────
     private fun restoreToPicker(
         value: Float?,
         p100: NumberPicker, p10: NumberPicker, p1: NumberPicker, pDec: NumberPicker
     ) {
         if (value == null) return
 
-        val str = "%.1f".format(value) // ex: 175.3
-        val parts = str.split(".")     // ["175", "3"]
-
-        val whole = parts[0].padStart(3, '0') // "175"
+        val str = "%.1f".format(value)
+        val parts = str.split(".")
+        val whole = parts[0].padStart(3, '0')
         val decimal = parts[1].toInt()
 
         p100.value = whole[0].digitToInt()

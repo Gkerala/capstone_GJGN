@@ -3,6 +3,7 @@ package com.example.gjgn_02v.main
 import android.os.Bundle
 import android.widget.NumberPicker
 import android.widget.Toast
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
@@ -20,7 +21,7 @@ class WeightRecordActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_weight_record)
 
-        val btnBack = findViewById<Button>(R.id.btnBack)
+        val btnBack = findViewById<ImageView>(R.id.btnBack)
         btnBack.setOnClickListener {
             finish()
         }

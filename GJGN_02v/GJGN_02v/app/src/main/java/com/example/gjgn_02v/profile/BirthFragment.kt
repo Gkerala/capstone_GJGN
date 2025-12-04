@@ -4,6 +4,7 @@
  * - 2단계: 생년월일 선택 화면
  * - XML 내 DatePicker 사용
  * - 선택된 날짜를 ViewModel에 저장
+ * - 🔙 뒤로가기 버튼 기능 추가됨
  */
 
 package com.example.gjgn_02v.profile
@@ -14,11 +15,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.DatePicker
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.gjgn_02v.R
-import java.text.SimpleDateFormat
-import java.util.*
 
 class BirthFragment : Fragment() {
 
@@ -38,6 +38,12 @@ class BirthFragment : Fragment() {
         val datePicker = view.findViewById<DatePicker>(R.id.datePickerBirth)
         val btnNext = view.findViewById<Button>(R.id.btnNextBirth)
 
+        // 🔙 뒤로가기 버튼
+        val btnBack = view.findViewById<ImageView>(R.id.btnBack)
+        btnBack?.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+
         // DatePicker 기본값 설정 (이미 선택된 값이 있으면 불러오기)
         if (!viewModel.birth.isNullOrEmpty()) {
             val parts = viewModel.birth!!.split("-")
@@ -50,15 +56,12 @@ class BirthFragment : Fragment() {
 
         // 다음 버튼 클릭
         btnNext.setOnClickListener {
-
-            // 날짜 읽기
             val year = datePicker.year
             val month = datePicker.month + 1
             val day = datePicker.dayOfMonth
 
             // yyyy-MM-dd 형식으로 저장
             val formatted = "%04d-%02d-%02d".format(year, month, day)
-
             viewModel.birth = formatted
 
             // 다음 페이지 이동

@@ -1,9 +1,3 @@
-/**
- * SummaryFragment
- * ------------------------------
- * - 6단계: 지금까지 입력된 정보를 최종 확인하는 화면
- */
-
 package com.example.gjgn_02v.profile
 
 import android.os.Bundle
@@ -11,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -38,6 +33,12 @@ class SummaryFragment : Fragment() {
         val tvActivity = view.findViewById<TextView>(R.id.tvSummaryActivity)
         val tvGoal = view.findViewById<TextView>(R.id.tvSummaryGoal)
         val btnFinish = view.findViewById<Button>(R.id.btnFinish)
+
+        // ★ 뒤로가기 버튼 추가 (기존 코드 변경 없음)
+        val btnBack = view.findViewById<ImageView>(R.id.btnBack)
+        btnBack.setOnClickListener {
+            (activity as ProfileSetupActivity).prevPage()
+        }
 
         // 성별
         tvGender.text = "성별: ${viewModel.gender ?: "-"}"

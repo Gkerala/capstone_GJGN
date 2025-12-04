@@ -3,6 +3,7 @@ package com.example.gjgn_02v.profile
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView   // ★ 추가
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.gjgn_02v.R
@@ -35,6 +36,11 @@ class ProfileSetupActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile_setup)
 
         viewModel = ViewModelProvider(this)[ProfileSetupViewModel::class.java]
+
+        // ★★★★★ 뒤로가기 버튼 기능 추가 (기존 코드 변경 없음)
+        findViewById<ImageView>(R.id.btnBack).setOnClickListener {
+            prevPage()
+        }
 
         loadFragment(0)
     }

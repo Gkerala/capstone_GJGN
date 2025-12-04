@@ -3,6 +3,7 @@ package com.example.gjgn_02v.main
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.model.mypage.EditActivityLevelActivity
@@ -28,7 +29,7 @@ class ProfileEditActivity : AppCompatActivity() {
     private lateinit var btnEditGoalType: Button
     private lateinit var btnEditGoalWeight: Button
 
-    private lateinit var btnBack: Button
+    private lateinit var btnBack: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,8 +91,10 @@ class ProfileEditActivity : AppCompatActivity() {
             startActivity(Intent(this, EditGoalWeightActivity::class.java))
         }
 
-        // 뒤로가기
-        btnBack.setOnClickListener { finish() }
+        btnBack = findViewById<ImageView>(R.id.btnBack)
+        btnBack.setOnClickListener {
+            finish()
+        }
     }
 
     private fun setupBottomNav() {

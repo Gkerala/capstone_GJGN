@@ -3,6 +3,7 @@
  * --------------------------------------
  * - 5단계: 활동량 + 목표 선택 화면
  * - RadioGroup 값 저장 후 다음 단계로 이동
+ * - 🔥 뒤로가기 버튼 처리 추가됨
  */
 
 package com.example.gjgn_02v.profile
@@ -12,7 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.RadioButton
+import android.widget.ImageView
 import android.widget.RadioGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -38,6 +39,12 @@ class ActivityGoalFragment : Fragment() {
         val rgActivity = view.findViewById<RadioGroup>(R.id.rgActivity)
         val rgGoal = view.findViewById<RadioGroup>(R.id.rgGoal)
         val btnNext = view.findViewById<Button>(R.id.btnNextActivityGoal)
+
+        // 🔙 뒤로가기 버튼 추가
+        val btnBack = view.findViewById<ImageView>(R.id.btnBack)
+        btnBack?.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
 
         // ─────────────────────────────
         // 기존 값 복원 (있으면)

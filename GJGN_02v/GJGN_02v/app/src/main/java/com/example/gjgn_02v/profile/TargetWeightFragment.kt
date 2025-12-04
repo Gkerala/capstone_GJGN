@@ -1,10 +1,3 @@
-/**
- * TargetWeightFragment
- * -------------------------
- * - 4단계: 목표 체중 선택 화면
- * - NumberPicker 조합으로 소수점 입력 처리
- */
-
 package com.example.gjgn_02v.profile
 
 import android.os.Bundle
@@ -12,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.NumberPicker
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -30,6 +24,12 @@ class TargetWeightFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         viewModel = ViewModelProvider(requireActivity())[ProfileSetupViewModel::class.java]
+
+        // 🔙 뒤로가기 버튼 (추가된 부분)
+        val btnBack = view.findViewById<ImageView>(R.id.btnBack)
+        btnBack.setOnClickListener {
+            (activity as ProfileSetupActivity).prevPage()
+        }
 
         // NumberPickers 매핑
         val np100 = view.findViewById<NumberPicker>(R.id.npTarget100)

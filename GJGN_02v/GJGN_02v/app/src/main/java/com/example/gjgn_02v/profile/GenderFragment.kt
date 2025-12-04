@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView   // ⭐ 추가
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -25,6 +26,11 @@ class GenderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         viewModel = ViewModelProvider(requireActivity())[ProfileSetupViewModel::class.java]
+
+        // ⭐ 뒤로가기 버튼 기능만 추가
+        view.findViewById<ImageView?>(R.id.btnBack)?.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
 
         val btnMale = view.findViewById<Button>(R.id.btnMale)
         val btnFemale = view.findViewById<Button>(R.id.btnFemale)
@@ -53,7 +59,6 @@ class GenderFragment : Fragment() {
 
         btnNext.setOnClickListener {
             if (viewModel.gender == null) {
-                // 성별 선택 안함
                 return@setOnClickListener
             }
             (activity as ProfileSetupActivity).nextPage()
