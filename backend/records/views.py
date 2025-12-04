@@ -1,13 +1,10 @@
 # backend/records/views.py
-from datetime import timedelta
-from datetime import datetime, time
+from datetime import timedelta, datetime, time
 from django.db.models import Sum
 from django.utils.timezone import now
-
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from rest_framework.decorators import api_view, permission_classes
 from django.utils import timezone
 
@@ -18,19 +15,20 @@ from .serializers import (
     WeightRecordCreateSerializer,
     MealRecordListSerializer,
     MealRecordDetailSerializer,
-    MealRecordSerializer,
 )
 
+
+# ------------------------------------------
+# 🔥 KST 기준 오늘 날짜 범위(UTC 변환)
+# ------------------------------------------
 def get_today_utc_range():
-    # 🔥 localdate() 대신 timezone.now().date() 사용
-    today = timezone.now().date()  # 이미 aware datetime → safe
+    kst_now = timezone.localtime(timezone.now())   # 항상 KST로 변환
+    today_kst = kst_now.date()
 
-    start_kst = datetime.combine(today, time.min)
-    end_kst = datetime.combine(today, time.max)
+    start_kst = timezone.make_aware(datetime.combine(today_kst, time.min))
+    end_kst = timezone.make_aware(datetime.combine(today_kst, time.max))
 
-    start_kst = timezone.make_aware(start_kst, timezone.get_current_timezone())
-    end_kst = timezone.make_aware(end_kst, timezone.get_current_timezone())
-
+    # 🔥 UTC 변환
     start_utc = start_kst.astimezone(timezone.utc)
     end_utc = end_kst.astimezone(timezone.utc)
 
@@ -38,17 +36,20 @@ def get_today_utc_range():
 
 
 # ------------------------------------------
-# 1) 식단 기록 저장 API
+# 1) 식단 기록 저장 API (UTC로 저장)
 # ------------------------------------------
 class MealRecordCreateAPIView(generics.CreateAPIView):
     serializer_class = MealRecordCreateSerializer
 
     def perform_create(self, serializer):
-        serializer.save()
+        obj = serializer.save()
+        # 저장은 무조건 UTC
+        obj.meal_time = timezone.now().astimezone(timezone.utc)
+        obj.save()
 
 
 # ------------------------------------------
-# 2) 날짜별 또는 전체 리스트 조회
+# 2) 날짜별 리스트
 # ------------------------------------------
 class MealRecordListAPIView(generics.ListAPIView):
     serializer_class = MealRecordListSerializer
@@ -87,13 +88,8 @@ class WeeklyStatsAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        today = now().date()
+        today = timezone.localtime().date()
         start = today - timedelta(days=6)
-
-        qs = MealRecord.objects.filter(
-            user=request.user,
-            meal_time__date__range=[start, today]
-        ).values("foods__kcal")
 
         data = MealRecord.objects.filter(
             user=request.user,
@@ -120,7 +116,7 @@ class MonthlyStatsAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        today = now().date()
+        today = timezone.localtime().date()
         start = today.replace(day=1)
 
         data = MealRecord.objects.filter(
@@ -139,12 +135,18 @@ class MonthlyStatsAPIView(generics.GenericAPIView):
             "totals": data,
         })
 
+
+# ------------------------------------------
+# 6) 몸무게 저장 (UTC로 저장)
+# ------------------------------------------
 class WeightRecordCreateAPIView(generics.CreateAPIView):
     serializer_class = WeightRecordCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save()  # user는 serializer에서 자동 처리됨
+        obj = serializer.save()
+        obj.created_at = timezone.now().astimezone(timezone.utc)
+        obj.save()
 
 
 class WeightRecordListAPIView(generics.ListAPIView):
@@ -153,7 +155,11 @@ class WeightRecordListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return WeightRecord.objects.filter(user=self.request.user).order_by("-date")
-    
+
+
+# ------------------------------------------
+# 7) 오늘 식단 조회 (UTC 저장 → KST 기준 날짜 검색)
+# ------------------------------------------
 @api_view(["GET"])
 def get_today_meals(request):
     user = request.user
@@ -165,32 +171,29 @@ def get_today_meals(request):
         meal_time__range=(start_utc, end_utc)
     ).order_by("-meal_time")
 
-    print("🔥 [meal/today] UTC RANGE:", start_utc, "~", end_utc)
-    print("🔥 [meal/today] RECORDS COUNT:", queryset.count())
-
-    # meal_type에 따라 분류
+    # 정리된 응답
     result = {"breakfast": [], "lunch": [], "dinner": []}
 
     for record in queryset:
         foods = [
             {
-                "id": food.id,
-                "name": food.food_name,
-                "kcal": food.kcal,
-                "carbs": food.carb,
-                "protein": food.protein,
-                "fat": food.fat,
+                "id": f.id,
+                "name": f.food_name,
+                "kcal": f.kcal,
+                "carbs": f.carb,
+                "protein": f.protein,
+                "fat": f.fat,
             }
-            for food in record.foods.all()
+            for f in record.foods.all()
         ]
         result[record.meal_type].extend(foods)
-
-    print("🔥 [meal/today] FINAL RESPONSE:", result)
 
     return Response(result)
 
 
-
+# ------------------------------------------
+# 8) 식단 추가 (UTC로 저장)
+# ------------------------------------------
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_meal(request):
@@ -207,30 +210,35 @@ def add_meal(request):
     if not meal_type or not food_name:
         return Response({"error": "missing fields"}, status=400)
 
-    today = timezone.now().date()
+    now_kst = timezone.localtime()
+    meal_time_utc = now_kst.astimezone(timezone.utc)
 
-    # 오늘 해당 식사(meal_type)의 레코드가 이미 있는지 확인
+    # 오늘의 해당 meal_type 레코드
     record, _ = MealRecord.objects.get_or_create(
         user=user,
         meal_type=meal_type,
-        meal_time__date=today,
-        defaults={"meal_type": meal_type}
+        meal_time__date=now_kst.date(),
+        defaults={"meal_type": meal_type, "meal_time": meal_time_utc}
     )
 
-    # MealFood 추가
+    # 음식 추가
     MealFood.objects.create(
         record=record,
         food_name=food_name,
-        amount=1,     # 기본값 1
+        amount=1,
         kcal=kcal,
         carb=carb,
         protein=protein,
         fat=fat,
-        sugar=0
+        sugar=0,
     )
 
     return Response({"message": "ok"}, status=201)
 
+
+# ------------------------------------------
+# 9) 식단 항목 삭제
+# ------------------------------------------
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_meal_item(request, id):
@@ -242,19 +250,19 @@ def delete_meal_item(request, id):
     food.delete()
     return Response(status=204)
 
+
+# ------------------------------------------
+# 10) 오늘 몸무게 조회 (KST 기준 조회)
+# ------------------------------------------
 @api_view(["GET"])
 def get_today_weight(request):
     user = request.user
-
     start_utc, end_utc = get_today_utc_range()
 
     record = WeightRecord.objects.filter(
         user=user,
         created_at__range=(start_utc, end_utc)
     ).order_by("-created_at").first()
-
-    print("🔥 [weight/today] UTC RANGE:", start_utc, "~", end_utc)
-    print("🔥 [weight/today] FOUND:", record)
 
     if not record:
         return Response({"weight": None})

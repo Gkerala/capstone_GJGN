@@ -25,6 +25,12 @@
                 android:layout_marginBottom="16dp">
 
                 <Button
+                    android:id="@+id/btnBack"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/ic_arrow_back" />
+
+                <Button
                     android:id="@+id/btnBreakfast"
                     android:layout_width="0dp"
                     android:layout_height="48dp"

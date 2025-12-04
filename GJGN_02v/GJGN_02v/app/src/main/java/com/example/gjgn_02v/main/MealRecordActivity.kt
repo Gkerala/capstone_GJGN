@@ -94,13 +94,98 @@ class MealRecordActivity : AppCompatActivity() {
         btnSearch.setOnClickListener {
             val query = searchInput.text.toString().trim()
             if (query.isNotEmpty()) {
-                manualSearch(query)
+                val mapped = mapFoodName(query)
+                manualSearch(mapped)
             } else {
                 Toast.makeText(this, "검색어를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
         }
+        findViewById<Button>(R.id.btnBack).setOnClickListener {
+            finish()  // 현재 Activity 종료 -> 이전 화면으로 이동
+        }
+
     }
 
+    private val koreanToEnglishMap = mapOf(
+        // rice
+        "밥" to "rice",
+        "백미밥" to "rice",
+        "공기밥" to "rice",
+
+        // sushi
+        "스시" to "sushi",
+        "초밥" to "sushi",
+
+        // tempura bowl
+        "텐동" to "tempura bowl",
+        "튀김덮밥" to "tempura bowl",
+
+        // udon noodle
+        "우동" to "udon noodle",
+
+        // tempura udon
+        "튀김우동" to "tempura udon",
+
+        // soba noodle
+        "소바" to "soba noodle",
+
+        // ramen noodle
+        "라멘" to "ramen noodle",
+        "라면" to "ramen noodle",
+
+        // Japanese-style pancake (Okonomiyaki)
+        "오코노미야키" to "Japanese-style pancake",
+        "오코노미야끼" to "Japanese-style pancake",
+
+        // takoyaki
+        "타코야끼" to "takoyaki",
+        "타코야키" to "takoyaki",
+
+        // vegetable tempura
+        "야채튀김" to "vegetable tempura",
+        "야채 템푸라" to "vegetable tempura",
+
+        // miso soup
+        "미소된장국" to "miso soup",
+        "된장국" to "miso soup",
+
+        // grilled salmon
+        "연어구이" to "grilled salmon",
+
+        // rice ball
+        "오니기리" to "rice ball",
+
+        // dry curry
+        "드라이카레" to "dry curry",
+
+        // spicy chili-flavored tofu (mapo tofu)
+        "마파두부" to "spicy chili-flavored tofu",
+
+        // fried chicken
+        "치킨" to "fried chicken",
+        "닭튀김" to "fried chicken",
+
+        // fried fish
+        "생선까스" to "fried fish",
+        "피쉬까스" to "fried fish",
+
+        // pork cutlet on rice (katsudon)
+        "가츠동" to "pork cutlet on rice",
+        "돈까스덮밥" to "pork cutlet on rice",
+
+        // beef curry
+        "카레라이스" to "beef curry",
+        "카레" to "beef curry",
+
+        // broiled eel bowl (unagi don)
+        "장어덮밥" to "broiled eel bowl",
+        "우나기동" to "broiled eel bowl"
+    )
+
+
+    private fun mapFoodName(name: String): String {
+        return koreanToEnglishMap[name] ?: name
+    }
     private fun initViews() {
         btnBreakfast = findViewById(R.id.btnBreakfast)
         btnLunch = findViewById(R.id.btnLunch)
@@ -188,7 +273,7 @@ class MealRecordActivity : AppCompatActivity() {
         // 키보드 Enter → 직접 검색 실행
         searchInput.setOnEditorActionListener { _, _, _ ->
             val q = searchInput.text.toString().trim()
-            if (q.isNotEmpty()) manualSearch(q)
+            if (q.isNotEmpty()) manualSearch(mapFoodName(q))
             true
         }
 
@@ -226,7 +311,7 @@ class MealRecordActivity : AppCompatActivity() {
                         setOnClickListener {
                             searchInput.setText(name)
                             searchContainer.visibility = View.GONE
-                            manualSearch(name)
+                            manualSearch(mapFoodName(name))
                         }
                     }
                     searchContainer.addView(tv)

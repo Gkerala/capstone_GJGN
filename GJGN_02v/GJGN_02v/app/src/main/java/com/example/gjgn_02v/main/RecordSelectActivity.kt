@@ -20,6 +20,7 @@ import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import retrofit2.Call
 import retrofit2.Callback
@@ -138,24 +139,54 @@ class RecordSelectActivity : AppCompatActivity() {
         if (protein > 0) entries.add(PieEntry(protein.toFloat(), "단백질"))
         if (fat > 0) entries.add(PieEntry(fat.toFloat(), "지방"))
 
-        val dataSet = PieDataSet(entries, "영양 비율")
+        val dataSet = PieDataSet(entries, "")
         dataSet.sliceSpace = 3f
-        dataSet.valueTextSize = 14f
 
-        // 원그래프 색상 (원하는대로 변경 가능)
+        // 🔥 내부 항목 이름 제거
+        pieSummaryMacro.setDrawEntryLabels(false)
+
+        // 🔥 퍼센트 바깥에 검은 글씨로 표시
+        dataSet.setDrawValues(true)
+        dataSet.yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+        dataSet.xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+        dataSet.valueTextColor = Color.BLACK
+        dataSet.valueTextSize = 12f
+        dataSet.valueFormatter = PercentFormatter(pieSummaryMacro)
+
+        // 🔥 퍼센트 라인(바깥으로 이어지는 선)
+        dataSet.valueLinePart1Length = 0.6f
+        dataSet.valueLinePart2Length = 0.3f
+        dataSet.valueLineColor = Color.BLACK
+        dataSet.valueLineWidth = 2f
+
+        // 색상
         dataSet.colors = listOf(
-            Color.parseColor("#FFB74D"), // Carbs
-            Color.parseColor("#81C784"), // Protein
-            Color.parseColor("#E57373")  // Fat
+            Color.parseColor("#FFB74D"),
+            Color.parseColor("#81C784"),
+            Color.parseColor("#E57373")
         )
 
+        pieSummaryMacro.setExtraOffsets(20f, 20f, 20f, 20f)
         val data = PieData(dataSet)
-
         pieSummaryMacro.data = data
+
+        // 가운데 텍스트 제거
+        pieSummaryMacro.setDrawCenterText(false)
+
+        // description 제거
         pieSummaryMacro.description.isEnabled = false
+
+        // 퍼센트 계산 사용
         pieSummaryMacro.setUsePercentValues(true)
+
+        // Legend는 유지
+        pieSummaryMacro.legend.isEnabled = true
+
         pieSummaryMacro.invalidate()
     }
+
+
+
 
 
     /** ---------------------------
@@ -251,5 +282,10 @@ class RecordSelectActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+    override fun onResume() {
+        super.onResume()
+        loadTodayMeals()
+        loadTodayWeight()
     }
 }

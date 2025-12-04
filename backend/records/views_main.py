@@ -1,11 +1,34 @@
-from datetime import datetime
-from django.utils.timezone import now
+from datetime import datetime, time, timedelta
+from django.utils import timezone
+from django.db.models.functions import Cast
+from django.db.models import DateField, Sum
 from rest_framework.response import Response
 from rest_framework import generics, permissions
-from django.db.models.functions import Cast
-from django.db.models import DateField
+
 from records.models import MealRecord, MealFood, WeightRecord
 from goals.models import UserGoal
+
+
+def get_kst_range(date_kst):
+    """
+    KST 00:00:00 ~ 23:59:59 를 UTC 로 변환하여 반환
+    """
+    KST = timezone.get_current_timezone()  # Asia/Seoul (ZoneInfo)
+
+    # naive datetime 구성
+    start_kst = datetime.combine(date_kst, time.min)
+    end_kst = datetime.combine(date_kst, time.max)
+
+    # aware 로 변환
+    start_kst = timezone.make_aware(start_kst, KST)
+    end_kst = timezone.make_aware(end_kst, KST)
+
+    # UTC 로 변환
+    start_utc = start_kst.astimezone(timezone.utc)
+    end_utc = end_kst.astimezone(timezone.utc)
+
+    return start_utc, end_utc
+
 
 
 class MainSummaryAPIView(generics.GenericAPIView):
@@ -14,51 +37,54 @@ class MainSummaryAPIView(generics.GenericAPIView):
     def get(self, request):
         user = request.user
 
-        # ---------------------------
-        # 0) 날짜 파싱
-        # ---------------------------
+        # -------------------------------------
+        # 1) 요청 날짜 파싱 (KST 기준)
+        # -------------------------------------
         date_str = request.GET.get("date")
 
         if date_str:
             try:
-                today = datetime.strptime(date_str, "%Y-%m-%d").date()
+                today_kst = datetime.strptime(date_str, "%Y-%m-%d").date()
             except ValueError:
-                return Response({"error": "잘못된 날짜 형식 (YYYY-MM-DD)"}, status=400)
+                return Response({"error": "날짜 형식 오류 (YYYY-MM-DD)"}, status=400)
         else:
-            today = now().date()
+            today_kst = timezone.now().astimezone(
+                timezone.get_current_timezone()
+            ).date()
 
-        print("📅 조회 날짜:", today)
+        print("📅 [KST 기준 조회 날짜]:", today_kst)
 
-        # ---------------------------
-        # 1) Goal (UserGoal)
-        # ---------------------------
+        # 🟦 조회 KST 날짜 → UTC 범위 변환
+        start_utc, end_utc = get_kst_range(today_kst)
+        print("🕒 KST→UTC RANGE:", start_utc, "~", end_utc)
+
+        # =====================================
+        # 2) 목표 데이터
+        # =====================================
         goal = UserGoal.objects.filter(user=user).first()
 
-        goal_kcal = goal.kcal if goal else 2000
-        goal_carb = goal.carbs if goal else 250
-        goal_protein = goal.protein if goal else 120
-        goal_fat = goal.fat if goal else 60
-        goal_sugar = goal.sugar if goal else 50
+        goal_values = {
+            "kcal": goal.kcal if goal else 2000,
+            "carb": goal.carbs if goal else 250,
+            "protein": goal.protein if goal else 120,
+            "fat": goal.fat if goal else 60,
+            "sugar": goal.sugar if goal else 50,
+            "goal_weight": goal.goal_weight if goal else None,
+        }
 
-        # 🔥 목표 체중 추가
-        goal_weight = goal.goal_weight if goal and goal.goal_weight else None
+        # =====================================
+        # 3) 식단 데이터 (UTC → KST 변환 후 date 비교)
+        # =====================================
+        meal_records = MealRecord.objects.filter(
+            user=user,
+            meal_time__range=(start_utc, end_utc)
+        ).order_by("meal_time")
 
-        # ---------------------------
-        # 2) Today Meal Records
-        # ---------------------------
-        meal_records = (
-            MealRecord.objects.annotate(
-                meal_date=Cast("meal_time", DateField())
-            )
-            .filter(user=user, meal_date=today)
-            .order_by("meal_time")
-        )
-
-        total = {"kcal": 0, "carb": 0, "protein": 0, "fat": 0, "sugar": 0}
         meal_summary = {"breakfast": None, "lunch": None, "dinner": None}
+        total = {"kcal": 0, "carb": 0, "protein": 0, "fat": 0, "sugar": 0}
 
-        for rec in meal_records:
-            foods = MealFood.objects.filter(record_id=rec.id)
+        for record in meal_records:
+            foods = MealFood.objects.filter(record_id=record.id)
 
             sum_info = {
                 "kcal": sum(f.kcal for f in foods),
@@ -68,10 +94,11 @@ class MainSummaryAPIView(generics.GenericAPIView):
                 "sugar": sum(f.sugar for f in foods),
             }
 
-            for k in total:
-                total[k] += sum_info[k]
+            # 총합 누적
+            for key in total:
+                total[key] += sum_info[key]
 
-            meal_type = (rec.meal_type or "").lower()
+            meal_type = record.meal_type.lower()
             if meal_type not in meal_summary:
                 meal_type = "breakfast"
 
@@ -90,51 +117,52 @@ class MainSummaryAPIView(generics.GenericAPIView):
                 "total": sum_info,
             }
 
-        # ---------------------------
-        # 3) Weight Info
-        # ---------------------------
-        first_weight = WeightRecord.objects.filter(user=user).order_by("date").first()
-
-        today_weight_obj = (
-            WeightRecord.objects
-            .filter(user=user, date=today)
-            .order_by("-created_at")
-            .first()
-        )
+        # =====================================
+        # 4) 체중 정보 (UTC → KST 기준 조회)
+        # =====================================
+        first_weight = WeightRecord.objects.filter(user=user).order_by("created_at").first()
+        today_weight_obj = WeightRecord.objects.filter(
+            user=user,
+            created_at__range=(start_utc, end_utc)
+        ).order_by("-created_at").first()
 
         weight_data = {
             "start_weight": first_weight.weight if first_weight else None,
             "today_weight": today_weight_obj.weight if today_weight_obj else None,
-            "goal_weight": goal_weight,
+            "goal_weight": goal_values["goal_weight"],
         }
 
-        # ---------------------------
-        # 4) Percent 계산
-        # ---------------------------
-        percent = lambda val, goal: round((val / goal) * 100, 1) if goal > 0 else 0
+        # =====================================
+        # 5) 비율 계산
+        # =====================================
+        def pct(val, goal):
+            return round((val / goal) * 100, 1) if goal > 0 else 0
 
         today_data = {
             "total_kcal": total["kcal"],
-            "goal_kcal": goal_kcal,
-            "kcal_percent": percent(total["kcal"], goal_kcal),
+            "goal_kcal": goal_values["kcal"],
+            "kcal_percent": pct(total["kcal"], goal_values["kcal"]),
 
             "carb": total["carb"],
-            "goal_carb": goal_carb,
-            "carb_percent": percent(total["carb"], goal_carb),
+            "goal_carb": goal_values["carb"],
+            "carb_percent": pct(total["carb"], goal_values["carb"]),
 
             "protein": total["protein"],
-            "goal_protein": goal_protein,
-            "protein_percent": percent(total["protein"], goal_protein),
+            "goal_protein": goal_values["protein"],
+            "protein_percent": pct(total["protein"], goal_values["protein"]),
 
             "fat": total["fat"],
-            "goal_fat": goal_fat,
-            "fat_percent": percent(total["fat"], goal_fat),
+            "goal_fat": goal_values["fat"],
+            "fat_percent": pct(total["fat"], goal_values["fat"]),
 
             "sugar": total["sugar"],
-            "goal_sugar": goal_sugar,
-            "sugar_percent": percent(total["sugar"], goal_sugar),
+            "goal_sugar": goal_values["sugar"],
+            "sugar_percent": pct(total["sugar"], goal_values["sugar"]),
         }
 
+        # =====================================
+        # 최종 응답
+        # =====================================
         return Response({
             "today": today_data,
             "weight": weight_data,
