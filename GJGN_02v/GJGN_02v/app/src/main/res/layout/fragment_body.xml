@@ -1,117 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:orientation="vertical"
+    android:background="#FAFAFA">
 
+    <!-- 🔥 상단 뒤로가기 + 제목 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@android:color/white"
+        android:elevation="4dp">
 
+        <!-- 뒤로가기 -->
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_arrow_back"
+            android:padding="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <!-- 제목 -->
         <TextView
-            android:id="@+id/tvBodyTitle"
+            android:text="신체 정보 입력"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="키와 몸무게를 입력하세요"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginBottom="20dp" />
-
-        <!-- 키 입력 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="키 (cm)"
-            android:textSize="16sp"
-            android:layout_marginBottom="10dp"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <NumberPicker
-                android:id="@+id/npHeight100"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <NumberPicker
-                android:id="@+id/npHeight10"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <NumberPicker
-                android:id="@+id/npHeight1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="."
-                android:textSize="30sp"
-                android:layout_marginLeft="6dp"
-                android:layout_marginRight="6dp"/>
-
-            <NumberPicker
-                android:id="@+id/npHeightDecimal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <!-- 몸무게 입력 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="몸무게 (kg)"
-            android:textSize="16sp"
-            android:layout_marginTop="30dp"
-            android:layout_marginBottom="10dp"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <NumberPicker
-                android:id="@+id/npWeight100"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <NumberPicker
-                android:id="@+id/npWeight10"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <NumberPicker
-                android:id="@+id/npWeight1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="."
-                android:textSize="30sp"
-                android:layout_marginLeft="6dp"
-                android:layout_marginRight="6dp"/>
-
-            <NumberPicker
-                android:id="@+id/npWeightDecimal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btnNextBody"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="다음"
-            android:layout_marginTop="30dp"
-            android:backgroundTint="@color/purple_500"
-            android:textColor="@android:color/white" />
+            android:textColor="#111111"
+            android:layout_marginStart="12dp" />
     </LinearLayout>
-</ScrollView>
+
+    <!-- ⭐ 스크롤 영역 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- 원본 제목 유지 -->
+            <TextView
+                android:id="@+id/tvBodyTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="키와 몸무게를 입력하세요"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="20dp"
+                android:textColor="#111111" />
+
+            <!-- 🔹 키 카드 영역 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_card"
+                android:elevation="2dp">
+
+                <TextView
+                    android:text="키 (cm)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="#444444"
+                    android:layout_marginBottom="14dp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <NumberPicker
+                        android:id="@+id/npHeight100"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <NumberPicker
+                        android:id="@+id/npHeight10"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <NumberPicker
+                        android:id="@+id/npHeight1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:text="."
+                        android:textSize="30sp"
+                        android:layout_marginLeft="6dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <NumberPicker
+                        android:id="@+id/npHeightDecimal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 🔹 몸무게 카드 영역 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:background="@drawable/bg_card"
+                android:elevation="2dp">
+
+                <TextView
+                    android:text="몸무게 (kg)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="#444444"
+                    android:layout_marginBottom="14dp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <NumberPicker
+                        android:id="@+id/npWeight100"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <NumberPicker
+                        android:id="@+id/npWeight10"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <NumberPicker
+                        android:id="@+id/npWeight1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:text="."
+                        android:textSize="30sp"
+                        android:layout_marginLeft="6dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <NumberPicker
+                        android:id="@+id/npWeightDecimal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 다음 버튼 -->
+            <Button
+                android:id="@+id/btnNextBody"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="다음"
+                android:layout_marginTop="30dp"
+                android:backgroundTint="@color/purple_500"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

@@ -1,41 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center_horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
 
-    <TextView
-        android:text="목표 설정"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
-        android:layout_marginBottom="32dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSetGoalType"
+    <!-- 🔥 상단 AppBar -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="목표 유형 선택"
-        android:padding="14dp"
-        android:layout_marginBottom="16dp" />
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@android:color/white"
+        android:elevation="4dp">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSetTargetWeight"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="목표 체중 설정"
-        android:padding="14dp"
-        android:layout_marginBottom="32dp" />
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_arrow_back"
+            android:padding="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSaveGoalAll"
+        <TextView
+            android:text="목표 설정"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#111111"
+            android:layout_marginStart="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- ⭐ Scroll 영역 -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="저장하기"
-        android:padding="14dp" />
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
+            <!-- 🔹 카드형 메뉴 버튼 리스트 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:background="@drawable/bg_card"
+                android:elevation="2dp">
+
+                <!-- 목표 유형 선택 -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSetGoalType"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="목표 유형 선택"
+                    android:textSize="16sp"
+                    android:cornerRadius="12dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- 목표 체중 설정 -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSetTargetWeight"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="목표 체중 설정"
+                    android:textSize="16sp"
+                    android:cornerRadius="12dp"
+                    android:layout_marginBottom="16dp" />
+
+            </LinearLayout>
+
+            <!-- 저장 버튼 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSaveGoalAll"
+                android:text="저장하기"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/teal_700"
+                android:layout_marginTop="28dp"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:textSize="16sp"
+                android:cornerRadius="12dp" />
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

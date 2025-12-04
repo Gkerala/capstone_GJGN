@@ -1,105 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="24dp">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <!-- 🔹 상단 AppBar + 뒤로가기 화살표 -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="56dp"
+        android:background="@color/white"
+        android:elevation="3dp"
+        app:title="활동량 &amp; 목표 선택"
+        app:titleCentered="true"
+        app:titleTextColor="#111111"
+        app:navigationIcon="@drawable/ic_arrow_back" />
 
-        <!-- ──────────────── 활동량 선택 ──────────────── -->
-        <TextView
-            android:id="@+id/tvActivityTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="활동량을 선택하세요"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="20dp"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="24dp"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <RadioGroup
-            android:id="@+id/rgActivity"
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <RadioButton
-                android:id="@+id/rbActivity1"
+            <!-- 🔸 활동량 선택 -->
+            <TextView
+                android:id="@+id/tvActivityTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="① 거의 움직이지 않음" />
+                android:text="활동량을 선택하세요"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
 
-            <RadioButton
-                android:id="@+id/rbActivity2"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:elevation="2dp">
+
+                <RadioGroup
+                    android:id="@+id/rgActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <RadioButton android:id="@+id/rbActivity1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="① 거의 움직이지 않음" />
+                    <RadioButton android:id="@+id/rbActivity2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="② 일주일에 5시간 이상 걷는다" />
+                    <RadioButton android:id="@+id/rbActivity3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="③ 주 1회 이상 운동한다" />
+                    <RadioButton android:id="@+id/rbActivity4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="④ 주 3회 이상 운동한다" />
+                    <RadioButton android:id="@+id/rbActivity5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⑤ 매일 운동한다" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- 🔸 목표 선택 -->
+            <TextView
+                android:id="@+id/tvGoalTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="② 일주일에 5시간 이상 걷는다" />
+                android:text="목표를 선택하세요"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="16dp" />
 
-            <RadioButton
-                android:id="@+id/rbActivity3"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="③ 주 1회 이상 운동한다" />
+                android:padding="20dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:elevation="2dp">
 
-            <RadioButton
-                android:id="@+id/rbActivity4"
-                android:layout_width="wrap_content"
+                <RadioGroup
+                    android:id="@+id/rgGoal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <RadioButton android:id="@+id/rbGoalLose"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="체중 감량" />
+                    <RadioButton android:id="@+id/rbGoalMaintain"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="체중 유지" />
+                    <RadioButton
+                        android:id="@+id/rbGoalGain"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="체중 증가" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- 🔸 다음 버튼 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNextActivityGoal"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="④ 주 3회 이상 운동한다" />
+                android:text="다음"
+                android:textSize="16sp"
+                android:padding="14dp"
+                android:layout_marginTop="32dp"
+                android:backgroundTint="@color/purple_500"
+                android:textColor="@android:color/white" />
 
-            <RadioButton
-                android:id="@+id/rbActivity5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="⑤ 매일 운동한다" />
-        </RadioGroup>
+        </LinearLayout>
+    </ScrollView>
 
-        <!-- ──────────────── 목표 선택 ──────────────── -->
-
-        <TextView
-            android:id="@+id/tvGoalTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="목표를 선택하세요"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="30dp"
-            android:layout_marginBottom="20dp"/>
-
-        <RadioGroup
-            android:id="@+id/rgGoal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <RadioButton
-                android:id="@+id/rbGoalLose"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="체중 감량" />
-
-            <RadioButton
-                android:id="@+id/rbGoalMaintain"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="체중 유지" />
-
-            <RadioButton
-                android:id="@+id/rbGoalGain"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="체중 증가" />
-        </RadioGroup>
-
-        <!-- ──────────────── 다음 버튼 ──────────────── -->
-        <Button
-            android:id="@+id/btnNextActivityGoal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="다음"
-            android:layout_marginTop="30dp"
-            android:backgroundTint="@color/purple_500"
-            android:textColor="@android:color/white" />
-
-    </LinearLayout>
-</ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

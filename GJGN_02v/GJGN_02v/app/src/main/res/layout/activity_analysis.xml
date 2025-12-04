@@ -3,23 +3,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FAFAFA">
 
-    <!-- 🔥 최상단: 주간 이동 바 -->
+    <!-- 🔥 상단 주간 선택 바 (카드 형태 + 가운데 정렬) -->
     <LinearLayout
         android:id="@+id/layoutWeekSelector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:padding="12dp">
+        android:background="@drawable/bg_week_selector"
+        android:padding="16dp"
+        android:layout_margin="16dp"
+        android:elevation="4dp">
 
         <ImageView
             android:id="@+id/btnPrevWeek"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/ic_arrow_left"
-            android:padding="5dp" />
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp" />
 
         <TextView
             android:id="@+id/tvWeekRange"
@@ -28,65 +33,89 @@
             android:text="11.17 ~ 11.23"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:padding="20dp" />
+            android:textColor="#111111"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp" />
 
         <ImageView
             android:id="@+id/btnNextWeek"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:rotation="180"
             android:src="@drawable/ic_arrow_left"
-            android:padding="5dp" />
-
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp" />
     </LinearLayout>
 
 
+    <!-- 스크롤 영역 -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="20dp"
         android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <!-- 주간 섭취 칼로리 -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="주간 섭취 칼로리"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp"/>
-
-            <com.github.mikephil.charting.charts.BarChart
-                android:id="@+id/barChartWeekly"
+            <!-- ⭐ 카드: 주간 섭취 칼로리 -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp"/>
-
-            <!-- 체중 변화 -->
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="체중 변화"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginTop="30dp"
-                android:layout_marginBottom="12dp"/>
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginBottom="20dp"
+                android:elevation="3dp">
 
-            <com.github.mikephil.charting.charts.LineChart
-                android:id="@+id/lineChartWeight"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="주간 섭취 칼로리"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="12dp" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/barChartWeekly"
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp"/>
+            </LinearLayout>
+
+
+            <!-- ⭐ 카드: 체중 변화 -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp"/>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:elevation="3dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="체중 변화"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="12dp" />
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/lineChartWeight"
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp"/>
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
 
 
-    <!-- 🔥 하단 네비 -->
+    <!-- 🔥 하단 네비게이션 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"

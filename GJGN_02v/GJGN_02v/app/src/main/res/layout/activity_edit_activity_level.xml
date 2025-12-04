@@ -1,76 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="24dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:text="활동량 수정"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="28dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <!-- 라디오 버튼 그룹 -->
-    <RadioGroup
-        android:id="@+id/radioGroupActivity"
+    <!-- 🔥 상단 뒤로가기 + 제목 (툴바 없이 구현) -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@android:color/white"
+        android:elevation="4dp">
 
-        <RadioButton
-            android:id="@+id/rbVeryLow"
-            android:text="매우 낮음 (Sedentary)"
-            android:layout_marginBottom="12dp"
-             android:layout_height="48dp"
-             android:layout_width="200dp"/>
+        <!-- 뒤로가기 버튼 -->
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:padding="6dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
-        <RadioButton
-            android:id="@+id/rbLow"
-            android:text="낮음 (Light)"
-            android:layout_marginBottom="12dp"
-            android:layout_height="48dp"
-            android:layout_width="200dp"/>
+        <!-- 제목 -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="활동량 수정"
+            android:textSize="20sp"
+            android:textColor="#111111"
+            android:textStyle="bold"
+            android:layout_marginStart="12dp" />
 
-        <RadioButton
-            android:id="@+id/rbMedium"
-            android:text="보통 (Moderate)"
-            android:layout_marginBottom="12dp"
-            android:layout_height="48dp"
-            android:layout_width="200dp"/>
+    </LinearLayout>
 
-        <RadioButton
-            android:id="@+id/rbHigh"
-            android:text="높음 (Active)"
-            android:layout_marginBottom="12dp"
-            android:layout_height="48dp"
-            android:layout_width="200dp"/>
 
-        <RadioButton
-            android:id="@+id/rbVeryHigh"
-            android:text="매우 높음 (Very Active)"
-            android:layout_marginBottom="12dp"
-            android:layout_height="48dp"
-            android:layout_width="200dp"/>
-    </RadioGroup>
-
-    <!-- 저장 버튼 -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSave"
-        android:text="저장"
-        android:backgroundTint="@color/teal_700"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="30dp"
+    <!-- ⭐ 본문 스크롤 영역 -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent">
 
-    <!-- 뒤로가기 버튼 -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnBack"
-        android:text="뒤로가기"
-        android:layout_marginTop="12dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- 카드 형태의 선택 영역 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:background="@drawable/bg_card"
+                android:elevation="3dp"
+                android:orientation="vertical">
+
+                <RadioGroup
+                    android:id="@+id/radioGroupActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <RadioButton
+                        android:id="@+id/rbVeryLow"
+                        android:text="매우 낮음 (Sedentary)"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="12dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <RadioButton
+                        android:id="@+id/rbLow"
+                        android:text="낮음 (Light)"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="12dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <RadioButton
+                        android:id="@+id/rbMedium"
+                        android:text="보통 (Moderate)"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="12dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <RadioButton
+                        android:id="@+id/rbHigh"
+                        android:text="높음 (Active)"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="12dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <RadioButton
+                        android:id="@+id/rbVeryHigh"
+                        android:text="매우 높음 (Very Active)"
+                        android:textSize="16sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </RadioGroup>
+
+            </LinearLayout>
+
+            <!-- 저장 버튼 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
+                android:text="저장"
+                android:backgroundTint="@color/teal_700"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="32dp"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:textSize="16sp"
+                android:cornerRadius="12dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
 </LinearLayout>

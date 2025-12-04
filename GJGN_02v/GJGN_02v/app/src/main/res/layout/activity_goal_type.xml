@@ -1,64 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="28dp"
-    android:gravity="top|center_horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
 
-    <!-- Title -->
-    <TextView
-        android:text="목표 유형 선택"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
-        android:layout_marginBottom="28dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <!-- RadioGroup (여백 확장) -->
-    <RadioGroup
-        android:id="@+id/rgGoalType"
-        android:orientation="vertical"
+    <!-- 🔥 상단 AppBar -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="36dp">
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@android:color/white"
+        android:elevation="4dp">
 
-        <RadioButton
-            android:id="@+id/rbLoseWeight"
-            android:text="감량"
-            android:textSize="18sp"
-            android:padding="12dp"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_arrow_back"
+            android:padding="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:text="목표 유형 선택"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#111111"
+            android:layout_marginStart="12dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+    </LinearLayout>
 
-        <RadioButton
-            android:id="@+id/rbMaintainWeight"
-            android:text="유지"
-            android:textSize="18sp"
-            android:padding="12dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
 
-        <RadioButton
-            android:id="@+id/rbGainWeight"
-            android:text="증량"
-            android:textSize="18sp"
-            android:padding="12dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    </RadioGroup>
-
-    <!-- Save Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSaveGoalType"
+    <!-- ⭐ ScrollView 본문 -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="저장"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:backgroundTint="#2196F3"
-        android:padding="14dp" />
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:orientation="vertical">
+
+            <!-- 카드 형태 UI -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card"
+                android:elevation="2dp"
+                android:padding="20dp"
+                android:orientation="vertical">
+
+                <!-- 라디오 그룹 -->
+                <RadioGroup
+                    android:id="@+id/rgGoalType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/rbLoseWeight"
+                        android:text="감량"
+                        android:textSize="16sp"
+                        android:padding="12dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <RadioButton
+                        android:id="@+id/rbMaintainWeight"
+                        android:text="유지"
+                        android:textSize="16sp"
+                        android:padding="12dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <RadioButton
+                        android:id="@+id/rbGainWeight"
+                        android:text="증량"
+                        android:textSize="16sp"
+                        android:padding="12dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- 저장 버튼 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSaveGoalType"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="저장"
+                android:textSize="16sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/teal_700"
+                android:cornerRadius="12dp"
+                android:layout_marginTop="28dp" />
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

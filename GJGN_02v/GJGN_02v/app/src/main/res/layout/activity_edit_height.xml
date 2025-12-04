@@ -1,69 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="20dp"
-    android:gravity="center"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
 
-    <TextView
-        android:text="키 선택 (cm)"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
+    <!-- 🔥 상단 AppBar -->
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@android:color/white"
+        android:elevation="4dp">
 
-        <NumberPicker
-            android:id="@+id/npHeight100"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <NumberPicker
-            android:id="@+id/npHeight10"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <NumberPicker
-            android:id="@+id/npHeight1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_arrow_back"
+            android:padding="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
         <TextView
+            android:text="키 선택"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#111111"
+            android:layout_marginStart="12dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="."
-            android:textSize="30sp"
-            android:layout_marginLeft="6dp"
-            android:layout_marginRight="6dp"/>
-
-        <NumberPicker
-            android:id="@+id/npHeightDecimal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
+            android:layout_height="wrap_content" />
     </LinearLayout>
-    <!-- 저장 버튼 -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSave"
-        android:text="저장"
-        android:backgroundTint="@color/teal_700"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 
-    <!-- 뒤로가기 버튼 -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnBack"
-        android:text="뒤로가기"
+
+    <!-- ⭐ 본문 영역 -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- 카드 컨테이너 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:background="@drawable/bg_card"
+                android:elevation="2dp"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:text="키 (cm)"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp"
+                    android:textColor="#333333"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <!-- NumberPicker 정렬 -->
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <NumberPicker
+                        android:id="@+id/npHeight100"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <NumberPicker
+                        android:id="@+id/npHeight10"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp" />
+
+                    <NumberPicker
+                        android:id="@+id/npHeight1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp" />
+
+                    <TextView
+                        android:text="."
+                        android:textSize="28sp"
+                        android:textColor="#222222"
+                        android:layout_marginLeft="6dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <NumberPicker
+                        android:id="@+id/npHeightDecimal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- 저장 버튼 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
+                android:text="저장"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/teal_700"
+                android:layout_marginTop="32dp"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:textSize="16sp"
+                android:cornerRadius="12dp" />
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>
