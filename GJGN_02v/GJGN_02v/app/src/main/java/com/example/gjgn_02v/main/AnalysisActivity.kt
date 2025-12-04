@@ -1,6 +1,7 @@
 package com.example.gjgn_02v.main
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
@@ -171,7 +172,7 @@ class AnalysisActivity : AppCompatActivity() {
                     val entries = values.mapIndexed { i, v -> BarEntry(i.toFloat(), v) }
 
                     val dataSet = BarDataSet(entries, "주간 칼로리").apply {
-                        color = getColor(R.color.teal_200)
+                        color = Color.parseColor("#FF9800")
 
                         // 🔢 막대 위에 칼로리 숫자 표시
                         setDrawValues(true)
@@ -238,13 +239,13 @@ class AnalysisActivity : AppCompatActivity() {
 
                     val dataSet = LineDataSet(entries, "체중 변화 (kg)").apply {
 
-                        color = getColor(R.color.graph_cyan)
+                        color = Color.parseColor("#FF9800")
                         lineWidth = 3f
 
                         // 🔵 데이터 있는 부분만 원 표시
                         setDrawCircles(true)
                         circleRadius = 4f
-                        setCircleColor(getColor(R.color.graph_cyan))
+                        setCircleColor(Color.parseColor("#FF9800"))
                         setDrawCircleHole(false)
 
                         // 🔢 데이터 값 표시 (NaN은 표시 안됨)

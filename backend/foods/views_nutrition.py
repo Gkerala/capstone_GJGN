@@ -21,7 +21,7 @@ LABEL_MAPPING = {
     "soba noodle": "cooked soba noodles",
     "ramen noodle": "Japanese ramen (noodles with broth)",
     "Japanese-style pancake": "okonomiyaki (Japanese savory pancake)",
-    "takoyaki": "takoyaki (octopus balls)",
+    "takoyaki": "Japanese octopus balls", 
     "vegetable tempura": "vegetable tempura (fried vegetables)",
     "miso soup": "miso soup",
     "grilled salmon": "grilled salmon",

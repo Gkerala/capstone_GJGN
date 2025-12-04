@@ -8,6 +8,7 @@ import java.util.*
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -37,6 +38,11 @@ import retrofit2.Callback
 import retrofit2.Response
 import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
+import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.PercentFormatter
 
 class MealRecordActivity : AppCompatActivity() {
 
@@ -395,89 +401,133 @@ class MealRecordActivity : AppCompatActivity() {
     // 6. Nutrition UI 표시
     // ------------------------------------------------------------
     private fun updateNutritionUI() {
-        Log.d("DBG_NUT", "updateNutritionUI called; nutritionList.size=${nutritionList.size}")
 
         analysisContainer.visibility = View.VISIBLE
         analysisContainer.removeAllViews()
 
         nutritionList.forEachIndexed { idx, item ->
-            try {
-                val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
-                Log.d("DBG_NUT", "inflate success idx=$idx name=${item.name}")
+            val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
 
-                val txtGrams = view.findViewById<TextView>(R.id.txtGrams)
-                val txtKcal = view.findViewById<TextView>(R.id.txtKcal)
-                val txtCarbs = view.findViewById<TextView>(R.id.txtCarbs)
-                val txtProtein = view.findViewById<TextView>(R.id.txtProtein)
-                val txtFat = view.findViewById<TextView>(R.id.txtFat)
-                val txtSugar = view.findViewById<TextView>(R.id.txtSugar)
-                val btnEdit = view.findViewById<Button>(R.id.btnEdit)
+            val txtName = view.findViewById<TextView>(R.id.txtName)
+            val txtGrams = view.findViewById<TextView>(R.id.txtGrams)
+            val txtKcal = view.findViewById<TextView>(R.id.txtKcal)
+            val txtCarbs = view.findViewById<TextView>(R.id.txtCarbs)
+            val txtProtein = view.findViewById<TextView>(R.id.txtProtein)
+            val txtFat = view.findViewById<TextView>(R.id.txtFat)
+            val txtSugar = view.findViewById<TextView>(R.id.txtSugar)
 
-                view.findViewById<TextView>(R.id.txtName).text = item.name ?: "-"
-                txtGrams.text = "${item.grams ?: 100f} g"
-                txtKcal.text = "${item.calories ?: 0f} kcal"
-                txtCarbs.text = "탄수화물: ${item.carbs ?: 0f}"
-                txtProtein.text = "단백질: ${item.protein ?: 0f}"
-                txtFat.text = "지방: ${item.fat ?: 0f}"
-                txtSugar.text = "당: ${item.sugar ?: 0f}"
+            val btnEdit = view.findViewById<Button>(R.id.btnEdit)
+            val btnDelete = view.findViewById<ImageButton>(R.id.btnDelete)
 
-                btnEdit.setOnClickListener {
-                    val dialog = AlertDialog.Builder(this)
-                    dialog.setTitle("섭취량(g) 수정")
+            val pieChart = view.findViewById<PieChart>(R.id.pieChartMacro)
 
-                    val input = EditText(this)
-                    input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
-                    input.setText((item.grams ?: 100f).toInt().toString())
-                    dialog.setView(input)
+            val txtPercentCarb = view.findViewById<TextView>(R.id.txtPercentCarb)
+            val txtPercentProtein = view.findViewById<TextView>(R.id.txtPercentProtein)
+            val txtPercentFat = view.findViewById<TextView>(R.id.txtPercentFat)
 
-                    dialog.setPositiveButton("변경") { _, _ ->
-                        val newGram = input.text.toString().toIntOrNull()
-                        if (newGram != null && newGram > 0) {
-                            val updated = scaleNutrition(item, newGram)
-                            nutritionList[idx] = updated
+            // ---------------------------
+            // 텍스트 세팅
+            // ---------------------------
+            txtName.text = item.name ?: "-"
+            txtGrams.text = "${item.grams ?: 100f} g"
+            txtKcal.text = "${item.calories ?: 0f} kcal"
+            txtCarbs.text = "탄수화물: ${item.carbs ?: 0f}"
+            txtProtein.text = "단백질: ${item.protein ?: 0f}"
+            txtFat.text = "지방: ${item.fat ?: 0f}"
+            txtSugar.text = "당: ${item.sugar ?: 0f}"
 
-                            txtGrams.text = "${updated.grams} g"
-                            txtKcal.text = "${updated.calories}"
-                            txtCarbs.text = "탄수화물: ${updated.carbs}"
-                            txtProtein.text = "단백질: ${updated.protein}"
-                            txtFat.text = "지방: ${updated.fat}"
-                            txtSugar.text = "당: ${updated.sugar}"
-                        }
-                    }
+            // ---------------------------
+            // 파이 차트 데이터
+            // ---------------------------
+            val carbs = item.carbs ?: 0f
+            val protein = item.protein ?: 0f
+            val fat = item.fat ?: 0f
 
-                    dialog.setNegativeButton("취소", null)
-                    dialog.show()
-                }
+            val entries = listOf(
+                PieEntry(carbs, "탄"),
+                PieEntry(protein, "단"),
+                PieEntry(fat, "지")
+            )
 
-
-                val btnDelete = view.findViewById<ImageButton>(R.id.btnDelete)
-
-                btnDelete.setOnClickListener {
-                    AlertDialog.Builder(this)
-                        .setTitle("삭제 확인")
-                        .setMessage("해당 음식 항목을 삭제할까요?")
-                        .setPositiveButton("삭제") { _, _ ->
-                            // 실제 리스트에서 삭제
-                            nutritionList.removeAt(idx)
-
-                            // UI 다시 갱신
-                            updateNutritionUI()
-                        }
-                        .setNegativeButton("취소", null)
-                        .show()
-                }
-
-
-                analysisContainer.addView(view)
-                Log.d("DBG_NUT", "addView success idx=$idx")
-
-            } catch (e: Exception) {
-                Log.e("DBG_NUT", "EXCEPTION idx=$idx", e)
+            val dataSet = PieDataSet(entries, "").apply {
+                sliceSpace = 2f
+                setDrawValues(false)
+                colors = listOf(
+                    Color.parseColor("#42A5F5"), // 탄
+                    Color.parseColor("#66BB6A"), // 단
+                    Color.parseColor("#FF7043")  // 지
+                )
             }
-        }
 
-        Log.d("DBG_NUT", "updateNutritionUI finished childCount=${analysisContainer.childCount}")
+            pieChart.apply {
+                data = PieData(dataSet)
+                holeRadius = 40f
+                transparentCircleRadius = 45f
+                description.isEnabled = false
+                legend.isEnabled = false
+                setTouchEnabled(false)
+                setDrawEntryLabels(false)
+                invalidate()
+            }
+
+            // ---------------------------
+            // 퍼센트 계산 + 표시
+            // ---------------------------
+            val total = carbs + protein + fat
+            val safeTotal = if (total <= 0f) 1f else total
+
+            fun pct(v: Float) = if (v <= 0f) "0%" else "${String.format("%.1f", v / safeTotal * 100f)}%"
+
+            txtPercentCarb.text = "탄: ${pct(carbs)}"
+            txtPercentProtein.text = "단: ${pct(protein)}"
+            txtPercentFat.text = "지: ${pct(fat)}"
+
+            // ---------------------------
+            // 수정 버튼
+            // ---------------------------
+            btnEdit.setOnClickListener {
+                val dialog = AlertDialog.Builder(this)
+                dialog.setTitle("섭취량(g) 수정")
+
+                val input = EditText(this)
+                input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                input.setText((item.grams ?: 100f).toInt().toString())
+                dialog.setView(input)
+
+                dialog.setPositiveButton("변경") { _, _ ->
+                    val newGram = input.text.toString().toIntOrNull()
+                    if (newGram != null && newGram > 0) {
+                        val updated = scaleNutrition(item, newGram)
+                        nutritionList[idx] = updated
+                        updateNutritionUI()
+                    }
+                }
+
+                dialog.setNegativeButton("취소", null)
+                dialog.show()
+            }
+
+            // ---------------------------
+            // 삭제 버튼
+            // ---------------------------
+            btnDelete.setOnClickListener {
+                AlertDialog.Builder(this)
+                    .setTitle("삭제 확인")
+                    .setMessage("해당 음식 항목을 삭제할까요?")
+                    .setPositiveButton("삭제") { _, _ ->
+                        nutritionList.removeAt(idx)
+                        updateNutritionUI()
+                    }
+                    .setNegativeButton("취소", null)
+                    .show()
+            }
+
+            analysisContainer.addView(view)
+        }
     }
+
+
+
 
 
     // ------------------------------------------------------------
@@ -505,6 +555,40 @@ class MealRecordActivity : AppCompatActivity() {
             } catch (_: Exception) { }
         }
     }
+
+    private fun updateMacroPieChart(pieChart: PieChart, carbs: Float, protein: Float, fat: Float) {
+
+        val total = carbs + protein + fat
+        if (total <= 0f) return     // 값이 없으면 그래프 숨김 등 처리 가능
+
+        val entries = listOf(
+            PieEntry(carbs, "탄"),
+            PieEntry(protein, "단"),
+            PieEntry(fat, "지")
+        )
+
+        val dataSet = PieDataSet(entries, "").apply {
+            colors = listOf(
+                Color.parseColor("#42A5F5"),   // 탄: 파란색
+                Color.parseColor("#66BB6A"),   // 단: 초록색
+                Color.parseColor("#FF7043")    // 지: 주황색
+            )
+            valueTextColor = Color.BLACK
+            valueTextSize = 10f
+            sliceSpace = 2f
+        }
+
+        pieChart.apply {
+            data = PieData(dataSet)
+            description.isEnabled = false
+            legend.isEnabled = true
+            setUsePercentValues(true)
+            setEntryLabelColor(Color.BLACK)
+            setEntryLabelTextSize(10f)
+            invalidate()
+        }
+    }
+
 
 
     // ------------------------------------------------------------

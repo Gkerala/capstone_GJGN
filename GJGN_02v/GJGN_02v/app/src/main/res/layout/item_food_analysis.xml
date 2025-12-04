@@ -2,90 +2,211 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:background="@drawable/rounded_card"
     android:padding="16dp"
     android:layout_marginBottom="12dp">
 
-    <!-- 헤더 영역: 이름 + 삭제 버튼 -->
+    <!-- 🔹 왼쪽: 기존 텍스트 영역 그대로 유지 -->
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+        android:id="@+id/infoContainer"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
+        <!-- 헤더: 이름 -->
         <TextView
             android:id="@+id/txtName"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="음식명"
             android:textSize="18sp"
             android:textStyle="bold" />
 
+        <!-- 기존 텍스트뷰 스타일 그대로 유지 -->
+        <TextView
+            android:id="@+id/txtGrams"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100 g"
+            android:textSize="15sp"
+            android:layout_marginTop="6dp"/>
+
+        <TextView
+            android:id="@+id/txtKcal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="200 kcal"
+            android:textSize="15sp"
+            android:layout_marginTop="2dp"/>
+
+        <TextView
+            android:id="@+id/txtCarbs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="탄수화물: -"
+            android:layout_marginTop="2dp"/>
+
+        <TextView
+            android:id="@+id/txtProtein"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="단백질: -"
+            android:layout_marginTop="2dp"/>
+
+        <TextView
+            android:id="@+id/txtFat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="지방: -"
+            android:layout_marginTop="2dp"/>
+
+        <TextView
+            android:id="@+id/txtSugar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="당: -"
+            android:layout_marginTop="2dp"/>
+
+    </LinearLayout>
+
+    <!-- 🔹 PieChart + 퍼센트 영역을 감싸는 세로 레이아웃 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp">
+
+        <!-- 🔵 PieChart -->
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pieChartMacro"
+            android:layout_width="110dp"
+            android:layout_height="110dp"/>
+
+        <!-- 🔹 퍼센트 영역 -->
+        <LinearLayout
+            android:id="@+id/percentContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="6dp"
+            android:gravity="start">
+
+            <!-- 탄수화물 -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
+
+                <!-- 색 점 표시 -->
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="#42A5F5"
+                    android:layout_marginEnd="6dp"
+                    android:shape="oval" />
+
+                <TextView
+                    android:id="@+id/txtPercentCarb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="90dp"
+                    android:text="탄: %"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- 단백질 -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="#66BB6A"
+                    android:layout_marginEnd="6dp"
+                    android:shape="oval" />
+
+                <TextView
+                    android:id="@+id/txtPercentProtein"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="90dp"
+                    android:text="단: %"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- 지방 -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="#FF7043"
+                    android:layout_marginEnd="6dp"
+                    android:shape="oval" />
+
+                <TextView
+                    android:id="@+id/txtPercentFat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="90dp"
+                    android:text="지: %"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <!-- 🔹 오른쪽: 수정버튼 + 삭제(X) 버튼 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- 상단 X 버튼 -->
         <ImageButton
             android:id="@+id/btnDelete"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/ic_close"
             android:background="@android:color/transparent"
-            android:contentDescription="삭제" />
+            android:contentDescription="삭제"
+            android:layout_gravity="end" />
+
+        <!-- 중간 빈 공간 → 버튼들의 상·하단 고정을 보장 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- 하단 수정 버튼 -->
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="수정"
+            android:textSize="14sp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:layout_gravity="end" />
+
+
+
     </LinearLayout>
-
-    <!-- 내용 영역 -->
-    <TextView
-        android:id="@+id/txtGrams"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="100 g"
-        android:textSize="15sp"
-        android:layout_marginTop="6dp"/>
-
-    <TextView
-        android:id="@+id/txtKcal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="200 kcal"
-        android:textSize="15sp"
-        android:layout_marginTop="2dp"/>
-
-    <TextView
-        android:id="@+id/txtCarbs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="탄수화물: -"
-        android:layout_marginTop="2dp"/>
-
-    <TextView
-        android:id="@+id/txtProtein"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="단백질: -"
-        android:layout_marginTop="2dp"/>
-
-    <TextView
-        android:id="@+id/txtFat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="지방: -"
-        android:layout_marginTop="2dp"/>
-
-    <TextView
-        android:id="@+id/txtSugar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="당: -"
-        android:layout_marginTop="2dp"/>
-
-    <!-- 수정 버튼 -->
-    <Button
-        android:id="@+id/btnEdit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="수정"
-        android:layout_gravity="end"
-        android:layout_marginTop="10dp"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"/>
 
 </LinearLayout>
