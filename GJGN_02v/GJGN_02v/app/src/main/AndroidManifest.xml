@@ -85,8 +85,17 @@
 
         <!-- 식사/체중 기록 -->
         <activity android:name=".main.RecordSelectActivity" android:exported="true" />
-        <activity android:name=".main.MealRecordActivity" android:exported="false" />
-        <activity android:name=".main.WeightRecordActivity" android:exported="false" />
+
+        <!-- ★ 키보드로 인해 bottomArea가 밀리지 않도록 adjustPan 적용 -->
+        <activity
+            android:name=".main.MealRecordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+
+        <activity
+            android:name=".main.WeightRecordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
 
         <!-- 분석 -->
         <activity android:name=".main.AnalysisActivity" android:exported="true" />

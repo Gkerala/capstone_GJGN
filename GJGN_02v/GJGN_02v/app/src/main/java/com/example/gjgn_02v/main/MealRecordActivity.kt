@@ -115,28 +115,27 @@ class MealRecordActivity : AppCompatActivity() {
     }
 
     private fun loadYoloNames(): List<String> {
-        return try {
-            val input = assets.open("data.yaml")
-            val yamlContent = input.bufferedReader().use { it.readText() }
-            input.close()
+        val input = assets.open("data.yaml")
+        val yaml = input.bufferedReader().use { it.readText() }
 
-            // names: ['Apple', 'Chapathi', ...]
-            val regex = Regex(
-                pattern = """names:\s*\[(.*?)]""",
-                options = setOf(RegexOption.DOT_MATCHES_ALL)
-            )
+        val lines = yaml.lines()
 
-            val match = regex.find(yamlContent)
-            val raw = match?.groupValues?.get(1) ?: return emptyList()
+        val namesStartIndex = lines.indexOfFirst { it.trim().startsWith("names:") }
+        if (namesStartIndex == -1) return emptyList()
 
-            raw.split(",")
-                .map { it.trim().replace("'", "").replace("\"", "") }
-                .filter { it.isNotEmpty() }
+        val result = mutableListOf<String>()
 
-        } catch (e: Exception) {
-            emptyList()
+        for (i in namesStartIndex + 1 until lines.size) {
+            val line = lines[i].trim()
+            if (!line.startsWith("-")) break
+
+            val item = line.removePrefix("-").trim()
+            if (item.isNotEmpty()) result.add(item)
         }
+
+        return result
     }
+
 
 
     // ------------------------------------------------------------
