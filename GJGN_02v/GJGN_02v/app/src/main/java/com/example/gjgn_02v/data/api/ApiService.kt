@@ -65,6 +65,22 @@ interface ApiService {
     @GET("api/records/date/")
     fun getRecordsByDate(@Query("date") date: String): Call<List<MealRecordResponse>>
 
+    // 오늘 식단 조회
+    @GET("/api/records/meal/today/")
+    fun getTodayMeals(): Call<MealDayResponse>
+
+    // 식단 추가
+    @POST("/api/records/meal/add/")
+    fun addMeal(@Body request: AddMealRequest): Call<Void>
+
+    // 식단 삭제
+    @DELETE("/api/records/meal/delete/{id}/")
+    fun deleteMealItem(@Path("id") id: Int): Call<Void>
+
+    // 오늘 체중 조회
+    @GET("/api/records/weight/today/")
+    fun getTodayWeight(): Call<WeightResponse?>
+
 
     // -------------------------------------------------------------
     // 🤖 YOLO AI

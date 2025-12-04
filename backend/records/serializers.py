@@ -145,3 +145,16 @@ class WeeklyWeightSerializer(serializers.Serializer):
     week_start = serializers.DateField()
     week_end = serializers.DateField()
     records = WeeklyWeightItemSerializer(many=True)
+    
+    
+class MealFoodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MealFood
+        fields = ["id", "food_name", "amount", "kcal", "carb", "protein", "fat", "sugar"]
+
+class MealRecordSerializer(serializers.ModelSerializer):
+    foods = MealFoodSerializer(many=True)
+
+    class Meta:
+        model = MealRecord
+        fields = ["id", "meal_type", "meal_time", "foods"]

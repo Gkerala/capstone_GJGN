@@ -18,7 +18,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class ProfileEditActivity : AppCompatActivity() {
 
-    private lateinit var btnEditName: Button
     private lateinit var btnEditBirth: Button
     private lateinit var btnEditGender: Button
     private lateinit var btnEditHeight: Button
@@ -41,7 +40,6 @@ class ProfileEditActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        btnEditName = findViewById(R.id.btnEditName)
         btnEditBirth = findViewById(R.id.btnEditBirth)
         btnEditGender = findViewById(R.id.btnEditGender)
         btnEditHeight = findViewById(R.id.btnEditHeight)
@@ -56,10 +54,6 @@ class ProfileEditActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-
-        btnEditName.setOnClickListener {
-            startActivity(Intent(this, EditNameActivity::class.java))
-        }
 
         btnEditBirth.setOnClickListener {
             startActivity(Intent(this, EditBirthActivity::class.java))

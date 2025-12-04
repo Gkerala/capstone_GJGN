@@ -1,6 +1,7 @@
 # backend/records/models.py
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 
 class MealRecord(models.Model):
@@ -9,7 +10,7 @@ class MealRecord(models.Model):
         on_delete=models.CASCADE,
         related_name="meal_records"
     )
-    meal_time = models.DateTimeField(auto_now_add=True)
+    meal_time = models.DateTimeField(default=timezone.now)
     meal_type = models.CharField(max_length=50)   # 새로 추가됨
     memo = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="records/", blank=True, null=True)

@@ -6,7 +6,12 @@ from .views import (
     WeeklyStatsAPIView,
     MonthlyStatsAPIView,
     WeightRecordCreateAPIView, 
-    WeightRecordListAPIView
+    WeightRecordListAPIView,
+    
+    get_today_meals,
+    add_meal,
+    delete_meal_item,
+    get_today_weight,
 )
 
 from .views_main import MainSummaryAPIView
@@ -51,5 +56,11 @@ urlpatterns = [
     path("today/stat/", TodayStatAPIView.as_view()),
     
     path("main/summary/", MainSummaryAPIView.as_view()),
+    
+    path("meal/today/", get_today_meals),
+    path("meal/add/", add_meal),
+    path("meal/delete/<int:id>/", delete_meal_item),
+    path("weight/today/", get_today_weight),
+
 
 ]

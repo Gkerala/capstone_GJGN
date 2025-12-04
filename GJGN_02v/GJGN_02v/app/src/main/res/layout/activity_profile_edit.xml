@@ -49,12 +49,6 @@
             android:orientation="vertical">
 
             <!-- 수정 버튼들 -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnEditName"
-                android:text="이름 수정"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="16dp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEditBirth"

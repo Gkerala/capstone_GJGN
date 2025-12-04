@@ -1,4 +1,5 @@
-SELECT id, meal_time, meal_type, user_id 
-FROM records_mealrecord 
-WHERE user_id = 2
-ORDER BY meal_time DESC;
+UPDATE records_mealrecord
+SET meal_time = DATE_SUB(meal_time, INTERVAL 9 HOUR);
+
+UPDATE records_mealrecord
+SET created_at = DATE_SUB(created_at, INTERVAL 9 HOUR);

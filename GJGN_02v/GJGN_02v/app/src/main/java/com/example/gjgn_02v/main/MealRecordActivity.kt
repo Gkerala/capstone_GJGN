@@ -81,6 +81,7 @@ class MealRecordActivity : AppCompatActivity() {
 
         initViews()
         setupMealButtons()
+        applyMealTypeAutoSelect()
         setupSearchInput()
         setupBottomNav()
 
@@ -130,11 +131,18 @@ class MealRecordActivity : AppCompatActivity() {
             if (!line.startsWith("-")) break
 
             val item = line.removePrefix("-").trim()
-            if (item.isNotEmpty()) result.add(item)
+            if (item.isNotEmpty()) {
+
+                // “sushi / 초밥 / 스시” 분리
+                val tokens = item.split("/").map { it.trim() }.filter { it.isNotEmpty() }
+
+                result.addAll(tokens)  // 자동완성으로 사용될 이름들
+            }
         }
 
         return result
     }
+
 
 
 
@@ -158,6 +166,18 @@ class MealRecordActivity : AppCompatActivity() {
         btnDinner.setOnClickListener { selectedMealType = "dinner"; focus(btnDinner) }
 
         focus(btnBreakfast)
+    }
+
+    private fun applyMealTypeAutoSelect() {
+        val type = intent.getStringExtra("mealType") ?: "breakfast"
+
+        selectedMealType = type
+
+        when (type) {
+            "breakfast" -> btnBreakfast.performClick()
+            "lunch" -> btnLunch.performClick()
+            "dinner" -> btnDinner.performClick()
+        }
     }
 
     // ------------------------------------------------------------
@@ -767,4 +787,6 @@ class MealRecordActivity : AppCompatActivity() {
         currentPhotoPath = file.absolutePath
         return file
     }
+
+
 }
