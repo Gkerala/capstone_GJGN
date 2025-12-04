@@ -64,7 +64,7 @@ class WeightRecordActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         Toast.makeText(
                             this@WeightRecordActivity,
-                            "체량 기록 저장 완료!",
+                            "체중 기록 저장 완료!",
                             Toast.LENGTH_SHORT
                         ).show()
                         finish()

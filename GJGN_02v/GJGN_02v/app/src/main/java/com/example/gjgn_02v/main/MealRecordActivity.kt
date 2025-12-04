@@ -105,7 +105,7 @@ class MealRecordActivity : AppCompatActivity() {
         analysisContainer = findViewById(R.id.analysisContainer)
         btnSave = findViewById(R.id.btnSave)
 
-        analysisContainer.visibility = View.VISIBLE
+        analysisContainer.visibility = View.GONE
     }
 
     private fun loadYoloNames(): List<String> {
@@ -376,78 +376,109 @@ class MealRecordActivity : AppCompatActivity() {
                     val res = RetrofitClient.api.getNutrition(name)
                     if (res.isSuccessful && res.body() != null) {
                         nutritionList.add(res.body()!!)
+                    } else {
+                        Log.d("DBG_NUT", "getNutrition not successful for $name : code=${res.code()} body=${res.errorBody()}")
                     }
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    Log.e("DBG_NUT", "exception getNutrition for $name", e)
+                }
             }
 
-            updateNutritionUI()
+            Log.d("DBG_NUT", "fetchNutritionForFoods finished, nutritionList.size=${nutritionList.size}")
+            // force update on UI thread
+            runOnUiThread { updateNutritionUI() }
         }
     }
+
 
     // ------------------------------------------------------------
     // 6. Nutrition UI 표시
     // ------------------------------------------------------------
     private fun updateNutritionUI() {
+        Log.d("DBG_NUT", "updateNutritionUI called; nutritionList.size=${nutritionList.size}")
+
+        analysisContainer.visibility = View.VISIBLE
         analysisContainer.removeAllViews()
 
         nutritionList.forEachIndexed { idx, item ->
+            try {
+                val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
+                Log.d("DBG_NUT", "inflate success idx=$idx name=${item.name}")
 
-            val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
+                val txtGrams = view.findViewById<TextView>(R.id.txtGrams)
+                val txtKcal = view.findViewById<TextView>(R.id.txtKcal)
+                val txtCarbs = view.findViewById<TextView>(R.id.txtCarbs)
+                val txtProtein = view.findViewById<TextView>(R.id.txtProtein)
+                val txtFat = view.findViewById<TextView>(R.id.txtFat)
+                val txtSugar = view.findViewById<TextView>(R.id.txtSugar)
+                val btnEdit = view.findViewById<Button>(R.id.btnEdit)
 
-            val chk = view.findViewById<CheckBox>(R.id.chkSelect)
-            val txtGrams = view.findViewById<TextView>(R.id.txtGrams)
-            val txtKcal = view.findViewById<TextView>(R.id.txtKcal)
-            val txtCarbs = view.findViewById<TextView>(R.id.txtCarbs)
-            val txtProtein = view.findViewById<TextView>(R.id.txtProtein)
-            val txtFat = view.findViewById<TextView>(R.id.txtFat)
-            val txtSugar = view.findViewById<TextView>(R.id.txtSugar)
-            val btnEdit = view.findViewById<Button>(R.id.btnEdit)
+                view.findViewById<TextView>(R.id.txtName).text = item.name ?: "-"
+                txtGrams.text = "${item.grams ?: 100f} g"
+                txtKcal.text = "${item.calories ?: 0f} kcal"
+                txtCarbs.text = "탄수화물: ${item.carbs ?: 0f}"
+                txtProtein.text = "단백질: ${item.protein ?: 0f}"
+                txtFat.text = "지방: ${item.fat ?: 0f}"
+                txtSugar.text = "당: ${item.sugar ?: 0f}"
 
-            view.findViewById<TextView>(R.id.txtName).text = item.name ?: "-"
-            txtGrams.text = "${item.grams ?: 100f} g"
-            txtKcal.text = "${item.calories ?: 0f} kcal"
-            txtCarbs.text = "탄수화물: ${item.carbs ?: 0f}"
-            txtProtein.text = "단백질: ${item.protein ?: 0f}"
-            txtFat.text = "지방: ${item.fat ?: 0f}"
-            txtSugar.text = "당: ${item.sugar ?: 0f}"
+                btnEdit.setOnClickListener {
+                    val dialog = AlertDialog.Builder(this)
+                    dialog.setTitle("섭취량(g) 수정")
 
-            // g 수정 팝업
-            btnEdit.setOnClickListener {
-                val dialog = AlertDialog.Builder(this)
-                dialog.setTitle("섭취량(g) 수정")
+                    val input = EditText(this)
+                    input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                    input.setText((item.grams ?: 100f).toInt().toString())
+                    dialog.setView(input)
 
-                val input = EditText(this)
-                input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
-                input.setText((item.grams ?: 100f).toInt().toString())
+                    dialog.setPositiveButton("변경") { _, _ ->
+                        val newGram = input.text.toString().toIntOrNull()
+                        if (newGram != null && newGram > 0) {
+                            val updated = scaleNutrition(item, newGram)
+                            nutritionList[idx] = updated
 
-                dialog.setView(input)
-
-                dialog.setPositiveButton("변경") { _: DialogInterface, _: Int ->
-                    val newGram = input.text.toString().toIntOrNull()
-                    if (newGram != null && newGram > 0) {
-                        val updated = scaleNutrition(item, newGram)
-                        nutritionList[idx] = updated
-
-                        txtGrams.text = "${updated.grams} g"
-                        txtKcal.text = "${updated.calories}"
-                        txtCarbs.text = "탄수화물: ${updated.carbs}"
-                        txtProtein.text = "단백질: ${updated.protein}"
-                        txtFat.text = "지방: ${updated.fat}"
-                        txtSugar.text = "당: ${updated.sugar}"
+                            txtGrams.text = "${updated.grams} g"
+                            txtKcal.text = "${updated.calories}"
+                            txtCarbs.text = "탄수화물: ${updated.carbs}"
+                            txtProtein.text = "단백질: ${updated.protein}"
+                            txtFat.text = "지방: ${updated.fat}"
+                            txtSugar.text = "당: ${updated.sugar}"
+                        }
                     }
+
+                    dialog.setNegativeButton("취소", null)
+                    dialog.show()
                 }
 
-                dialog.setNegativeButton("취소", null)
-                dialog.show()
-            }
 
-            chk.setOnCheckedChangeListener { _, isChecked ->
-                nutritionList[idx] = nutritionList[idx].copy(selected = isChecked)
-            }
+                val btnDelete = view.findViewById<ImageButton>(R.id.btnDelete)
 
-            analysisContainer.addView(view)
+                btnDelete.setOnClickListener {
+                    AlertDialog.Builder(this)
+                        .setTitle("삭제 확인")
+                        .setMessage("해당 음식 항목을 삭제할까요?")
+                        .setPositiveButton("삭제") { _, _ ->
+                            // 실제 리스트에서 삭제
+                            nutritionList.removeAt(idx)
+
+                            // UI 다시 갱신
+                            updateNutritionUI()
+                        }
+                        .setNegativeButton("취소", null)
+                        .show()
+                }
+
+
+                analysisContainer.addView(view)
+                Log.d("DBG_NUT", "addView success idx=$idx")
+
+            } catch (e: Exception) {
+                Log.e("DBG_NUT", "EXCEPTION idx=$idx", e)
+            }
         }
+
+        Log.d("DBG_NUT", "updateNutritionUI finished childCount=${analysisContainer.childCount}")
     }
+
 
     // ------------------------------------------------------------
     // 7. 단일 Nutrition 조회
@@ -461,22 +492,20 @@ class MealRecordActivity : AppCompatActivity() {
                 val n = res.body()!!
                 singleNutritionResult = n
 
-                analysisContainer.removeAllViews()
-                val view = layoutInflater.inflate(R.layout.item_food_analysis, analysisContainer, false)
+                // ① 검색 결과도 리스트에 저장
+                nutritionList.clear()
+                nutritionList.add(n)
 
-                view.findViewById<TextView>(R.id.txtName).text = n.name ?: "-"
-                view.findViewById<TextView>(R.id.txtKcal).text = "${n.calories ?: 0} kcal"
-                view.findViewById<TextView>(R.id.txtCarbs).text = "탄수화물: ${n.carbs ?: 0}"
-                view.findViewById<TextView>(R.id.txtProtein).text = "단백질: ${n.protein ?: 0}"
-                view.findViewById<TextView>(R.id.txtFat).text = "지방: ${n.fat ?: 0}"
-                view.findViewById<TextView>(R.id.txtSugar).text = "당: ${n.sugar ?: 0}"
-                view.findViewById<TextView>(R.id.txtGrams).text = "${n.grams ?: 100f} g"
+                // ② UI 표시 허용
+                analysisContainer.visibility = View.VISIBLE
 
-                analysisContainer.addView(view)
+                // ③ 기존 분석 UI 로직으로 렌더링 (수정 버튼 포함)
+                runOnUiThread { updateNutritionUI() }
 
-            } catch (e: Exception) {}
+            } catch (_: Exception) { }
         }
     }
+
 
     // ------------------------------------------------------------
     // 8. 저장 로직

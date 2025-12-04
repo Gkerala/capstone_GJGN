@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.gjgn_02v">
 
-    <!-- 카메라 하드웨어가 없어도 설치 가능하도록 -->
+    <!-- 카메라 없어도 설치 가능 -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -11,10 +12,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Android 13+ 갤러리 접근 -->
+    <!-- Android 13+ 이미지 읽기 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
-    <!-- Android 10 이하 기기 용 -->
+    <!-- Android 10 이하 저장소 -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -29,12 +30,12 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.GJGN">
 
-        <!-- 카메오 SDK -->
+        <!-- Kakao SDK -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="15717b2f42caeea1ee8e0d45226b3236" />
 
-        <!-- FileProvider (카메라로 저장한 파일 접근용) -->
+        <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -49,18 +50,20 @@
         <!-- 스플래시 -->
         <activity
             android:name=".SplashActivity"
-            android:exported="true"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- 카카오 리다이렉트 -->
+        <!-- Kakao OAuth Redirect -->
         <activity
             android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/TransparentCompat"
+            tools:replace="android:theme">
+
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -72,22 +75,13 @@
         </activity>
 
         <!-- 로그인 -->
-        <activity
-            android:name=".login.LoginActivity"
-            android:exported="true"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+        <activity android:name=".login.LoginActivity" android:exported="true" />
 
         <!-- 프로필 설정 -->
-        <activity
-            android:name=".profile.ProfileSetupActivity"
-            android:exported="true"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+        <activity android:name=".profile.ProfileSetupActivity" android:exported="true" />
 
         <!-- 메인 -->
-        <activity
-            android:name=".main.MainActivity"
-            android:exported="true"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+        <activity android:name=".main.MainActivity" android:exported="true" />
 
         <!-- 식사/체중 기록 -->
         <activity android:name=".main.RecordSelectActivity" android:exported="true" />
@@ -95,10 +89,7 @@
         <activity android:name=".main.WeightRecordActivity" android:exported="false" />
 
         <!-- 분석 -->
-        <activity
-            android:name=".main.AnalysisActivity"
-            android:exported="true"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+        <activity android:name=".main.AnalysisActivity" android:exported="true" />
 
         <!-- My Page -->
         <activity android:name=".main.MyPageActivity" android:exported="true" />
