@@ -61,7 +61,7 @@ class MealRecordActivity : AppCompatActivity() {
     private var selectedFood: FoodItemResponse? = null
     private var singleNutritionResult: NutritionResponse? = null
 
-    private val nutritionList = mutableListOf<NutritionResponse>()
+    private var nutritionList = mutableListOf<NutritionResponse>()
     private var selectedMealType = "breakfast"
     private var foods = listOf<FoodItemResponse>()
 
@@ -481,6 +481,8 @@ class MealRecordActivity : AppCompatActivity() {
     // 6. Nutrition UI 표시
     // ------------------------------------------------------------
     private fun updateNutritionUI() {
+
+        nutritionList = nutritionList.distinctBy { it.name }.toMutableList()
 
         analysisContainer.visibility = View.VISIBLE
         analysisContainer.removeAllViews()
