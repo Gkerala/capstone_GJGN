@@ -73,16 +73,19 @@ class ProfileSetupActivity : AppCompatActivity() {
             return
         }
 
-        val request = FullProfileRequest(
+        val request = RegisterRequest(
             gender = viewModel.gender!!,
             birth = viewModel.birth!!,
             height = viewModel.height!!,
             weight = viewModel.weight!!,
+            goal_weight = viewModel.targetWeight!!,
+            activity_level = viewModel.activityLevel!!,
+            goal_type = viewModel.goalType!!
         )
 
-        Log.d("PROFILE_DEBUG", "서버로 보낼 JSON = " + Gson().toJson(request))
+        Log.d("PROFILE_DEBUG", "서버로 보낼 회원가입 JSON = " + Gson().toJson(request))
 
-        RetrofitClient.api.updateFullProfile(request)
+        RetrofitClient.api.register(request)
             .enqueue(object : Callback<UserProfileResponse> {
 
                 override fun onResponse(
@@ -92,13 +95,12 @@ class ProfileSetupActivity : AppCompatActivity() {
                     Log.d("PROFILE_DEBUG", "응답 코드 = ${response.code()}")
 
                     if (response.isSuccessful) {
-                        Log.d("PROFILE_DEBUG", "프로필 저장 성공 → MainActivity 이동")
+                        Log.d("PROFILE_DEBUG", "회원가입 + 프로필 저장 성공 → MainActivity 이동")
                         startActivity(Intent(this@ProfileSetupActivity, MainActivity::class.java))
                         finish()
                     } else {
-                        Log.e(
-                            "PROFILE_DEBUG",
-                            "프로필 저장 실패: ${response.errorBody()?.string()}"
+                        Log.e("PROFILE_DEBUG",
+                            "회원가입 실패: ${response.errorBody()?.string()}"
                         )
                     }
                 }
@@ -108,6 +110,7 @@ class ProfileSetupActivity : AppCompatActivity() {
                 }
             })
     }
+
 
     /** null 값 검증 */
     private fun validateAllFields(): Boolean {

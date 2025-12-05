@@ -7,6 +7,7 @@ import com.example.gjgn_02v.data.model.foods.*
 import com.example.gjgn_02v.data.model.goals.*
 import com.example.gjgn_02v.data.model.analysis.MainSummaryResponse
 import com.example.gjgn_02v.data.model.records.*
+import com.example.gjgn_02v.profile.RegisterRequest
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Response
@@ -17,6 +18,10 @@ interface ApiService {
     // -------------------------------------------------------------
     // 🔐 Auth
     // -------------------------------------------------------------
+
+    @POST("auth/register/")
+    fun register(@Body request: RegisterRequest): Call<UserProfileResponse>
+
     @POST("api/auth/login/kakao/")
     fun loginWithKakao(@Body request: KakaoLoginRequest): Call<KakaoLoginResponse>
 

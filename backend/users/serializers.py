@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import CustomUser, UserProfile
 from datetime import date
+from goals.models import UserGoal
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -47,22 +48,51 @@ class FullProfileUpdateSerializer(serializers.Serializer):
     height = serializers.FloatField(required=True)
     weight = serializers.FloatField(required=True)
 
-    def update(self, user, validated_data):
+    goal_weight = serializers.FloatField(required=True)
+    activity_level = serializers.IntegerField(required=True)
+    goal_type = serializers.CharField(required=True)  # "lose" / "maintain" / "gain"
 
+    def update(self, user, validated_data):
+        # --------------------------
+        # 1) User 기본 정보 업데이트
+        # --------------------------
         user.gender = validated_data["gender"]
         user.height = validated_data["height"]
         user.weight = validated_data["weight"]
 
+        # 나이 계산
         birth = validated_data["birth"]
         user.age = int((date.today() - birth).days / 365.25)
 
         user.save()
 
+        # --------------------------
+        # 2) UserProfile 업데이트
+        # --------------------------
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.gender = validated_data["gender"]
         profile.height = validated_data["height"]
         profile.weight = validated_data["weight"]
         profile.age = user.age
+        profile.birth = birth
         profile.save()
+
+        # --------------------------
+        # 3) UserGoal 업데이트
+        # --------------------------
+        goal, _ = UserGoal.objects.get_or_create(user=user)
+        goal.goal_weight = validated_data["goal_weight"]
+        goal.activity_level = validated_data["activity_level"]
+
+        # 문자열을 정수 Enum으로 변환
+        goal_type = validated_data["goal_type"]
+        if goal_type == "lose":
+            goal.goal_type = 1
+        elif goal_type == "maintain":
+            goal.goal_type = 2
+        elif goal_type == "gain":
+            goal.goal_type = 3
+
+        goal.save()
 
         return user
