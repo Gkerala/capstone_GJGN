@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import CustomUser, UserProfile
+from .models import CustomUser
 from datetime import date
-from goals.models import UserGoal
+from users.models import UserProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -39,9 +39,8 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-
-
+    
+    
 class FullProfileUpdateSerializer(serializers.Serializer):
     gender = serializers.CharField(required=True)
     birth = serializers.DateField(required=True)
@@ -50,7 +49,7 @@ class FullProfileUpdateSerializer(serializers.Serializer):
 
     goal_weight = serializers.FloatField(required=True)
     activity_level = serializers.IntegerField(required=True)
-    goal_type = serializers.CharField(required=True)  # "lose" / "maintain" / "gain"
+    goal_type = serializers.CharField(required=True)  # "lose" | "maintain" | "gain"
 
     def update(self, user, validated_data):
         # --------------------------
@@ -80,11 +79,12 @@ class FullProfileUpdateSerializer(serializers.Serializer):
         # --------------------------
         # 3) UserGoal 업데이트
         # --------------------------
+        from goals.models import UserGoal  # ← 반드시 import 필요
+
         goal, _ = UserGoal.objects.get_or_create(user=user)
         goal.goal_weight = validated_data["goal_weight"]
         goal.activity_level = validated_data["activity_level"]
 
-        # 문자열을 정수 Enum으로 변환
         goal_type = validated_data["goal_type"]
         if goal_type == "lose":
             goal.goal_type = 1

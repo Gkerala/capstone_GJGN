@@ -10,11 +10,11 @@ class UserGoal(models.Model):
 
     activity_level = models.IntegerField(default=3)  # 1~5
 
-    kcal = models.IntegerField(default=2000)
-    carbs = models.IntegerField(default=250)
-    protein = models.IntegerField(default=120)
-    fat = models.IntegerField(default=60)
-    sugar = models.IntegerField(default=50)  # WHO 기준 10%
+    kcal = models.IntegerField(default=9999)
+    carbs = models.IntegerField(default=999)
+    protein = models.IntegerField(default=999)
+    fat = models.IntegerField(default=999)
+    sugar = models.IntegerField(default=999)  # WHO 기준 10%
 
     # 자동 생성 모드
     auto_mode = models.BooleanField(default=True)

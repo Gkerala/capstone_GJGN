@@ -1,9 +1,11 @@
+# backend/records/views_main.py 
 from datetime import datetime, time, timedelta
 from django.utils import timezone
 from django.db.models.functions import Cast
 from django.db.models import DateField, Sum
 from rest_framework.response import Response
 from rest_framework import generics, permissions
+import json
 
 from records.models import MealRecord, MealFood, WeightRecord
 from goals.models import UserGoal
@@ -106,15 +108,24 @@ class MainSummaryAPIView(generics.GenericAPIView):
                 "foods": [
                     {
                         "name": f.food_name,
-                        "kcal": f.kcal,
-                        "carb": f.carb,
-                        "protein": f.protein,
-                        "fat": f.fat,
-                        "sugar": f.sugar,
+                        "kcal": float(f.kcal),
+                        "carb": float(f.carb),
+                        "protein": float(f.protein),
+                        "fat": float(f.fat),
+                        "sugar": float(f.sugar),
                     }
                     for f in foods
                 ],
-                "total": sum_info,
+
+                # 🔥 앱 모델(MainSummaryResponse)과 일치하도록 수정된 total 구조
+                "total": {
+                    "name": "total",
+                    "kcal": float(sum_info["kcal"]),
+                    "carb": float(sum_info["carb"]),
+                    "protein": float(sum_info["protein"]),
+                    "fat": float(sum_info["fat"]),
+                    "sugar": float(sum_info["sugar"]),
+                },
             }
 
         # =====================================
@@ -163,6 +174,11 @@ class MainSummaryAPIView(generics.GenericAPIView):
         # =====================================
         # 최종 응답
         # =====================================
+        print("📌 SUMMARY DATA JSON:", json.dumps({
+            "today": today_data,
+            "weight": weight_data,
+            "meals": meal_summary,
+        }, ensure_ascii=False, indent=2))
         return Response({
             "today": today_data,
             "weight": weight_data,

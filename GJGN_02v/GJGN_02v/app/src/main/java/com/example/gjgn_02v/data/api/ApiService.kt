@@ -19,7 +19,7 @@ interface ApiService {
     // 🔐 Auth
     // -------------------------------------------------------------
 
-    @POST("auth/register/")
+    @PUT("api/users/me/profile/")
     fun register(@Body request: RegisterRequest): Call<UserProfileResponse>
 
     @POST("api/auth/login/kakao/")
@@ -121,7 +121,7 @@ interface ApiService {
     @GET("api/records/weights/")
     fun getWeights(): Call<List<WeightResponse>>
 
-    @GET("/api/records/main/summary/")
+    @GET("api/records/main/summary/")
     fun getMainSummary(): Call<MainSummaryResponse>
 
 }
