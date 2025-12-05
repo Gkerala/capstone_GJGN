@@ -37,11 +37,6 @@ class ProfileSetupActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[ProfileSetupViewModel::class.java]
 
-        // ★★★★★ 뒤로가기 버튼 기능 추가 (기존 코드 변경 없음)
-        findViewById<ImageView>(R.id.btnBack).setOnClickListener {
-            prevPage()
-        }
-
         loadFragment(0)
     }
 

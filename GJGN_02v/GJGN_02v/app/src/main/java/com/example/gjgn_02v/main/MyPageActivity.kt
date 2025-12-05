@@ -50,7 +50,7 @@ class MyPageActivity : AppCompatActivity() {
         }
 
         btnLogout.setOnClickListener { logoutUser() }
-        btnDelete.setOnClickListener { deleteUser() }
+        btnDelete.setOnClickListener {  showDeleteConfirmDialog() }
 
         loadUserGoal()
         setBottomNav()
@@ -109,13 +109,40 @@ class MyPageActivity : AppCompatActivity() {
     }
 
     private fun handleLogoutSuccess(msg: String) {
+
+        // 🔥 1) 카카오 로그아웃
+        try {
+            com.kakao.sdk.user.UserApiClient.instance.logout { error ->
+                // 성공/실패 관계없이 다음 단계 진행
+            }
+        } catch (_: Exception) { }
+
+        // 🔥 2) 앱 JWT 토큰 삭제
         TokenManager.clearTokens(this)
+
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 
-        startActivity(Intent(this, LoginActivity::class.java)
-            .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK })
+        // 🔥 3) 로그인 화면으로 완전 이동 (기존 액티비티 스택 제거)
+        startActivity(Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+
         finish()
     }
+
+    private fun showDeleteConfirmDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("회원 탈퇴")
+            .setMessage("정말 탈퇴하시겠습니까?\n탈퇴 시 모든 기록이 삭제됩니다.")
+            .setPositiveButton("탈퇴") { _, _ ->
+                deleteUser()  // 실제 탈퇴 실행
+            }
+            .setNegativeButton("취소", null)
+            .setCancelable(true)
+            .show()
+    }
+
+
 
     private fun setBottomNav() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)

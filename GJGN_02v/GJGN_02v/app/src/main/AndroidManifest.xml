@@ -11,6 +11,8 @@
     <!-- 기본 권한 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"/>
 
     <!-- Android 13+ 이미지 읽기 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -24,8 +26,8 @@
         android:name=".App"
         android:allowBackup="true"
         android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/gjgn"
+        android:roundIcon="@mipmap/gjgn"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.GJGN">
@@ -113,6 +115,7 @@
         <activity android:name="com.example.gjgn_02v.data.model.mypage.EditActivityLevelActivity" android:exported="false" />
         <activity android:name="com.example.gjgn_02v.data.model.mypage.EditGoalTypeActivity" android:exported="false" />
         <activity android:name="com.example.gjgn_02v.data.model.mypage.EditGoalWeightActivity" android:exported="false" />
+
 
     </application>
 </manifest>

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserGoal, WeightRecord
+from .models import UserGoal
 
 class UserGoalSerializer(serializers.ModelSerializer):
 
@@ -31,8 +31,3 @@ class UserGoalUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
-class WeightRecordCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WeightRecord
-        fields = ["weight"]

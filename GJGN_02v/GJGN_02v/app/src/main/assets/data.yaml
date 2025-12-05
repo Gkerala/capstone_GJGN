@@ -1,27 +1,12 @@
 names:
-  - rice / 밥 / 백미밥 / 공기밥
-  - sushi / 초밥 / 스시
-  - tempura bowl / 텐동 / 튀김덮밥
-  - udon noodle / 우동
-  - tempura udon / 튀김우동
-  - soba noodle / 소바
-  - ramen noodle / 라멘
-  - Japanese-style pancake / 오코노미야키
-  - takoyaki / 타코야끼
-  - vegetable tempura / 야채튀김
-  - miso soup / 미소된장국
-  - grilled salmon / 연어구이
-  - rice ball / 오니기리
-  - dry curry / 드라이카레
-  - spicy chili-flavored tofu / 마파두부
-  - fried chicken / 치킨
-  - fried fish / 생선까스
-  - pork cutlet on rice / 가츠동
-  - beef curry / 카레라이스
-  - broiled eel bowl / 장어덮밥
+  - cake / 케이크
+  - french / 감자튀김
+  - hamburger / 햄버거
+  - hot / 핫도그
+  - pasta / 파스타
+  - pizza / 피자
+  - salad / 샐러드
+  - sandwich / 샌드위치
+  - sushi / 스시 / 초밥
+  - taco / 타코
 
-nc: 20
-
-train: D:/capstone/diet_app/capstone_GJGN/dataset256/yolo_japanese_20/images/train
-val: D:/capstone/diet_app/capstone_GJGN/dataset256/yolo_japanese_20/images/val
-test: D:/capstone/diet_app/capstone_GJGN/dataset256/yolo_japanese_20/images/test

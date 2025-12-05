@@ -23,7 +23,7 @@ interface ApiService {
     @GET("api/users/me/")
     fun getMyProfile(): Call<UserProfileResponse>
 
-    @PUT("api/users/me/goal/update/")
+    @PATCH("api/goals/update/")
     fun updateFullProfile(@Body request: FullProfileRequest): Call<UserProfileResponse>
 
     @GET("api/goals/me/")

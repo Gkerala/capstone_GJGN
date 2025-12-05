@@ -8,9 +8,11 @@ import java.util.*
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
@@ -68,6 +70,7 @@ class MealRecordActivity : AppCompatActivity() {
     private var currentPhotoPath: String = ""
 
     private var yoloFoods: List<String> = emptyList()
+    private val CAMERA_REQUEST_CODE = 1001
 
     companion object {
         private const val PICK_IMAGE = 2001
@@ -107,79 +110,50 @@ class MealRecordActivity : AppCompatActivity() {
     }
 
     private val koreanToEnglishMap = mapOf(
-        // rice
-        "밥" to "rice",
-        "백미밥" to "rice",
-        "공기밥" to "rice",
+
+        // cake
+        "케이크" to "cake",
+        "케익" to "cake",
+        "초코케이크" to "cake",
+
+        // french fries
+        "감자튀김" to "french",
+        "프렌치프라이" to "french",
+        "후렌치후라이" to "french",
+
+        // hamburger
+        "햄버거" to "hamburger",
+        "버거" to "hamburger",
+
+        // hot dog
+        "핫도그" to "hot",
+        "핫도그빵" to "hot",
+
+        // pasta
+        "파스타" to "pasta",
+        "스파게티" to "pasta",
+
+        // pizza
+        "피자" to "pizza",
+        "치즈피자" to "pizza",
+        "페퍼로니피자" to "pizza",
+
+        // salad
+        "샐러드" to "salad",
+        "사라다" to "salad",
+
+        // sandwich
+        "샌드위치" to "sandwich",
+        "샌드" to "sandwich",
 
         // sushi
         "스시" to "sushi",
         "초밥" to "sushi",
+        "참치초밥" to "sushi",
 
-        // tempura bowl
-        "텐동" to "tempura bowl",
-        "튀김덮밥" to "tempura bowl",
-
-        // udon noodle
-        "우동" to "udon noodle",
-
-        // tempura udon
-        "튀김우동" to "tempura udon",
-
-        // soba noodle
-        "소바" to "soba noodle",
-
-        // ramen noodle
-        "라멘" to "ramen noodle",
-        "라면" to "ramen noodle",
-
-        // Japanese-style pancake (Okonomiyaki)
-        "오코노미야키" to "Japanese-style pancake",
-        "오코노미야끼" to "Japanese-style pancake",
-
-        // takoyaki
-        "타코야끼" to "takoyaki",
-        "타코야키" to "takoyaki",
-
-        // vegetable tempura
-        "야채튀김" to "vegetable tempura",
-        "야채 템푸라" to "vegetable tempura",
-
-        // miso soup
-        "미소된장국" to "miso soup",
-        "된장국" to "miso soup",
-
-        // grilled salmon
-        "연어구이" to "grilled salmon",
-
-        // rice ball
-        "오니기리" to "rice ball",
-
-        // dry curry
-        "드라이카레" to "dry curry",
-
-        // spicy chili-flavored tofu (mapo tofu)
-        "마파두부" to "spicy chili-flavored tofu",
-
-        // fried chicken
-        "치킨" to "fried chicken",
-        "닭튀김" to "fried chicken",
-
-        // fried fish
-        "생선까스" to "fried fish",
-        "피쉬까스" to "fried fish",
-
-        // pork cutlet on rice (katsudon)
-        "가츠동" to "pork cutlet on rice",
-        "돈까스덮밥" to "pork cutlet on rice",
-
-        // beef curry
-        "카레라이스" to "beef curry",
-        "카레" to "beef curry",
-
-        // broiled eel bowl (unagi don)
-        "장어덮밥" to "broiled eel bowl",
-        "우나기동" to "broiled eel bowl"
+        // taco
+        "타코" to "taco",
+        "타코요리" to "taco"
     )
 
 
@@ -485,7 +459,9 @@ class MealRecordActivity : AppCompatActivity() {
                 try {
                     val res = RetrofitClient.api.getNutrition(name)
                     if (res.isSuccessful && res.body() != null) {
-                        nutritionList.add(res.body()!!)
+                        val n = res.body()!!
+                        n.selected = true       // ★ 자동 선택
+                        nutritionList.add(n)
                     } else {
                         Log.d("DBG_NUT", "getNutrition not successful for $name : code=${res.code()} body=${res.errorBody()}")
                     }
@@ -648,6 +624,7 @@ class MealRecordActivity : AppCompatActivity() {
 
                 // ① 검색 결과도 리스트에 저장
                 nutritionList.clear()
+                n.selected = true
                 nutritionList.add(n)
 
                 // ② UI 표시 허용
@@ -845,6 +822,16 @@ class MealRecordActivity : AppCompatActivity() {
     // 카메라 기능
     // ------------------------------------------------------------
     private fun openCamera() {
+
+        // 1) CAMERA 권한 체크
+        if (checkSelfPermission(android.Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 2000)
+            return
+        }
+
+        // 2) 사진 파일 생성
         val photoFile = createImageFile()
 
         cameraImageUri = FileProvider.getUriForFile(
@@ -853,18 +840,28 @@ class MealRecordActivity : AppCompatActivity() {
             photoFile
         )
 
+        // 3) 카메라 앱 호출 인텐트
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        // FileProvider URI 접근 권한 부여
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
+        // 사진 저장 위치 전달
         intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri)
 
+        // 4) 인텐트 실행
         startActivityForResult(intent, CAMERA_REQUEST)
     }
 
+
+
     private fun createImageFile(): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.KOREA).format(Date())
-        val storageDir = externalCacheDir
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 
         val file = File.createTempFile(
-            "CAMERA_${timeStamp}_",
+            "IMG_${timeStamp}_",
             ".jpg",
             storageDir
         )
@@ -873,5 +870,22 @@ class MealRecordActivity : AppCompatActivity() {
         return file
     }
 
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == 2000) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera()   // 권한 허용 → 다시 촬영 시작
+            } else {
+                Toast.makeText(this, "카메라 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
 }

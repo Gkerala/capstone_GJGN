@@ -2,19 +2,6 @@
 from django.db import models
 from django.conf import settings
 
-class WeightRecord(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    weight = models.FloatField()
-    created_at = models.DateTimeField()
-
-    class Meta:
-        db_table = "records_weight"
-        ordering = ["-created_at"]
-
-    def __str__(self):
-        return f"{self.user} - {self.weight}kg ({self.created_at})"
-
-
 class UserGoal(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

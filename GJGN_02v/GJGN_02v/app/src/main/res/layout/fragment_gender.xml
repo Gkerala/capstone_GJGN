@@ -16,14 +16,6 @@
         android:background="@android:color/white"
         android:elevation="4dp">
 
-        <ImageView
-            android:id="@+id/btnBack"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_arrow_back"
-            android:padding="6dp"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-
         <TextView
             android:text="성별 선택"
             android:textStyle="bold"

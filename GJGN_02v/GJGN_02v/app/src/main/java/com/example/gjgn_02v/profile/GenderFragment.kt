@@ -27,11 +27,6 @@ class GenderFragment : Fragment() {
 
         viewModel = ViewModelProvider(requireActivity())[ProfileSetupViewModel::class.java]
 
-        // ⭐ 뒤로가기 버튼 기능만 추가
-        view.findViewById<ImageView?>(R.id.btnBack)?.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
-
         val btnMale = view.findViewById<Button>(R.id.btnMale)
         val btnFemale = view.findViewById<Button>(R.id.btnFemale)
         val btnNext = view.findViewById<Button>(R.id.btnNextGender)

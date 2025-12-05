@@ -13,26 +13,16 @@ from foods.models import NutritionCache
 # YOLO 라벨 → Edamam 검색용 이름 매핑
 # ------------------------------------------------------
 LABEL_MAPPING = {
-    "rice": "cooked white rice",
-    "sushi": "salmon sushi roll",
-    "tempura bowl": "tempura rice bowl (tendon)",
-    "udon noodle": "cooked udon noodles",
-    "tempura udon": "udon with tempura",
-    "soba noodle": "cooked soba noodles",
-    "ramen noodle": "Japanese ramen (noodles with broth)",
-    "Japanese-style pancake": "okonomiyaki (Japanese savory pancake)",
-    "takoyaki": "Japanese octopus balls", 
-    "vegetable tempura": "vegetable tempura (fried vegetables)",
-    "miso soup": "miso soup",
-    "grilled salmon": "grilled salmon",
-    "rice ball": "onigiri rice ball",
-    "dry curry": "Japanese dry curry with rice",
-    "spicy chili-flavored tofu": "mapo tofu (spicy tofu dish)",
-    "fried chicken": "Japanese fried chicken (karaage)",
-    "fried fish": "fried white fish (battered)",
-    "pork cutlet on rice": "katsudon (pork cutlet rice bowl)",
-    "beef curry": "Japanese beef curry with rice",
-    "broiled eel bowl": "unagi don (broiled eel rice bowl)"
+    "cake": "chocolate cake",
+    "french": "french fries",
+    "hamburger": "hamburger patty",
+    "hot": "hot dog sausage",
+    "pasta": "pasta",
+    "pizza": "cheese pizza",
+    "salad": "vegetable salad",
+    "sandwich": "chicken sandwich",
+    "sushi": "salmon sushi",
+    "taco": "beef taco"
 }
 
 
