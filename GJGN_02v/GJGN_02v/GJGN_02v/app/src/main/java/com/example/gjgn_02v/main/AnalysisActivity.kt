@@ -22,6 +22,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
+import com.github.mikephil.charting.formatter.ValueFormatter
 
 class AnalysisActivity : AppCompatActivity() {
 
@@ -242,20 +243,25 @@ class AnalysisActivity : AppCompatActivity() {
                         color = Color.parseColor("#FF9800")
                         lineWidth = 3f
 
-                        // 🔵 데이터 있는 부분만 원 표시
                         setDrawCircles(true)
                         circleRadius = 4f
                         setCircleColor(Color.parseColor("#FF9800"))
                         setDrawCircleHole(false)
 
-                        // 🔢 데이터 값 표시 (NaN은 표시 안됨)
                         setDrawValues(true)
                         valueTextSize = 9f
                         valueTextColor = getColor(R.color.black)
 
-                        // 부드러운 선 or 직선
+                        // 🔥 소수점 1자리 포맷 (구버전 완벽 호환)
+                        valueFormatter = object : ValueFormatter() {
+                            override fun getFormattedValue(value: Float): String {
+                                return if (value.isNaN()) "" else String.format("%.1f", value)
+                            }
+                        }
+
                         mode = LineDataSet.Mode.LINEAR
                     }
+
 
                     lineChartWeight.data = LineData(dataSet)
 
