@@ -9,7 +9,6 @@ import com.example.gjgn_02v.R
 import com.example.gjgn_02v.data.api.RetrofitClient
 import com.example.gjgn_02v.data.model.goals.WeightRequest
 import com.example.gjgn_02v.data.model.goals.WeightResponse
-import com.example.gjgn_02v.utils.TokenManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

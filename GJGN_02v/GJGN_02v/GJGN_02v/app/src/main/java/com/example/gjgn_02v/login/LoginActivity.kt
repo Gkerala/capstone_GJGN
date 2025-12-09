@@ -9,7 +9,7 @@ import androidx.activity.ComponentActivity
 import com.example.gjgn_02v.R
 import com.example.gjgn_02v.main.MainActivity
 import com.example.gjgn_02v.profile.ProfileSetupActivity
-import com.example.gjgn_02v.utils.TokenManager
+import com.example.gjgn_02v.data.api.TokenManager
 import com.example.gjgn_02v.data.api.RetrofitClient
 import com.example.gjgn_02v.data.model.auth.KakaoLoginRequest
 import com.example.gjgn_02v.data.model.auth.KakaoLoginResponse

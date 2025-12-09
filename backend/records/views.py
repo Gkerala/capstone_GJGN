@@ -43,7 +43,6 @@ class MealRecordCreateAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         obj = serializer.save()
-        # 저장은 무조건 UTC
         obj.meal_time = timezone.now().astimezone(timezone.utc)
         obj.save()
 

@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import com.example.gjgn_02v.login.LoginActivity
 import com.example.gjgn_02v.main.MainActivity
-import com.example.gjgn_02v.utils.TokenManager
+import com.example.gjgn_02v.data.api.TokenManager
 
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

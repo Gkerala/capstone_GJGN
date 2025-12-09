@@ -7,7 +7,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gjgn_02v.R
-import com.example.gjgn_02v.utils.TokenManager
+import com.example.gjgn_02v.data.api.TokenManager
 import com.example.gjgn_02v.data.api.RetrofitClient
 import com.example.gjgn_02v.data.model.goals.UserGoalResponse
 import com.example.gjgn_02v.login.LoginActivity
