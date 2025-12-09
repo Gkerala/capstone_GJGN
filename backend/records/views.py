@@ -186,9 +186,16 @@ def get_today_meals(request):
             }
             for f in record.foods.all()
         ]
+
         result[record.meal_type].extend(foods)
 
+    # 🔥 요청 결과 JSON을 콘솔에 출력
+    import json
+    print("🔵 [get_today_meals RESPONSE]:\n",
+          json.dumps(result, ensure_ascii=False, indent=2))
+
     return Response(result)
+
 
 
 # ------------------------------------------

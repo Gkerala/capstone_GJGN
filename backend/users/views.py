@@ -7,6 +7,10 @@ from django.utils import timezone
 from records.models import MealRecord, MealFood
 from goals.models import UserGoal
 from datetime import date
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 from rest_framework import status
 from users.serializers import (
@@ -26,7 +30,7 @@ class UserDetailView(APIView):
         # 1) 기본 유저 정보
         user_data = UserSerializer(user).data
 
-        # 2) UserGoal (목표 칼로리 / 탄단지)
+        # 2) 목표 정보 가져오기
         goal, _ = UserGoal.objects.get_or_create(user=user)
         goal_data = {
             "kcal": goal.kcal,
@@ -39,44 +43,27 @@ class UserDetailView(APIView):
             "goal_type": goal.goal_type,
         }
 
-        # 3) 오늘 식단 기록
-        today_records = MealRecord.objects.filter(
-            user=user,
-            meal_time__date=date.today()
-        )
-
-        # 4) 오늘 먹은 모든 음식
-        today_foods = MealFood.objects.filter(
-            record__in=today_records
-        ).values(
-            "food_name", "kcal", "carb", "protein", "fat", "sugar", "amount"
-        )
-
-        # 5) 총합 계산
-        total = {
-            "kcal": sum(f["kcal"] for f in today_foods),
-            "carbs": sum(f["carb"] for f in today_foods),
-            "protein": sum(f["protein"] for f in today_foods),
-            "fat": sum(f["fat"] for f in today_foods),
-            "sugar": sum(f["sugar"] for f in today_foods),
+        # --------------------------------------------------
+        # 🔥 앱 UserProfileResponse 구조에 맞게 평탄화(flat)
+        # --------------------------------------------------
+        response_data = {
+            **user_data,   # id, name, birth, gender, height, weight ...
+            **goal_data    # kcal, carb, protein, fat ...
         }
 
-        return Response({
-            "user": user_data,
-            "goal": goal_data,
-            "today": {
-                "records": list(today_records.values()),
-                "foods": list(today_foods),
-                "total": total,
-            }
-        }, status=200)
-        
+        # 🔍 JSON 로그
+        print("\n==================== /api/users/me/ FLAT RESPONSE ====================")
+        print(json.dumps(response_data, indent=4, ensure_ascii=False))
+        print("======================================================================\n")
+
+        return Response(response_data, status=200)
+
     def patch(self, request):
         user = request.user
         serializer = UserSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=200)    
+        return Response(serializer.data, status=200) 
         
 
 

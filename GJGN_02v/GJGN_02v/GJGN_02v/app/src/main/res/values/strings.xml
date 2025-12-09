@@ -1,0 +1,65 @@
+<resources>
+
+    <!-- 앱 기본 -->
+    <string name="app_name">GJGN_02v</string>
+    <string name="home">메인</string>
+    <string name="record">기록</string>
+    <string name="analysis">분석</string>
+    <string name="my_info">내 정보</string>
+    <string name="logout">로그아웃</string>
+    <string name="delete_account">회원탈퇴</string>
+
+    <!-- 식사 종류 -->
+    <string-array name="meal_types">
+        <item>아침</item>
+        <item>점심</item>
+        <item>저녁</item>
+    </string-array>
+
+    <!-- 🔵 프로필 설정 - 공통 -->
+    <string name="next">다음</string>
+    <string name="prev">이전</string>
+    <string name="finish">완료</string>
+    <string name="confirm">예</string>
+    <string name="cancel">아니오</string>
+
+    <!-- 🟣 1단계: 성별 -->
+    <string name="gender_title">성별을 선택하세요</string>
+    <string name="male">남성</string>
+    <string name="female">여성</string>
+
+    <!-- 🟣 2단계: 생년월일 -->
+    <string name="birth_title">생년월일을 입력하세요</string>
+    <string name="select_birth">생년월일 선택</string>
+
+    <!-- 🟣 3단계: 키 / 몸무게 -->
+    <string name="height_weight_title">키와 몸무게를 입력하세요</string>
+    <string name="height_label">키 (cm)</string>
+    <string name="weight_label">몸무게 (kg)</string>
+
+    <!-- 🟣 4단계: 목표 체중 -->
+    <string name="goal_weight_title">목표 체중을 입력하세요</string>
+    <string name="goal_weight_label">목표 체중 (kg)</string>
+
+    <!-- 🟣 5단계: 활동량 + 목표 -->
+    <string name="activity_goal_title">활동량과 목표를 선택하세요</string>
+
+    <string-array name="activity_levels">
+        <item>나는 움직임이 거의 없다</item>
+        <item>일주일에 5시간 이상 걷는다</item>
+        <item>주 1회 이상 운동한다</item>
+        <item>주 3회 이상 운동한다</item>
+        <item>매일 운동한다</item>
+    </string-array>
+
+    <string-array name="diet_goals">
+        <item>체중 감량</item>
+        <item>체중 유지</item>
+        <item>체중 증가</item>
+    </string-array>
+
+    <!-- 🟢 최종 확인 페이지 -->
+    <string name="profile_review_title">입력한 정보를 확인하세요</string>
+    <string name="profile_review_message">입력한 정보가 모두 올바른가요?</string>
+
+</resources>

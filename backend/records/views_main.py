@@ -75,57 +75,72 @@ class MainSummaryAPIView(generics.GenericAPIView):
         }
 
         # =====================================
-        # 3) 식단 데이터 (UTC → KST 변환 후 date 비교)
+        # 3) 식단 데이터 (여러 MealRecord → 하나로 합치기)
         # =====================================
         meal_records = MealRecord.objects.filter(
             user=user,
             meal_time__range=(start_utc, end_utc)
         ).order_by("meal_time")
 
+        # meal_type별 누적 구조
+        merged = {
+            "breakfast": {},
+            "lunch": {},
+            "dinner": {}
+        }
+
         meal_summary = {"breakfast": None, "lunch": None, "dinner": None}
         total = {"kcal": 0, "carb": 0, "protein": 0, "fat": 0, "sugar": 0}
 
         for record in meal_records:
-            foods = MealFood.objects.filter(record_id=record.id)
-
-            sum_info = {
-                "kcal": sum(f.kcal for f in foods),
-                "carb": sum(f.carb for f in foods),
-                "protein": sum(f.protein for f in foods),
-                "fat": sum(f.fat for f in foods),
-                "sugar": sum(f.sugar for f in foods),
-            }
-
-            # 총합 누적
-            for key in total:
-                total[key] += sum_info[key]
-
             meal_type = record.meal_type.lower()
-            if meal_type not in meal_summary:
+            if meal_type not in merged:
                 meal_type = "breakfast"
 
-            meal_summary[meal_type] = {
-                "foods": [
-                    {
-                        "name": f.food_name,
+            foods = MealFood.objects.filter(record_id=record.id)
+
+            for f in foods:
+                name = f.food_name
+
+                # 같은 이름이 없으면 새로 추가
+                if name not in merged[meal_type]:
+                    merged[meal_type][name] = {
+                        "name": name,
                         "kcal": float(f.kcal),
                         "carb": float(f.carb),
                         "protein": float(f.protein),
                         "fat": float(f.fat),
                         "sugar": float(f.sugar),
                     }
-                    for f in foods
-                ],
+                # 같은 이름이 이미 있다면 누적
+                else:
+                    merged[meal_type][name]["kcal"] += float(f.kcal)
+                    merged[meal_type][name]["carb"] += float(f.carb)
+                    merged[meal_type][name]["protein"] += float(f.protein)
+                    merged[meal_type][name]["fat"] += float(f.fat)
+                    merged[meal_type][name]["sugar"] += float(f.sugar)
 
-                # 🔥 앱 모델(MainSummaryResponse)과 일치하도록 수정된 total 구조
+                # 전체 total도 누적
+                total["kcal"] += float(f.kcal)
+                total["carb"] += float(f.carb)
+                total["protein"] += float(f.protein)
+                total["fat"] += float(f.fat)
+                total["sugar"] += float(f.sugar)
+
+        # meal_summary 최종 구성
+        for meal_type in ["breakfast", "lunch", "dinner"]:
+            foods_list = list(merged[meal_type].values())
+
+            meal_summary[meal_type] = {
+                "foods": foods_list,
                 "total": {
                     "name": "total",
-                    "kcal": float(sum_info["kcal"]),
-                    "carb": float(sum_info["carb"]),
-                    "protein": float(sum_info["protein"]),
-                    "fat": float(sum_info["fat"]),
-                    "sugar": float(sum_info["sugar"]),
-                },
+                    "kcal": sum(f["kcal"] for f in foods_list),
+                    "carb": sum(f["carb"] for f in foods_list),
+                    "protein": sum(f["protein"] for f in foods_list),
+                    "fat": sum(f["fat"] for f in foods_list),
+                    "sugar": sum(f["sugar"] for f in foods_list),
+                }
             }
 
         # =====================================

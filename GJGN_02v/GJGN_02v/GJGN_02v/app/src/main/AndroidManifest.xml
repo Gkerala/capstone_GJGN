@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.gjgn_02v">
+
+    <!-- 카메라 없어도 설치 가능 -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <!-- 기본 권한 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"/>
+
+    <!-- Android 13+ 이미지 읽기 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Android 10 이하 저장소 -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:icon="@mipmap/gjgn"
+        android:roundIcon="@mipmap/gjgn"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.GJGN">
+
+        <!-- Kakao SDK -->
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="15717b2f42caeea1ee8e0d45226b3236" />
+
+        <!-- FileProvider -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- 스플래시 -->
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Kakao OAuth Redirect -->
+        <activity
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:exported="true"
+            android:theme="@style/TransparentCompat"
+            tools:replace="android:theme">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="kakao15717b2f42caeea1ee8e0d45226b3236"
+                    android:host="oauth" />
+            </intent-filter>
+        </activity>
+
+        <!-- 로그인 -->
+        <activity android:name=".login.LoginActivity" android:exported="true" />
+
+        <!-- 프로필 설정 -->
+        <activity android:name=".profile.ProfileSetupActivity" android:exported="true" />
+
+        <!-- 메인 -->
+        <activity android:name=".main.MainActivity" android:exported="true" />
+
+        <!-- 식사/체중 기록 -->
+        <activity android:name=".main.RecordSelectActivity" android:exported="true" />
+
+        <!-- ★ 키보드로 인해 bottomArea가 밀리지 않도록 adjustPan 적용 -->
+        <activity
+            android:name=".main.MealRecordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+
+        <activity
+            android:name=".main.WeightRecordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+
+        <!-- 분석 -->
+        <activity android:name=".main.AnalysisActivity" android:exported="true" />
+
+        <!-- My Page -->
+        <activity android:name=".main.MyPageActivity" android:exported="true" />
+        <activity android:name=".main.ProfileEditActivity" android:exported="true" />
+
+        <!-- 프로필 항목 수정 -->
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditNameActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditBirthActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditGenderActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditHeightActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditWeightActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditActivityLevelActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditGoalTypeActivity" android:exported="false" />
+        <activity android:name="com.example.gjgn_02v.data.model.mypage.EditGoalWeightActivity" android:exported="false" />
+
+
+    </application>
+</manifest>
